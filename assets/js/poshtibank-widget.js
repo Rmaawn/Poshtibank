@@ -478,6 +478,24 @@
 				return;
 			}
 
+			// If AI First-Line Responder provided an instant response (Phase 7)
+			if (res && res.ai_reply) {
+				elements.typingIndicator.style.display = 'flex';
+				scrollStreamToBottom();
+				setTimeout(function () {
+					elements.typingIndicator.style.display = 'none';
+					var aiMsg = {
+						message_id: 'ai-' + Date.now(),
+						sender: 'ai',
+						content: res.ai_reply,
+						created_at: formatTime(new Date()),
+					};
+					appendMessageBubble(aiMsg);
+					scrollStreamToBottom();
+					playNotificationSound();
+				}, 500);
+			}
+
 			// Reset polling interval to active (3s)
 			state.pollingInterval = 3000;
 			resetUserIdle();

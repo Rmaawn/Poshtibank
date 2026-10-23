@@ -276,10 +276,21 @@ class Poshtibank_REST_Client {
 			)
 		);
 
+		// 8. Process AI First-Line Responder (Phase 7)
+		$ai_reply = false;
+		if ( 'text' === $type ) {
+			require_once POSHTIBANK_PATH . 'includes/ai/class-poshtibank-ai.php';
+			$ai = new Poshtibank_AI();
+			if ( $ai->is_enabled() ) {
+				$ai_reply = $ai->process_message( $session, $content );
+			}
+		}
+
 		return new WP_REST_Response(
 			array(
-				'success' => true,
-				'message' => $created_message,
+				'success'  => true,
+				'message'  => $created_message,
+				'ai_reply' => $ai_reply,
 			),
 			201
 		);
@@ -365,6 +376,18 @@ class Poshtibank_REST_Client {
 				$cutoff
 			)
 		);
+
+		// If aggressive spamming detected (2x limit), automatically blacklist IP
+		if ( intval( $count ) >= ( intval( $max_msgs ) * 2 ) && filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+			$raw_settings = get_option( Poshtibank_Admin::OPTION_KEY, array() );
+			$current_blocked = (array) ( $raw_settings['security']['blocked_ips'] ?? array() );
+			if ( ! in_array( $ip, $current_blocked, true ) ) {
+				$current_blocked[] = $ip;
+				$raw_settings['security']['blocked_ips'] = $current_blocked;
+				update_option( Poshtibank_Admin::OPTION_KEY, $raw_settings );
+			}
+			return false;
+		}
 
 		return intval( $count ) < intval( $max_msgs );
 	}
