@@ -1,0 +1,783 @@
+<?php
+/**
+ * Admin dashboard and settings manager for Poshtibank.
+ *
+ * @package Poshtibank
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Class Poshtibank_Admin
+ */
+class Poshtibank_Admin {
+
+	/**
+	 * Settings option key in wp_options.
+	 */
+	const OPTION_KEY = 'poshtibank_settings';
+
+	/**
+	 * Initialize admin hooks.
+	 */
+	public function init() {
+		add_action( 'admin_menu', array( $this, 'register_menu_pages' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+
+		// AJAX Endpoints
+		add_action( 'wp_ajax_poshtibank_save_settings', array( $this, 'ajax_save_settings' ) );
+		add_action( 'wp_ajax_poshtibank_test_telegram', array( $this, 'ajax_test_telegram' ) );
+		add_action( 'wp_ajax_poshtibank_set_telegram_webhook', array( $this, 'ajax_set_telegram_webhook' ) );
+		add_action( 'wp_ajax_poshtibank_delete_telegram_webhook', array( $this, 'ajax_delete_telegram_webhook' ) );
+		add_action( 'wp_ajax_poshtibank_test_bale', array( $this, 'ajax_test_bale' ) );
+		add_action( 'wp_ajax_poshtibank_set_bale_webhook', array( $this, 'ajax_set_bale_webhook' ) );
+		add_action( 'wp_ajax_poshtibank_delete_bale_webhook', array( $this, 'ajax_delete_bale_webhook' ) );
+		add_action( 'wp_ajax_poshtibank_test_ai', array( $this, 'ajax_test_ai' ) );
+		add_action( 'wp_ajax_poshtibank_get_session_messages', array( $this, 'ajax_get_session_messages' ) );
+		add_action( 'wp_ajax_poshtibank_update_session_status', array( $this, 'ajax_update_session_status' ) );
+	}
+
+	/**
+	 * Register Admin Menu Pages.
+	 */
+	public function register_menu_pages() {
+		// Main Top-level Menu
+		add_menu_page(
+			__( 'پشتیبانک', 'poshtibank' ),
+			__( 'پشتیبانک', 'poshtibank' ),
+			'manage_options',
+			'poshtibank',
+			array( $this, 'render_settings_page' ),
+			'dashicons-format-chat',
+			30
+		);
+
+		// Submenu: Settings (same slug as parent)
+		add_submenu_page(
+			'poshtibank',
+			__( 'تنظیمات پشتیبانک', 'poshtibank' ),
+			__( 'تنظیمات', 'poshtibank' ),
+			'manage_options',
+			'poshtibank',
+			array( $this, 'render_settings_page' )
+		);
+
+		// Submenu: Live Chats
+		add_submenu_page(
+			'poshtibank',
+			__( 'گفتگوهای زنده — پشتیبانک', 'poshtibank' ),
+			__( 'گفتگوهای زنده', 'poshtibank' ),
+			'manage_options',
+			'poshtibank-chats',
+			array( $this, 'render_chats_page' )
+		);
+	}
+
+	/**
+	 * Enqueue admin styles and scripts only on Poshtibank admin pages.
+	 *
+	 * @param string $hook The current admin page.
+	 */
+	public function enqueue_assets( $hook ) {
+		if ( strpos( $hook, 'poshtibank' ) === false ) {
+			return;
+		}
+
+		// Color picker
+		wp_enqueue_style( 'wp-color-picker' );
+		wp_enqueue_script( 'wp-color-picker' );
+
+		// Plugin Admin CSS
+		wp_enqueue_style(
+			'poshtibank-admin-style',
+			POSHTIBANK_URL . 'assets/css/poshtibank-admin.css',
+			array( 'wp-color-picker' ),
+			POSHTIBANK_VERSION
+		);
+
+		// Plugin Admin JS
+		wp_enqueue_script(
+			'poshtibank-admin-script',
+			POSHTIBANK_URL . 'assets/js/poshtibank-admin.js',
+			array( 'jquery', 'wp-color-picker' ),
+			POSHTIBANK_VERSION,
+			true
+		);
+
+		$settings = self::get_settings();
+
+		// Localize script with AJAX URL, Nonces, and Webhook details
+		wp_localize_script(
+			'poshtibank-admin-script',
+			'poshtibankAdmin',
+			array(
+				'ajaxUrl'            => admin_url( 'admin-ajax.php' ),
+				'nonce'              => wp_create_nonce( 'poshtibank_admin_action' ),
+				'telegramWebhookUrl' => rest_url( 'poshtibank/v1/webhook/telegram' ),
+				'baleWebhookUrl'     => rest_url( 'poshtibank/v1/webhook/bale' ),
+				'isSSL'              => is_ssl(),
+				'i18n'               => array(
+					'saving'          => __( 'در حال ذخیره‌سازی...', 'poshtibank' ),
+					'saved'           => __( 'تنظیمات با موفقیت ذخیره شد.', 'poshtibank' ),
+					'error'           => __( 'خطایی رخ داد. لطفاً مجدداً تلاش کنید.', 'poshtibank' ),
+					'testing'         => __( 'در حال بررسی اتصال...', 'poshtibank' ),
+					'settingWebhook'  => __( 'در حال ثبت وبهوک...', 'poshtibank' ),
+					'deletingWebhook' => __( 'در حال حذف وبهوک...', 'poshtibank' ),
+					'sslWarning'      => __( 'توجه: ثبت وبهوک تلگرام و بله نیازمند فعال بودن SSL (HTTPS) روی دامنه سایت شماست.', 'poshtibank' ),
+					'confirmBlock'    => __( 'آیا از مسدودسازی این کاربر مطمئن هستید؟', 'poshtibank' ),
+					'confirmDelete'   => __( 'آیا از حذف مطمئن هستید؟', 'poshtibank' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Retrieve all stored settings with default fallbacks.
+	 *
+	 * @return array
+	 */
+	public static function get_settings() {
+		$saved = get_option( self::OPTION_KEY, array() );
+
+		$defaults = array(
+			'general' => array(
+				'enabled'         => 1,
+				'widget_title'    => 'پشتیبانی آنلاین پشتیبانک',
+				'widget_subtitle' => 'معمولاً در کمتر از چند دقیقه پاسخگوییم',
+				'retention_days'  => 30,
+				'primary_color'   => '#2563eb',
+				'widget_position' => 'bottom-right',
+				'require_contact' => 0,
+			),
+			'telegram' => array(
+				'enabled'        => 0,
+				'bot_token'      => '',
+				'chat_id'        => '',
+				'proxy_url'      => '',
+				'use_topics'     => 1,
+				'webhook_secret' => wp_generate_password( 32, false ),
+			),
+			'bale' => array(
+				'enabled'        => 0,
+				'bot_token'      => '',
+				'chat_id'        => '',
+				'webhook_secret' => wp_generate_password( 32, false ),
+			),
+			'business_hours' => array(
+				'enabled'         => 0,
+				'offline_message' => 'در حال حاضر همکاران ما آفلاین هستند. لطفاً پیام و شماره تماس خود را ارسال کنید.',
+				'schedule'        => array(
+					'sat' => array( 'active' => 1, 'start' => '09:00', 'end' => '18:00' ),
+					'sun' => array( 'active' => 1, 'start' => '09:00', 'end' => '18:00' ),
+					'mon' => array( 'active' => 1, 'start' => '09:00', 'end' => '18:00' ),
+					'tue' => array( 'active' => 1, 'start' => '09:00', 'end' => '18:00' ),
+					'wed' => array( 'active' => 1, 'start' => '09:00', 'end' => '18:00' ),
+					'thu' => array( 'active' => 1, 'start' => '09:00', 'end' => '14:00' ),
+					'fri' => array( 'active' => 0, 'start' => '00:00', 'end' => '00:00' ),
+				),
+			),
+			'channels' => array(
+				'telegram_url'  => '',
+				'whatsapp_url'  => '',
+				'bale_url'      => '',
+				'eitaa_url'     => '',
+				'instagram_url' => '',
+				'phone_number'  => '',
+			),
+			'ai' => array(
+				'enabled'       => 0,
+				'provider'      => 'gemini',
+				'api_key'       => '',
+				'model'         => 'gemini-1.5-flash',
+				'system_prompt' => 'شما دستیار هوشمند و مودب پشتیبانی سایت هستید. به سوالات کاربران با دقت و صبوری پاسخ دهید.',
+			),
+			'security' => array(
+				'rate_limit_messages' => 10,
+				'rate_limit_window'   => 60,
+				'blocked_ips'         => array(),
+			),
+			'advanced' => array(
+				'delete_data_on_uninstall' => 0,
+			),
+		);
+
+		return wp_parse_args( $saved, $defaults );
+	}
+
+	/**
+	 * Render the Settings page.
+	 */
+	public function render_settings_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'شما اجازه دسترسی به این بخش را ندارید.', 'poshtibank' ) );
+		}
+
+		$settings = self::get_settings();
+		require_once POSHTIBANK_PATH . 'includes/admin/views/settings-page.php';
+	}
+
+	/**
+	 * Render the Live Chats page.
+	 */
+	public function render_chats_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'شما اجازه دسترسی به این بخش را ندارید.', 'poshtibank' ) );
+		}
+
+		global $wpdb;
+		$sessions_table = Poshtibank_DB::get_sessions_table();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$sessions = $wpdb->get_results(
+			"SELECT * FROM {$sessions_table} ORDER BY last_activity DESC LIMIT 100"
+		);
+
+		require_once POSHTIBANK_PATH . 'includes/admin/views/chats-page.php';
+	}
+
+	/*
+	|--------------------------------------------------------------------------
+	| AJAX Handlers
+	|--------------------------------------------------------------------------
+	*/
+
+	/**
+	 * AJAX Handler: Save all settings tabs.
+	 */
+	public function ajax_save_settings() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
+		}
+
+		$raw = isset( $_POST['settings'] ) ? wp_unslash( $_POST['settings'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( ! is_array( $raw ) ) {
+			wp_send_json_error( array( 'message' => __( 'داده‌های ارسالی نامعتبر است.', 'poshtibank' ) ) );
+		}
+
+		$current = self::get_settings();
+		$clean   = array();
+
+		// 1. General Tab
+		$clean['general'] = array(
+			'enabled'         => ! empty( $raw['general']['enabled'] ) ? 1 : 0,
+			'widget_title'    => isset( $raw['general']['widget_title'] ) ? sanitize_text_field( $raw['general']['widget_title'] ) : $current['general']['widget_title'],
+			'widget_subtitle' => isset( $raw['general']['widget_subtitle'] ) ? sanitize_text_field( $raw['general']['widget_subtitle'] ) : $current['general']['widget_subtitle'],
+			'retention_days'  => isset( $raw['general']['retention_days'] ) ? max( 0, absint( $raw['general']['retention_days'] ) ) : 30,
+			'primary_color'   => isset( $raw['general']['primary_color'] ) ? sanitize_hex_color( $raw['general']['primary_color'] ) : '#2563eb',
+			'widget_position' => in_array( $raw['general']['widget_position'] ?? '', array( 'bottom-right', 'bottom-left' ), true ) ? $raw['general']['widget_position'] : 'bottom-right',
+			'require_contact' => ! empty( $raw['general']['require_contact'] ) ? 1 : 0,
+		);
+
+		// 2. Telegram Tab
+		$webhook_secret = ! empty( $current['telegram']['webhook_secret'] ) ? $current['telegram']['webhook_secret'] : wp_generate_password( 32, false );
+		$clean['telegram'] = array(
+			'enabled'        => ! empty( $raw['telegram']['enabled'] ) ? 1 : 0,
+			'bot_token'      => isset( $raw['telegram']['bot_token'] ) ? sanitize_text_field( trim( $raw['telegram']['bot_token'] ) ) : '',
+			'chat_id'        => isset( $raw['telegram']['chat_id'] ) ? sanitize_text_field( trim( $raw['telegram']['chat_id'] ) ) : '',
+			'proxy_url'      => isset( $raw['telegram']['proxy_url'] ) ? esc_url_raw( trim( $raw['telegram']['proxy_url'] ) ) : '',
+			'use_topics'     => ! empty( $raw['telegram']['use_topics'] ) ? 1 : 0,
+			'webhook_secret' => $webhook_secret,
+		);
+
+		// 3. Bale Tab
+		$bale_secret = ! empty( $current['bale']['webhook_secret'] ) ? $current['bale']['webhook_secret'] : wp_generate_password( 32, false );
+		$clean['bale'] = array(
+			'enabled'        => ! empty( $raw['bale']['enabled'] ) ? 1 : 0,
+			'bot_token'      => isset( $raw['bale']['bot_token'] ) ? sanitize_text_field( trim( $raw['bale']['bot_token'] ) ) : '',
+			'chat_id'        => isset( $raw['bale']['chat_id'] ) ? sanitize_text_field( trim( $raw['bale']['chat_id'] ) ) : '',
+			'webhook_secret' => $bale_secret,
+		);
+
+		// 4. Business Hours
+		$schedule = array();
+		$days     = array( 'sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri' );
+		foreach ( $days as $day ) {
+			$schedule[ $day ] = array(
+				'active' => ! empty( $raw['business_hours']['schedule'][ $day ]['active'] ) ? 1 : 0,
+				'start'  => isset( $raw['business_hours']['schedule'][ $day ]['start'] ) ? sanitize_text_field( $raw['business_hours']['schedule'][ $day ]['start'] ) : '09:00',
+				'end'    => isset( $raw['business_hours']['schedule'][ $day ]['end'] ) ? sanitize_text_field( $raw['business_hours']['schedule'][ $day ]['end'] ) : '18:00',
+			);
+		}
+
+		$clean['business_hours'] = array(
+			'enabled'         => ! empty( $raw['business_hours']['enabled'] ) ? 1 : 0,
+			'offline_message' => isset( $raw['business_hours']['offline_message'] ) ? sanitize_textarea_field( $raw['business_hours']['offline_message'] ) : '',
+			'schedule'        => $schedule,
+		);
+
+		// 5. Communication Hub Channels
+		$clean['channels'] = array(
+			'telegram_url'  => isset( $raw['channels']['telegram_url'] ) ? esc_url_raw( trim( $raw['channels']['telegram_url'] ) ) : '',
+			'whatsapp_url'  => isset( $raw['channels']['whatsapp_url'] ) ? esc_url_raw( trim( $raw['channels']['whatsapp_url'] ) ) : '',
+			'bale_url'      => isset( $raw['channels']['bale_url'] ) ? esc_url_raw( trim( $raw['channels']['bale_url'] ) ) : '',
+			'eitaa_url'     => isset( $raw['channels']['eitaa_url'] ) ? esc_url_raw( trim( $raw['channels']['eitaa_url'] ) ) : '',
+			'instagram_url' => isset( $raw['channels']['instagram_url'] ) ? esc_url_raw( trim( $raw['channels']['instagram_url'] ) ) : '',
+			'phone_number'  => isset( $raw['channels']['phone_number'] ) ? sanitize_text_field( trim( $raw['channels']['phone_number'] ) ) : '',
+		);
+
+		// 6. AI BYOK Responder
+		$clean['ai'] = array(
+			'enabled'       => ! empty( $raw['ai']['enabled'] ) ? 1 : 0,
+			'provider'      => in_array( $raw['ai']['provider'] ?? '', array( 'gemini', 'openai' ), true ) ? $raw['ai']['provider'] : 'gemini',
+			'api_key'       => isset( $raw['ai']['api_key'] ) ? sanitize_text_field( trim( $raw['ai']['api_key'] ) ) : '',
+			'model'         => isset( $raw['ai']['model'] ) ? sanitize_text_field( trim( $raw['ai']['model'] ) ) : 'gemini-1.5-flash',
+			'system_prompt' => isset( $raw['ai']['system_prompt'] ) ? sanitize_textarea_field( $raw['ai']['system_prompt'] ) : '',
+		);
+
+		// 7. Security & Advanced
+		$blocked_raw = isset( $raw['security']['blocked_ips'] ) ? $raw['security']['blocked_ips'] : '';
+		$blocked_ips = array();
+		if ( is_string( $blocked_raw ) ) {
+			$lines = explode( "\n", str_replace( "\r", '', $blocked_raw ) );
+			foreach ( $lines as $line ) {
+				$ip = trim( $line );
+				if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+					$blocked_ips[] = $ip;
+				}
+			}
+		} elseif ( is_array( $blocked_raw ) ) {
+			foreach ( $blocked_raw as $ip ) {
+				if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+					$blocked_ips[] = $ip;
+				}
+			}
+		}
+
+		$clean['security'] = array(
+			'rate_limit_messages' => isset( $raw['security']['rate_limit_messages'] ) ? max( 1, absint( $raw['security']['rate_limit_messages'] ) ) : 10,
+			'rate_limit_window'   => isset( $raw['security']['rate_limit_window'] ) ? max( 10, absint( $raw['security']['rate_limit_window'] ) ) : 60,
+			'blocked_ips'         => array_values( array_unique( $blocked_ips ) ),
+		);
+
+		$clean['advanced'] = array(
+			'delete_data_on_uninstall' => ! empty( $raw['advanced']['delete_data_on_uninstall'] ) ? 1 : 0,
+		);
+
+		update_option( self::OPTION_KEY, $clean );
+
+		wp_send_json_success(
+			array(
+				'message'  => __( 'تنظیمات با موفقیت ذخیره شد.', 'poshtibank' ),
+				'settings' => $clean,
+			)
+		);
+	}
+
+	/**
+	 * AJAX: Test Telegram Bot connection via getMe.
+	 */
+	public function ajax_test_telegram() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
+		}
+
+		$token     = isset( $_POST['token'] ) ? sanitize_text_field( trim( wp_unslash( $_POST['token'] ) ) ) : '';
+		$proxy_url = isset( $_POST['proxy_url'] ) ? esc_url_raw( trim( wp_unslash( $_POST['proxy_url'] ) ) ) : '';
+
+		if ( empty( $token ) ) {
+			wp_send_json_error( array( 'message' => __( 'لطفاً توکن ربات تلگرام را وارد کنید.', 'poshtibank' ) ) );
+		}
+
+		$base_endpoint = ! empty( $proxy_url ) ? untrailingslashit( $proxy_url ) : 'https://api.telegram.org';
+		$url           = "{$base_endpoint}/bot{$token}/getMe";
+
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout'   => 15,
+				'sslverify' => true,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error(
+				array(
+					'message' => sprintf( __( 'خطا در برقراری ارتباط: %s (اگر هاست شما در ایران است، آدرس پروکسی/ورکر کلودفلر را تنظیم کنید).', 'poshtibank' ), $response->get_error_message() ),
+				)
+			);
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( ! empty( $body['ok'] ) && ! empty( $body['result'] ) ) {
+			$bot = $body['result'];
+			wp_send_json_success(
+				array(
+					'message'  => sprintf( __( 'اتصال به تلگرام با موفقیت برقرار شد! نام ربات: %s (@%s)', 'poshtibank' ), $bot['first_name'], $bot['username'] ),
+					'bot_info' => $bot,
+				)
+			);
+		} else {
+			$err = isset( $body['description'] ) ? $body['description'] : __( 'توکن نامعتبر است.', 'poshtibank' );
+			wp_send_json_error( array( 'message' => __( 'پاسخ ناموفق از تلگرام: ', 'poshtibank' ) . $err ) );
+		}
+	}
+
+	/**
+	 * AJAX: Set Telegram Webhook to point to the site's REST API endpoint.
+	 */
+	public function ajax_set_telegram_webhook() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
+		}
+
+		$settings  = self::get_settings();
+		$token     = isset( $_POST['token'] ) ? sanitize_text_field( trim( wp_unslash( $_POST['token'] ) ) ) : $settings['telegram']['bot_token'];
+		$proxy_url = isset( $_POST['proxy_url'] ) ? esc_url_raw( trim( wp_unslash( $_POST['proxy_url'] ) ) ) : $settings['telegram']['proxy_url'];
+
+		if ( empty( $token ) ) {
+			wp_send_json_error( array( 'message' => __( 'توکن ربات تلگرام مشخص نشده است.', 'poshtibank' ) ) );
+		}
+
+		$webhook_url = rest_url( 'poshtibank/v1/webhook/telegram' );
+
+		if ( ! is_ssl() && strpos( $webhook_url, 'https://' ) !== 0 ) {
+			wp_send_json_error( array( 'message' => __( 'وبهوک تلگرام نیازمند پروتکل امن HTTPS است. لطفاً ابتدا SSL سایت را فعال کنید.', 'poshtibank' ) ) );
+		}
+
+		$base_endpoint = ! empty( $proxy_url ) ? untrailingslashit( $proxy_url ) : 'https://api.telegram.org';
+		$api_url       = "{$base_endpoint}/bot{$token}/setWebhook";
+
+		$payload = array(
+			'url'             => $webhook_url,
+			'secret_token'    => $settings['telegram']['webhook_secret'],
+			'allowed_updates' => array( 'message', 'edited_message', 'callback_query' ),
+		);
+
+		$response = wp_remote_post(
+			$api_url,
+			array(
+				'timeout'   => 15,
+				'headers'   => array( 'Content-Type' => 'application/json' ),
+				'body'      => wp_json_encode( $payload ),
+				'sslverify' => true,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array( 'message' => $response->get_error_message() ) );
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( ! empty( $body['ok'] ) ) {
+			wp_send_json_success(
+				array(
+					'message'     => __( 'وبهوک تلگرام با موفقیت ثبت شد!', 'poshtibank' ),
+					'webhook_url' => $webhook_url,
+				)
+			);
+		} else {
+			wp_send_json_error(
+				array(
+					'message' => __( 'خطا در ثبت وبهوک تلگرام: ', 'poshtibank' ) . ( $body['description'] ?? '' ),
+				)
+			);
+		}
+	}
+
+	/**
+	 * AJAX: Delete Telegram Webhook.
+	 */
+	public function ajax_delete_telegram_webhook() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
+		}
+
+		$settings      = self::get_settings();
+		$token         = $settings['telegram']['bot_token'];
+		$proxy_url     = $settings['telegram']['proxy_url'];
+		$base_endpoint = ! empty( $proxy_url ) ? untrailingslashit( $proxy_url ) : 'https://api.telegram.org';
+		$api_url       = "{$base_endpoint}/bot{$token}/deleteWebhook";
+
+		$response = wp_remote_post( $api_url, array( 'timeout' => 15 ) );
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array( 'message' => $response->get_error_message() ) );
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( ! empty( $body['ok'] ) ) {
+			wp_send_json_success( array( 'message' => __( 'وبهوک تلگرام با موفقیت حذف گردید.', 'poshtibank' ) ) );
+		} else {
+			wp_send_json_error( array( 'message' => $body['description'] ?? __( 'خطا در حذف وبهوک.', 'poshtibank' ) ) );
+		}
+	}
+
+	/**
+	 * AJAX: Test Bale Messenger Bot connection.
+	 */
+	public function ajax_test_bale() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
+		}
+
+		$token = isset( $_POST['token'] ) ? sanitize_text_field( trim( wp_unslash( $_POST['token'] ) ) ) : '';
+
+		if ( empty( $token ) ) {
+			wp_send_json_error( array( 'message' => __( 'لطفاً توکن ربات بله را وارد کنید.', 'poshtibank' ) ) );
+		}
+
+		$url = "https://tapi.bale.ai/bot{$token}/getMe";
+
+		$response = wp_remote_get(
+			$url,
+			array(
+				'timeout'   => 15,
+				'sslverify' => true,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array( 'message' => sprintf( __( 'خطا در ارتباط با سرور بله: %s', 'poshtibank' ), $response->get_error_message() ) ) );
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( ! empty( $body['ok'] ) && ! empty( $body['result'] ) ) {
+			$bot = $body['result'];
+			wp_send_json_success(
+				array(
+					'message'  => sprintf( __( 'اتصال به پیام‌رسان بله با موفقیت انجام شد! ربات: %s (@%s)', 'poshtibank' ), $bot['first_name'] ?? '', $bot['username'] ?? '' ),
+					'bot_info' => $bot,
+				)
+			);
+		} else {
+			$err = isset( $body['description'] ) ? $body['description'] : __( 'توکن بله نامعتبر است.', 'poshtibank' );
+			wp_send_json_error( array( 'message' => __( 'پاسخ ناموفق از بله: ', 'poshtibank' ) . $err ) );
+		}
+	}
+
+	/**
+	 * AJAX: Set Bale Webhook.
+	 */
+	public function ajax_set_bale_webhook() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
+		}
+
+		$settings = self::get_settings();
+		$token    = isset( $_POST['token'] ) ? sanitize_text_field( trim( wp_unslash( $_POST['token'] ) ) ) : $settings['bale']['bot_token'];
+
+		if ( empty( $token ) ) {
+			wp_send_json_error( array( 'message' => __( 'توکن ربات بله مشخص نشده است.', 'poshtibank' ) ) );
+		}
+
+		$webhook_url = rest_url( 'poshtibank/v1/webhook/bale' );
+
+		if ( ! is_ssl() && strpos( $webhook_url, 'https://' ) !== 0 ) {
+			wp_send_json_error( array( 'message' => __( 'ثبت وبهوک بله نیازمند HTTPS است.', 'poshtibank' ) ) );
+		}
+
+		$api_url = "https://tapi.bale.ai/bot{$token}/setWebhook";
+		$payload = array(
+			'url' => $webhook_url,
+		);
+
+		$response = wp_remote_post(
+			$api_url,
+			array(
+				'timeout'   => 15,
+				'headers'   => array( 'Content-Type' => 'application/json' ),
+				'body'      => wp_json_encode( $payload ),
+				'sslverify' => true,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array( 'message' => $response->get_error_message() ) );
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( ! empty( $body['ok'] ) ) {
+			wp_send_json_success(
+				array(
+					'message'     => __( 'وبهوک پیام‌رسان بله با موفقیت ثبت شد!', 'poshtibank' ),
+					'webhook_url' => $webhook_url,
+				)
+			);
+		} else {
+			wp_send_json_error(
+				array(
+					'message' => __( 'خطا در ثبت وبهوک بله: ', 'poshtibank' ) . ( $body['description'] ?? '' ),
+				)
+			);
+		}
+	}
+
+	/**
+	 * AJAX: Delete Bale Webhook.
+	 */
+	public function ajax_delete_bale_webhook() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
+		}
+
+		$settings = self::get_settings();
+		$token    = $settings['bale']['bot_token'];
+		$api_url  = "https://tapi.bale.ai/bot{$token}/deleteWebhook";
+
+		$response = wp_remote_post( $api_url, array( 'timeout' => 15 ) );
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array( 'message' => $response->get_error_message() ) );
+		}
+
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( ! empty( $body['ok'] ) ) {
+			wp_send_json_success( array( 'message' => __( 'وبهوک بله با موفقیت غیرفعال شد.', 'poshtibank' ) ) );
+		} else {
+			wp_send_json_error( array( 'message' => $body['description'] ?? __( 'خطا در حذف وبهوک بله.', 'poshtibank' ) ) );
+		}
+	}
+
+	/**
+	 * AJAX: Test AI API key (Gemini or OpenAI).
+	 */
+	public function ajax_test_ai() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
+		}
+
+		$provider = isset( $_POST['provider'] ) ? sanitize_key( $_POST['provider'] ) : 'gemini';
+		$api_key  = isset( $_POST['api_key'] ) ? sanitize_text_field( trim( wp_unslash( $_POST['api_key'] ) ) ) : '';
+
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => __( 'کلید API وارد نشده است.', 'poshtibank' ) ) );
+		}
+
+		if ( 'gemini' === $provider ) {
+			// Test Google Gemini API
+			$url      = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$api_key}";
+			$payload  = array(
+				'contents' => array(
+					array(
+						'parts' => array(
+							array( 'text' => 'Hello. Reply with only one word: OK' ),
+						),
+					),
+				),
+			);
+			$response = wp_remote_post(
+				$url,
+				array(
+					'timeout' => 15,
+					'headers' => array( 'Content-Type' => 'application/json' ),
+					'body'    => wp_json_encode( $payload ),
+				)
+			);
+		} else {
+			// Test OpenAI API
+			$url      = 'https://api.openai.com/v1/chat/completions';
+			$payload  = array(
+				'model'    => 'gpt-4o-mini',
+				'messages' => array(
+					array(
+						'role'    => 'user',
+						'content' => 'Hello. Reply with only one word: OK',
+					),
+				),
+			);
+			$response = wp_remote_post(
+				$url,
+				array(
+					'timeout' => 15,
+					'headers' => array(
+						'Content-Type'  => 'application/json',
+						'Authorization' => 'Bearer ' . $api_key,
+					),
+					'body'    => wp_json_encode( $payload ),
+				)
+			);
+		}
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( array( 'message' => sprintf( __( 'خطا در ارتباط با سرویس هوش مصنوعی: %s', 'poshtibank' ), $response->get_error_message() ) ) );
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		if ( $code >= 200 && $code < 300 ) {
+			wp_send_json_success( array( 'message' => __( 'کلید API هوش مصنوعی معتبر است و ارتباط با موفقیت برقرار شد!', 'poshtibank' ) ) );
+		} else {
+			$err = $body['error']['message'] ?? __( 'کلید API نامعتبر است یا سهمیه تمام شده است.', 'poshtibank' );
+			wp_send_json_error( array( 'message' => __( 'خطا از سرویس‌دهنده هوش مصنوعی: ', 'poshtibank' ) . $err ) );
+		}
+	}
+
+	/**
+	 * AJAX: Retrieve message history for a session modal.
+	 */
+	public function ajax_get_session_messages() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
+		}
+
+		$session_id = isset( $_POST['session_id'] ) ? sanitize_text_field( wp_unslash( $_POST['session_id'] ) ) : '';
+
+		if ( empty( $session_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'شناسه نشست نامعتبر است.', 'poshtibank' ) ) );
+		}
+
+		$session  = Poshtibank_DB::get_session( $session_id );
+		$messages = Poshtibank_DB::get_messages( $session_id, 100 );
+
+		wp_send_json_success(
+			array(
+				'session'  => $session,
+				'messages' => $messages,
+			)
+		);
+	}
+
+	/**
+	 * AJAX: Update session status (block, close, open).
+	 */
+	public function ajax_update_session_status() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
+		}
+
+		$session_id = isset( $_POST['session_id'] ) ? sanitize_text_field( wp_unslash( $_POST['session_id'] ) ) : '';
+		$status     = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : 'open';
+
+		if ( empty( $session_id ) || ! in_array( $status, array( 'open', 'closed', 'blocked' ), true ) ) {
+			wp_send_json_error( array( 'message' => __( 'پارامترهای ارسالی نامعتبر است.', 'poshtibank' ) ) );
+		}
+
+		$updated = Poshtibank_DB::update_session( $session_id, array( 'status' => $status ) );
+
+		if ( $updated ) {
+			wp_send_json_success( array( 'message' => __( 'وضعیت گفتگو به‌روزرسانی شد.', 'poshtibank' ) ) );
+		} else {
+			wp_send_json_error( array( 'message' => __( 'خطا در به‌روزرسانی وضعیت گفتگو.', 'poshtibank' ) ) );
+		}
+	}
+}

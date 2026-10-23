@@ -91,13 +91,13 @@ class Poshtibank {
 	}
 
 	/**
-	 * Register all of the hooks related to the admin area functionality (Phase 2+).
+	 * Register all of the hooks related to the admin area functionality.
 	 */
 	private function define_admin_hooks() {
-		// Placeholder for Phase 2: Poshtibank_Admin initialization.
-		if ( is_admin() && file_exists( POSHTIBANK_PATH . 'includes/admin/class-poshtibank-admin.php' ) ) {
+		if ( is_admin() ) {
 			require_once POSHTIBANK_PATH . 'includes/admin/class-poshtibank-admin.php';
-			// Phase 2 hook registration.
+			$admin = new Poshtibank_Admin();
+			$admin->init();
 		}
 	}
 
