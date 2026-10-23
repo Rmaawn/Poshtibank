@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once POSHTIBANK_PATH . 'includes/bridges/class-poshtibank-bridge-telegram.php';
 require_once POSHTIBANK_PATH . 'includes/bridges/class-poshtibank-bridge-bale.php';
 require_once POSHTIBANK_PATH . 'includes/media/class-poshtibank-media.php';
+require_once POSHTIBANK_PATH . 'includes/woocommerce/class-poshtibank-bot-commands.php';
 
 /**
  * Class Poshtibank_REST_Webhook
@@ -196,6 +197,17 @@ class Poshtibank_REST_Webhook {
 		$tg_proxy = $settings['telegram']['proxy_url'] ?? '';
 
 		if ( ! empty( $message['text'] ) ) {
+			// Check for Bot Commands like /product or /coupon
+			if ( Poshtibank_Bot_Commands::is_command( $message['text'] ) ) {
+				$feedback = Poshtibank_Bot_Commands::handle( $session, $message['text'] );
+				$extra    = array();
+				if ( ! empty( $message['message_thread_id'] ) ) {
+					$extra['message_thread_id'] = $message['message_thread_id'];
+				}
+				$chat_target = ! empty( $message['chat']['id'] ) ? (string) $message['chat']['id'] : $telegram->get_chat_id();
+				$telegram->send_text( $chat_target, $feedback, $extra );
+				return new WP_REST_Response( array( 'ok' => true ), 200 );
+			}
 			$content = $message['text'];
 			$type    = 'text';
 		} elseif ( ! empty( $message['voice'] ) ) {
@@ -310,6 +322,13 @@ class Poshtibank_REST_Webhook {
 				$bale_token = $settings['bale']['bot_token'] ?? '';
 
 				if ( ! empty( $message['text'] ) ) {
+					// Check for Bot Commands like /product or /coupon in Bale
+					if ( Poshtibank_Bot_Commands::is_command( $message['text'] ) ) {
+						$feedback    = Poshtibank_Bot_Commands::handle( $session, $message['text'] );
+						$chat_target = ! empty( $message['chat']['id'] ) ? (string) $message['chat']['id'] : $bale->get_chat_id();
+						$bale->send_text( $chat_target, $feedback );
+						return new WP_REST_Response( array( 'ok' => true ), 200 );
+					}
 					$content = $message['text'];
 					$type    = 'text';
 				} elseif ( ! empty( $message['voice'] ) ) {

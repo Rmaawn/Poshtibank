@@ -219,7 +219,7 @@ class Poshtibank_Bridge_Manager {
 	}
 
 	/**
-	 * Build context header for messenger notifications.
+	 * Build context header for messenger notifications (including WooCommerce context).
 	 *
 	 * @param object $session  Session object.
 	 * @param string $platform 'telegram' or 'bale'.
@@ -230,10 +230,29 @@ class Poshtibank_Bridge_Manager {
 		$phone = ! empty( $session->user_phone ) ? ' | 📱 ' . esc_html( $session->user_phone ) : '';
 		$page  = ! empty( $session->current_page ) ? "\n🔗 " . esc_url( $session->current_page ) : '';
 
-		if ( 'telegram' === $platform ) {
-			return sprintf( '👤 <b>%s</b>%s%s', $name, $phone, $page );
+		// WooCommerce context enrichment
+		$extra_info = '';
+		$meta = ! empty( $session->metadata ) ? ( is_array( $session->metadata ) ? $session->metadata : json_decode( $session->metadata, true ) ) : array();
+
+		if ( ! empty( $meta['wc_product'] ) && is_array( $meta['wc_product'] ) ) {
+			$prod = $meta['wc_product'];
+			$extra_info .= sprintf( "\n📦 محصول: %s (%s)", esc_html( $prod['title'] ?? '' ), esc_html( $prod['price_formatted'] ?? '' ) );
 		}
 
-		return sprintf( "👤 %s%s%s", $name, $phone, $page );
+		if ( ! empty( $meta['wc_cart'] ) && is_array( $meta['wc_cart'] ) ) {
+			$cart = $meta['wc_cart'];
+			$extra_info .= sprintf( "\n🛒 سبد خرید: %d کالا (مجموع: %s)", absint( $cart['count'] ?? 0 ), esc_html( $cart['total'] ?? '' ) );
+		}
+
+		if ( ! empty( $meta['wc_customer'] ) && is_array( $meta['wc_customer'] ) ) {
+			$cust = $meta['wc_customer'];
+			$extra_info .= sprintf( "\n🛍 سابقه خرید: %d سفارش ثبت‌شده", absint( $cust['order_count'] ?? 0 ) );
+		}
+
+		if ( 'telegram' === $platform ) {
+			return sprintf( '👤 <b>%s</b>%s%s%s', $name, $phone, $page, $extra_info );
+		}
+
+		return sprintf( "👤 %s%s%s%s", $name, $phone, $page, $extra_info );
 	}
 }
