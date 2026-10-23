@@ -64,13 +64,13 @@ class Poshtibank_Activator {
 					'chat_id'        => '',
 					'proxy_url'      => '', // Cloudflare worker reverse proxy
 					'use_topics'     => 1,  // Multi-operator forum topics
-					'webhook_secret' => wp_generate_password( 32, false ),
+					'webhook_secret' => Poshtibank_DB::generate_secret( 32 ),
 				),
 				'bale' => array(
 					'enabled'        => 0,
 					'bot_token'      => '',
 					'chat_id'        => '',
-					'webhook_secret' => wp_generate_password( 32, false ),
+					'webhook_secret' => Poshtibank_DB::generate_secret( 32 ),
 				),
 				'security' => array(
 					'rate_limit_messages' => 10, // Max 10 messages per minute

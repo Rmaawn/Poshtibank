@@ -54,6 +54,24 @@ class Poshtibank_DB {
 		return vsprintf( '%s%s-%s-%s-%s-%s%s%s', str_split( bin2hex( $data ), 4 ) );
 	}
 
+	/**
+	 * Generate a random secret token safely without relying on pluggable.php.
+	 *
+	 * @param int $length Desired length of the string.
+	 * @return string
+	 */
+	public static function generate_secret( $length = 32 ) {
+		if ( function_exists( 'wp_generate_password' ) ) {
+			return wp_generate_password( $length, false );
+		}
+
+		try {
+			return substr( bin2hex( random_bytes( (int) ceil( $length / 2 ) ) ), 0, $length );
+		} catch ( Exception $e ) {
+			return substr( md5( uniqid( (string) wp_rand(), true ) ), 0, $length );
+		}
+	}
+
 	/*
 	|--------------------------------------------------------------------------
 	| Session Management Operations

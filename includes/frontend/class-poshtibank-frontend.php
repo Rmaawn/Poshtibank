@@ -20,13 +20,6 @@ class Poshtibank_Frontend {
 	 * Initialize frontend hooks.
 	 */
 	public function init() {
-		$settings = Poshtibank_Admin::get_settings();
-
-		// Check if chat is globally enabled
-		if ( empty( $settings['general']['enabled'] ) ) {
-			return;
-		}
-
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'wp_footer', array( $this, 'render_widget_markup' ) );
 	}
@@ -35,6 +28,13 @@ class Poshtibank_Frontend {
 	 * Enqueue CSS and Vanilla JS for the chat widget.
 	 */
 	public function enqueue_assets() {
+		$settings = Poshtibank_Admin::get_settings();
+
+		// Check if chat is globally enabled
+		if ( empty( $settings['general']['enabled'] ) ) {
+			return;
+		}
+
 		// Enqueue Widget CSS
 		wp_enqueue_style(
 			'poshtibank-widget-style',
@@ -146,6 +146,10 @@ class Poshtibank_Frontend {
 	 */
 	public function render_widget_markup() {
 		$settings = Poshtibank_Admin::get_settings();
+		if ( empty( $settings['general']['enabled'] ) ) {
+			return;
+		}
+
 		$position = $settings['general']['widget_position'] ?? 'bottom-right';
 		$pos_class = ( 'bottom-left' === $position ) ? 'pos-bottom-left' : 'pos-bottom-right';
 		$primary_color = esc_attr( $settings['general']['primary_color'] ?? '#2563eb' );

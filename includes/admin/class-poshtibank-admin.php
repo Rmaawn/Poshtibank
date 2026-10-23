@@ -157,13 +157,13 @@ class Poshtibank_Admin {
 				'chat_id'        => '',
 				'proxy_url'      => '',
 				'use_topics'     => 1,
-				'webhook_secret' => wp_generate_password( 32, false ),
+				'webhook_secret' => Poshtibank_DB::generate_secret( 32 ),
 			),
 			'bale' => array(
 				'enabled'        => 0,
 				'bot_token'      => '',
 				'chat_id'        => '',
-				'webhook_secret' => wp_generate_password( 32, false ),
+				'webhook_secret' => Poshtibank_DB::generate_secret( 32 ),
 			),
 			'business_hours' => array(
 				'enabled'         => 0,
@@ -274,7 +274,7 @@ class Poshtibank_Admin {
 		);
 
 		// 2. Telegram Tab
-		$webhook_secret = ! empty( $current['telegram']['webhook_secret'] ) ? $current['telegram']['webhook_secret'] : wp_generate_password( 32, false );
+		$webhook_secret = ! empty( $current['telegram']['webhook_secret'] ) ? $current['telegram']['webhook_secret'] : Poshtibank_DB::generate_secret( 32 );
 		$clean['telegram'] = array(
 			'enabled'        => ! empty( $raw['telegram']['enabled'] ) ? 1 : 0,
 			'bot_token'      => isset( $raw['telegram']['bot_token'] ) ? sanitize_text_field( trim( $raw['telegram']['bot_token'] ) ) : '',
@@ -285,7 +285,7 @@ class Poshtibank_Admin {
 		);
 
 		// 3. Bale Tab
-		$bale_secret = ! empty( $current['bale']['webhook_secret'] ) ? $current['bale']['webhook_secret'] : wp_generate_password( 32, false );
+		$bale_secret = ! empty( $current['bale']['webhook_secret'] ) ? $current['bale']['webhook_secret'] : Poshtibank_DB::generate_secret( 32 );
 		$clean['bale'] = array(
 			'enabled'        => ! empty( $raw['bale']['enabled'] ) ? 1 : 0,
 			'bot_token'      => isset( $raw['bale']['bot_token'] ) ? sanitize_text_field( trim( $raw['bale']['bot_token'] ) ) : '',
