@@ -102,6 +102,16 @@
 		elements.btnSend = document.getElementById('poshtibank-btn-send');
 		elements.inputHoneypot = document.getElementById('pb-hp-check');
 		elements.typingIndicator = document.getElementById('poshtibank-typing');
+
+		// Rich Media Elements (Phase 5)
+		elements.btnVoice = document.getElementById('poshtibank-btn-voice');
+		elements.btnAttach = document.getElementById('poshtibank-btn-attach');
+		elements.btnScreenshot = document.getElementById('poshtibank-btn-screenshot');
+		elements.fileInput = document.getElementById('poshtibank-file-input');
+		elements.voiceBar = document.getElementById('poshtibank-voice-bar');
+		elements.voiceTimer = document.getElementById('poshtibank-voice-timer');
+		elements.btnCancelVoice = document.getElementById('poshtibank-btn-cancel-voice');
+		elements.btnSendVoice = document.getElementById('poshtibank-btn-send-voice');
 	}
 
 	/**
@@ -140,6 +150,24 @@
 				handleSendMessage();
 			}
 		});
+
+		// Rich Media Listeners (Phase 5)
+		if (elements.btnVoice) {
+			elements.btnVoice.addEventListener('click', startVoiceRecording);
+			elements.btnCancelVoice.addEventListener('click', cancelVoiceRecording);
+			elements.btnSendVoice.addEventListener('click', sendVoiceRecording);
+		}
+
+		if (elements.btnAttach) {
+			elements.btnAttach.addEventListener('click', function () {
+				elements.fileInput.click();
+			});
+			elements.fileInput.addEventListener('change', handleFileSelected);
+		}
+
+		if (elements.btnScreenshot) {
+			elements.btnScreenshot.addEventListener('click', handleCaptureScreenshot);
+		}
 
 		// Textarea auto-resize
 		elements.inputText.addEventListener('input', function () {
@@ -521,7 +549,7 @@
 	}
 
 	/**
-	 * Append single message bubble to chat DOM.
+	 * Append single message bubble to chat DOM with Rich Media support (Phase 5).
 	 *
 	 * @param {object} msg Message object.
 	 */
@@ -542,11 +570,351 @@
 			html += '<div class="poshtibank-msg-sender">' + escapeHtml(senderName) + '</div>';
 		}
 
-		html += '<div class="poshtibank-msg-content">' + formatMessageContent(msg.content) + '</div>';
+		var type = msg.type || 'text';
+		var contentHtml = '';
+
+		if (type === 'voice') {
+			// Rich Voice Audio Player
+			var audioId = 'audio-' + (msg.message_id || msg.id);
+			contentHtml = '<div class="poshtibank-audio-player" data-src="' + escapeHtml(msg.content) + '">' +
+				'<audio id="' + audioId + '" src="' + escapeHtml(msg.content) + '" preload="metadata"></audio>' +
+				'<button type="button" class="poshtibank-audio-play-btn" aria-label="پخش صدا">' +
+					'<svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>' +
+					'<svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>' +
+				'</button>' +
+				'<div class="poshtibank-audio-track">' +
+					'<div class="poshtibank-audio-progress"><div class="poshtibank-audio-progress-bar"></div></div>' +
+					'<span class="poshtibank-audio-time">00:00</span>' +
+				'</div>' +
+			'</div>';
+		} else if (type === 'image') {
+			// Image preview bubble
+			contentHtml = '<div class="poshtibank-msg-image">' +
+				'<a href="' + escapeHtml(msg.content) + '" target="_blank" rel="noopener noreferrer">' +
+					'<img src="' + escapeHtml(msg.content) + '" alt="تصویر" loading="lazy">' +
+				'</a>' +
+			'</div>';
+		} else if (type === 'file') {
+			// File / Document bubble
+			var meta = msg.metadata ? (typeof msg.metadata === 'string' ? JSON.parse(msg.metadata) : msg.metadata) : {};
+			var fileName = meta.file_name || msg.content.split('/').pop() || 'فایل ضمیمه';
+			var fileSize = meta.file_size ? formatBytes(meta.file_size) : '';
+
+			contentHtml = '<a class="poshtibank-msg-file" href="' + escapeHtml(msg.content) + '" target="_blank" download rel="noopener noreferrer">' +
+				'<div class="poshtibank-file-icon">' +
+					'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>' +
+				'</div>' +
+				'<div class="poshtibank-file-info">' +
+					'<span class="poshtibank-file-name">' + escapeHtml(fileName) + '</span>' +
+					(fileSize ? '<span class="poshtibank-file-size">' + escapeHtml(fileSize) + '</span>' : '') +
+				'</div>' +
+			'</a>';
+		} else {
+			// Plain text message
+			contentHtml = formatMessageContent(msg.content);
+		}
+
+		html += '<div class="poshtibank-msg-content">' + contentHtml + '</div>';
 		html += '<div class="poshtibank-msg-time">' + formatTime(msg.created_at) + '</div>';
 
 		bubble.innerHTML = html;
 		elements.stream.appendChild(bubble);
+
+		// Initialize audio player if voice bubble
+		if (type === 'voice') {
+			initAudioPlayer(bubble.querySelector('.poshtibank-audio-player'));
+		}
+	}
+
+	/**
+	 * Initialize interactive audio player inside voice message bubble.
+	 *
+	 * @param {HTMLElement} playerContainer
+	 */
+	function initAudioPlayer(playerContainer) {
+		if (!playerContainer) return;
+
+		var audio = playerContainer.querySelector('audio');
+		var btn = playerContainer.querySelector('.poshtibank-audio-play-btn');
+		var iconPlay = btn.querySelector('.icon-play');
+		var iconPause = btn.querySelector('.icon-pause');
+		var progressBar = playerContainer.querySelector('.poshtibank-audio-progress-bar');
+		var timeDisplay = playerContainer.querySelector('.poshtibank-audio-time');
+		var progressContainer = playerContainer.querySelector('.poshtibank-audio-progress');
+
+		audio.addEventListener('loadedmetadata', function () {
+			timeDisplay.textContent = formatTimer(Math.floor(audio.duration || 0));
+		});
+
+		btn.addEventListener('click', function () {
+			if (audio.paused) {
+				// Pause any other playing audio
+				document.querySelectorAll('audio').forEach(function (a) {
+					if (a !== audio && !a.paused) a.pause();
+				});
+				audio.play();
+			} else {
+				audio.pause();
+			}
+		});
+
+		audio.addEventListener('play', function () {
+			iconPlay.style.display = 'none';
+			iconPause.style.display = 'block';
+		});
+
+		audio.addEventListener('pause', function () {
+			iconPlay.style.display = 'block';
+			iconPause.style.display = 'none';
+		});
+
+		audio.addEventListener('timeupdate', function () {
+			if (audio.duration) {
+				var pct = (audio.currentTime / audio.duration) * 100;
+				progressBar.style.width = pct + '%';
+				timeDisplay.textContent = formatTimer(Math.floor(audio.currentTime));
+			}
+		});
+
+		audio.addEventListener('ended', function () {
+			iconPlay.style.display = 'block';
+			iconPause.style.display = 'none';
+			progressBar.style.width = '0%';
+			timeDisplay.textContent = formatTimer(Math.floor(audio.duration || 0));
+		});
+
+		// Seek click
+		progressContainer.addEventListener('click', function (e) {
+			if (audio.duration) {
+				var rect = progressContainer.getBoundingClientRect();
+				var pos = (e.clientX - rect.left) / rect.width;
+				audio.currentTime = pos * audio.duration;
+			}
+		});
+	}
+
+	/*
+	|--------------------------------------------------------------------------
+	| Voice Messaging, Uploads & Screenshot (Phase 5)
+	|--------------------------------------------------------------------------
+	*/
+
+	var mediaRecorderInstance = null;
+	var audioStreamInstance = null;
+	var voiceChunks = [];
+	var voiceTimerInt = null;
+	var voiceTotalSecs = 0;
+	var shouldSendVoiceMsg = false;
+
+	/**
+	 * Start voice recording using MediaRecorder API.
+	 */
+	function startVoiceRecording() {
+		if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+			alert('قابلیت ضبط صدا در این مرورگر پشتیبانی نمی‌شود.');
+			return;
+		}
+
+		navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+			audioStreamInstance = stream;
+			voiceChunks = [];
+			shouldSendVoiceMsg = false;
+			voiceTotalSecs = 0;
+
+			elements.voiceTimer.textContent = '00:00';
+			elements.voiceBar.style.display = 'flex';
+
+			var mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+			mediaRecorderInstance = new MediaRecorder(stream, { mimeType: mimeType });
+
+			mediaRecorderInstance.ondataavailable = function (e) {
+				if (e.data && e.data.size > 0) {
+					voiceChunks.push(e.data);
+				}
+			};
+
+			mediaRecorderInstance.onstop = function () {
+				clearInterval(voiceTimerInt);
+				elements.voiceBar.style.display = 'none';
+
+				if (shouldSendVoiceMsg && voiceChunks.length > 0) {
+					var blob = new Blob(voiceChunks, { type: mimeType });
+					var ext = mimeType.indexOf('ogg') !== -1 ? 'ogg' : 'webm';
+					var file = new File([blob], 'voice_' + Date.now() + '.' + ext, { type: mimeType });
+					uploadMediaFile(file, 'voice', voiceTotalSecs);
+				}
+
+				if (audioStreamInstance) {
+					audioStreamInstance.getTracks().forEach(function (t) { t.stop(); });
+					audioStreamInstance = null;
+				}
+			};
+
+			mediaRecorderInstance.start();
+
+			voiceTimerInt = setInterval(function () {
+				voiceTotalSecs++;
+				elements.voiceTimer.textContent = formatTimer(voiceTotalSecs);
+			}, 1000);
+		}).catch(function (err) {
+			console.error(err);
+			alert('دسترسی به میکروفون تایید نشد یا میکروفونی متصل نیست.');
+		});
+	}
+
+	/**
+	 * Cancel voice recording.
+	 */
+	function cancelVoiceRecording() {
+		shouldSendVoiceMsg = false;
+		if (mediaRecorderInstance && mediaRecorderInstance.state !== 'inactive') {
+			mediaRecorderInstance.stop();
+		}
+	}
+
+	/**
+	 * Finish and send voice recording.
+	 */
+	function sendVoiceRecording() {
+		shouldSendVoiceMsg = true;
+		if (mediaRecorderInstance && mediaRecorderInstance.state !== 'inactive') {
+			mediaRecorderInstance.stop();
+		}
+	}
+
+	/**
+	 * Handle file selection from attachment input.
+	 */
+	function handleFileSelected(e) {
+		var file = e.target.files[0];
+		if (!file) return;
+
+		e.target.value = '';
+		var category = file.type.indexOf('image/') === 0 ? 'image' : 'file';
+		uploadMediaFile(file, category, 0);
+	}
+
+	/**
+	 * Built-in screenshot capture of current window/screen.
+	 */
+	function handleCaptureScreenshot() {
+		if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+			alert('قابلیت تصویر صفحه در این مرورگر پشتیبانی نمی‌شود.');
+			return;
+		}
+
+		navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' } }).then(function (stream) {
+			var video = document.createElement('video');
+			video.srcObject = stream;
+			video.play();
+
+			video.onloadedmetadata = function () {
+				setTimeout(function () {
+					var canvas = document.createElement('canvas');
+					canvas.width = video.videoWidth;
+					canvas.height = video.videoHeight;
+					var ctx = canvas.getContext('2d');
+					ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+					stream.getTracks().forEach(function (t) { t.stop(); });
+
+					canvas.toBlob(function (blob) {
+						if (blob) {
+							var file = new File([blob], 'screenshot_' + Date.now() + '.png', { type: 'image/png' });
+							uploadMediaFile(file, 'screenshot', 0);
+						}
+					}, 'image/png');
+				}, 350);
+			};
+		}).catch(function () {
+			// User dismissed capture prompt
+		});
+	}
+
+	/**
+	 * Upload media file (voice, image, screenshot, document) via REST API.
+	 *
+	 * @param {File}   file     File object.
+	 * @param {string} category 'voice', 'image', 'screenshot', 'file'.
+	 * @param {number} duration Voice duration in seconds.
+	 */
+	function uploadMediaFile(file, category, duration) {
+		if (!state.sessionId) {
+			initSession(function () {
+				uploadMediaFile(file, category, duration);
+			});
+			return;
+		}
+
+		// Optimistic bubble
+		var optimisticType = (category === 'screenshot' || category === 'image') ? 'image' : category;
+		var tempUrl = URL.createObjectURL(file);
+		var tempMsg = {
+			message_id: 'temp-' + Date.now(),
+			sender: 'user',
+			type: optimisticType,
+			content: tempUrl,
+			created_at: new Date(),
+			metadata: {
+				file_name: file.name,
+				file_size: file.size,
+				duration: duration,
+			},
+		};
+		appendMessageBubble(tempMsg);
+		scrollStreamToBottom();
+
+		// FormData upload
+		var formData = new FormData();
+		formData.append('file', file);
+		formData.append('session_id', state.sessionId);
+		formData.append('category', category);
+		if (duration > 0) {
+			formData.append('duration', duration);
+		}
+
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', config.restUrl + 'media/upload', true);
+		xhr.setRequestHeader('X-WP-Nonce', config.nonce);
+
+		xhr.onload = function () {
+			if (xhr.status >= 200 && xhr.status < 300) {
+				try {
+					var res = JSON.parse(xhr.responseText);
+					if (res.message && res.message.id) {
+						state.lastMessageId = Math.max(state.lastMessageId, parseInt(res.message.id, 10));
+					}
+				} catch (e) {}
+			} else {
+				console.error('[Poshtibank media upload error]', xhr.responseText);
+			}
+		};
+
+		xhr.send(formData);
+	}
+
+	/**
+	 * Format seconds to MM:SS string.
+	 *
+	 * @param {number} sec
+	 * @return {string}
+	 */
+	function formatTimer(sec) {
+		var m = Math.floor(sec / 60).toString().padStart(2, '0');
+		var s = (sec % 60).toString().padStart(2, '0');
+		return m + ':' + s;
+	}
+
+	/**
+	 * Format file bytes into KB or MB.
+	 *
+	 * @param {number} bytes
+	 * @return {string}
+	 */
+	function formatBytes(bytes) {
+		if (bytes < 1024) return bytes + ' B';
+		if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+		return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 	}
 
 	/**

@@ -245,6 +245,29 @@ class Poshtibank_Frontend {
 					<div class="poshtibank-input-bar">
 						<!-- Anti-spam Honeypot -->
 						<input type="text" id="pb-hp-check" name="poshtibank_hp" style="display:none !important;" tabindex="-1" autocomplete="off">
+						<input type="file" id="poshtibank-file-input" style="display:none !important;" accept="image/*,.pdf,.zip,.doc,.docx,.txt">
+
+						<div class="poshtibank-input-tools">
+							<button type="button" id="poshtibank-btn-attach" class="poshtibank-btn-tool" title="<?php esc_attr_e( 'ارسال فایل یا عکس', 'poshtibank' ); ?>">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+								</svg>
+							</button>
+							<button type="button" id="poshtibank-btn-screenshot" class="poshtibank-btn-tool" title="<?php esc_attr_e( 'ارسال اسکرین‌شات صفحه', 'poshtibank' ); ?>">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+									<circle cx="12" cy="13" r="4"></circle>
+								</svg>
+							</button>
+							<button type="button" id="poshtibank-btn-voice" class="poshtibank-btn-tool" title="<?php esc_attr_e( 'ضبط صدا (ویس)', 'poshtibank' ); ?>">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+									<path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+									<line x1="12" y1="19" x2="12" y2="23"></line>
+									<line x1="8" y1="23" x2="16" y2="23"></line>
+								</svg>
+							</button>
+						</div>
 
 						<textarea id="poshtibank-input-text" rows="1" placeholder="<?php esc_attr_e( 'پیام خود را بنویسید...', 'poshtibank' ); ?>"></textarea>
 
@@ -255,6 +278,20 @@ class Poshtibank_Frontend {
 									<polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
 								</svg>
 							</button>
+						</div>
+
+						<!-- Voice Recording Bar Overlay -->
+						<div id="poshtibank-voice-bar" class="poshtibank-voice-bar" style="display:none;">
+							<div class="poshtibank-voice-rec-dot"></div>
+							<span id="poshtibank-voice-timer" class="poshtibank-voice-timer">00:00</span>
+							<div class="poshtibank-voice-actions">
+								<button type="button" id="poshtibank-btn-cancel-voice" class="poshtibank-btn-vaction btn-cancel" title="<?php esc_attr_e( 'لغو ضبط', 'poshtibank' ); ?>">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+								</button>
+								<button type="button" id="poshtibank-btn-send-voice" class="poshtibank-btn-vaction btn-confirm" title="<?php esc_attr_e( 'ارسال ویس', 'poshtibank' ); ?>">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
