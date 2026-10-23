@@ -61,6 +61,17 @@ class Poshtibank_REST_Client {
 				'permission_callback' => '__return_true',
 			)
 		);
+
+		// 5. Media Upload: /poshtibank/v1/media/upload
+		register_rest_route(
+			'poshtibank/v1',
+			'/media/upload',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'upload_media' ),
+				'permission_callback' => '__return_true',
+			)
+		);
 	}
 
 	/**
@@ -329,6 +340,115 @@ class Poshtibank_REST_Client {
 		);
 
 		return intval( $count ) < intval( $max_msgs );
+	}
+
+	/**
+	 * Endpoint: Upload media (voice, image, screenshot, file) from client widget.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public function upload_media( WP_REST_Request $request ) {
+		// 1. Validate session
+		$session_id = isset( $_POST['session_id'] ) ? sanitize_text_field( wp_unslash( $_POST['session_id'] ) ) : '';
+		if ( empty( $session_id ) ) {
+			return new WP_REST_Response( array( 'error' => __( 'شناسه نشست الزامی است.', 'poshtibank' ) ), 400 );
+		}
+
+		$session = Poshtibank_DB::get_session( $session_id );
+		if ( ! $session ) {
+			return new WP_REST_Response( array( 'error' => __( 'نشست گفتگو یافت نشد.', 'poshtibank' ) ), 404 );
+		}
+
+		$client_ip = Poshtibank_DB::get_client_ip();
+
+		// 2. Blocked check
+		if ( 'blocked' === $session->status || Poshtibank_DB::is_blocked( $session_id, $client_ip ) ) {
+			return new WP_REST_Response( array( 'error' => __( 'دسترسی شما به این گفتگو مسدود است.', 'poshtibank' ) ), 403 );
+		}
+
+		// 3. Rate Limit check
+		if ( ! $this->check_rate_limit( $session_id, $client_ip ) ) {
+			return new WP_REST_Response(
+				array( 'error' => __( 'تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً کمی صبر کنید.', 'poshtibank' ) ),
+				429
+			);
+		}
+
+		// 4. File existence check
+		if ( empty( $_FILES['file'] ) ) {
+			return new WP_REST_Response( array( 'error' => __( 'هیچ فایلی ارسال نشده است.', 'poshtibank' ) ), 400 );
+		}
+
+		$category = isset( $_POST['category'] ) ? sanitize_key( wp_unslash( $_POST['category'] ) ) : 'file';
+		require_once POSHTIBANK_PATH . 'includes/media/class-poshtibank-media.php';
+
+		// 5. Handle file upload safely
+		$upload_result = Poshtibank_Media::handle_upload( $_FILES['file'], $category );
+
+		if ( is_wp_error( $upload_result ) ) {
+			return new WP_REST_Response( array( 'error' => $upload_result->get_error_message() ), 400 );
+		}
+
+		// 6. Map category to message type
+		$msg_type = 'file';
+		if ( 'voice' === $category ) {
+			$msg_type = 'voice';
+		} elseif ( in_array( $category, array( 'image', 'screenshot' ), true ) ) {
+			$msg_type = 'image';
+		}
+
+		$duration = isset( $_POST['duration'] ) ? absint( $_POST['duration'] ) : 0;
+		$metadata = array(
+			'file_name' => $upload_result['file_name'],
+			'file_size' => $upload_result['file_size'],
+			'mime_type' => $upload_result['mime_type'],
+			'category'  => $category,
+		);
+		if ( $duration > 0 ) {
+			$metadata['duration'] = $duration;
+		}
+
+		// 7. Store message in database
+		$message_id = Poshtibank_DB::create_message(
+			array(
+				'session_id'  => $session_id,
+				'sender'      => 'user',
+				'sender_id'   => (string) get_current_user_id(),
+				'sender_name' => ! empty( $session->user_name ) ? $session->user_name : __( 'کاربر', 'poshtibank' ),
+				'type'        => $msg_type,
+				'content'     => $upload_result['url'],
+				'metadata'    => $metadata,
+			)
+		);
+
+		if ( ! $message_id ) {
+			return new WP_REST_Response( array( 'error' => __( 'خطا در ثبت پیام رسانه.', 'poshtibank' ) ), 500 );
+		}
+
+		$created_message = Poshtibank_DB::get_message( $message_id );
+
+		// 8. Dispatch to Telegram and Bale bridges
+		require_once POSHTIBANK_PATH . 'includes/bridges/class-poshtibank-bridge-manager.php';
+		$bridge_manager = new Poshtibank_Bridge_Manager();
+		$bridge_manager->dispatch_to_bridges(
+			$session,
+			array(
+				'message_id' => $message_id,
+				'type'       => $msg_type,
+				'content'    => $upload_result['url'],
+				'metadata'   => $metadata,
+			)
+		);
+
+		return new WP_REST_Response(
+			array(
+				'success' => true,
+				'message' => $created_message,
+				'upload'  => $upload_result,
+			),
+			201
+		);
 	}
 
 	/**

@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once POSHTIBANK_PATH . 'includes/bridges/class-poshtibank-bridge-telegram.php';
 require_once POSHTIBANK_PATH . 'includes/bridges/class-poshtibank-bridge-bale.php';
+require_once POSHTIBANK_PATH . 'includes/media/class-poshtibank-media.php';
 
 /**
  * Class Poshtibank_REST_Webhook
@@ -190,22 +191,33 @@ class Poshtibank_REST_Webhook {
 			'sender_username'     => $message['from']['username'] ?? '',
 		);
 
+		$settings = Poshtibank_Admin::get_settings();
+		$tg_token = $settings['telegram']['bot_token'] ?? '';
+		$tg_proxy = $settings['telegram']['proxy_url'] ?? '';
+
 		if ( ! empty( $message['text'] ) ) {
 			$content = $message['text'];
 			$type    = 'text';
 		} elseif ( ! empty( $message['voice'] ) ) {
-			$content = $message['voice']['file_id'] ?? '';
+			$file_id = $message['voice']['file_id'] ?? '';
+			$local_url = Poshtibank_Media::download_telegram_file( $file_id, $tg_token, $tg_proxy );
+			$content = $local_url ? $local_url : $file_id;
 			$type    = 'voice';
 			$metadata['duration'] = $message['voice']['duration'] ?? 0;
 		} elseif ( ! empty( $message['photo'] ) ) {
 			// Get highest resolution photo
 			$photos  = $message['photo'];
 			$last    = end( $photos );
-			$content = $last['file_id'] ?? '';
+			$file_id = $last['file_id'] ?? '';
+			$local_url = Poshtibank_Media::download_telegram_file( $file_id, $tg_token, $tg_proxy );
+			$content = $local_url ? $local_url : $file_id;
 			$type    = 'image';
 		} elseif ( ! empty( $message['document'] ) ) {
-			$content = $message['document']['file_id'] ?? '';
+			$file_id = $message['document']['file_id'] ?? '';
+			$local_url = Poshtibank_Media::download_telegram_file( $file_id, $tg_token, $tg_proxy );
+			$content = $local_url ? $local_url : $file_id;
 			$type    = 'file';
+			$metadata['file_name'] = $message['document']['file_name'] ?? 'document';
 		}
 
 		if ( empty( $content ) ) {
@@ -290,19 +302,49 @@ class Poshtibank_REST_Webhook {
 				$session = Poshtibank_DB::get_latest_active_session();
 			}
 
-			if ( $session && ! empty( $message['text'] ) ) {
+			if ( $session ) {
 				$admin_name = $message['from']['first_name'] ?? __( 'پشتیبان بله', 'poshtibank' );
-				Poshtibank_DB::create_message(
-					array(
-						'session_id'  => $session->session_id,
-						'sender'      => 'admin',
-						'sender_id'   => (string) ( $message['from']['id'] ?? '' ),
-						'sender_name' => $admin_name,
-						'type'        => 'text',
-						'content'     => $message['text'],
-						'metadata'    => array( 'bale_message_id' => $message['message_id'] ?? null ),
-					)
-				);
+				$content    = '';
+				$type       = 'text';
+				$metadata   = array( 'bale_message_id' => $message['message_id'] ?? null );
+				$bale_token = $settings['bale']['bot_token'] ?? '';
+
+				if ( ! empty( $message['text'] ) ) {
+					$content = $message['text'];
+					$type    = 'text';
+				} elseif ( ! empty( $message['voice'] ) ) {
+					$file_id = $message['voice']['file_id'] ?? '';
+					$local_url = Poshtibank_Media::download_bale_file( $file_id, $bale_token );
+					$content = $local_url ? $local_url : $file_id;
+					$type    = 'voice';
+					$metadata['duration'] = $message['voice']['duration'] ?? 0;
+				} elseif ( ! empty( $message['photo'] ) ) {
+					$photos  = $message['photo'];
+					$last    = end( $photos );
+					$file_id = $last['file_id'] ?? '';
+					$local_url = Poshtibank_Media::download_bale_file( $file_id, $bale_token );
+					$content = $local_url ? $local_url : $file_id;
+					$type    = 'image';
+				} elseif ( ! empty( $message['document'] ) ) {
+					$file_id = $message['document']['file_id'] ?? '';
+					$local_url = Poshtibank_Media::download_bale_file( $file_id, $bale_token );
+					$content = $local_url ? $local_url : $file_id;
+					$type    = 'file';
+				}
+
+				if ( ! empty( $content ) ) {
+					Poshtibank_DB::create_message(
+						array(
+							'session_id'  => $session->session_id,
+							'sender'      => 'admin',
+							'sender_id'   => (string) ( $message['from']['id'] ?? '' ),
+							'sender_name' => $admin_name,
+							'type'        => $type,
+							'content'     => $content,
+							'metadata'    => $metadata,
+						)
+					);
+				}
 			}
 		}
 
