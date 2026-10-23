@@ -52,6 +52,7 @@
 		bindEvents();
 		renderChannels();
 		renderFaqs();
+		initProactiveTriggers();
 
 		// If user already had an active chat session, resume it
 		if (state.sessionId) {
@@ -169,6 +170,24 @@
 			elements.btnScreenshot.addEventListener('click', handleCaptureScreenshot);
 		}
 
+		// Delegated click for coupon copy (Phase 6)
+		elements.stream.addEventListener('click', function (e) {
+			var copyBtn = e.target.closest('.poshtibank-btn-copy-coupon');
+			if (copyBtn) {
+				var code = copyBtn.getAttribute('data-code');
+				if (navigator.clipboard) {
+					navigator.clipboard.writeText(code).then(function () {
+						copyBtn.textContent = config.i18n.couponCopied;
+						copyBtn.classList.add('copied');
+						setTimeout(function () {
+							copyBtn.textContent = config.i18n.copyCoupon;
+							copyBtn.classList.remove('copied');
+						}, 2500);
+					});
+				}
+			}
+		});
+
 		// Textarea auto-resize
 		elements.inputText.addEventListener('input', function () {
 			this.style.height = 'auto';
@@ -266,6 +285,7 @@
 		} else if (viewName === 'chat') {
 			elements.viewChat.classList.add('active');
 			elements.btnBack.style.display = 'flex';
+			renderHandoffBanner();
 			startAdaptivePolling();
 			setTimeout(function () {
 				elements.inputText.focus();
@@ -373,6 +393,7 @@
 			user_phone: state.userPhone,
 			current_page: config.page.url,
 			referer: document.referrer || '',
+			wc: config.wc || null,
 		};
 
 		apiRequest('session/init', 'POST', payload, function (err, res) {
@@ -503,6 +524,11 @@
 				}
 			}
 
+			// Render CSAT Survey if session was closed by admin
+			if (res && res.status === 'closed' && !document.getElementById('poshtibank-csat-box')) {
+				renderCsatSurvey();
+			}
+
 			// Schedule next poll
 			state.pollingTimer = setTimeout(pollOnce, state.pollingInterval);
 		});
@@ -609,6 +635,26 @@
 					(fileSize ? '<span class="poshtibank-file-size">' + escapeHtml(fileSize) + '</span>' : '') +
 				'</div>' +
 			'</a>';
+		} else if (type === 'product_card') {
+			// WooCommerce Product Card
+			var meta = msg.metadata ? (typeof msg.metadata === 'string' ? JSON.parse(msg.metadata) : msg.metadata) : {};
+			contentHtml = '<div class="poshtibank-product-card">' +
+				(meta.image ? '<div class="poshtibank-product-thumb"><img src="' + escapeHtml(meta.image) + '" alt="' + escapeHtml(meta.title || '') + '"></div>' : '') +
+				'<div class="poshtibank-product-details">' +
+					'<h6 class="poshtibank-product-title">' + escapeHtml(meta.title || msg.content) + '</h6>' +
+					(meta.price_formatted ? '<span class="poshtibank-product-price">' + escapeHtml(meta.price_formatted) + '</span>' : '') +
+					(meta.url ? '<a class="poshtibank-btn-product-buy" href="' + escapeHtml(meta.url) + '" target="_blank" rel="noopener noreferrer">' + config.i18n.viewProduct + '</a>' : '') +
+				'</div>' +
+			'</div>';
+		} else if (type === 'coupon') {
+			// WooCommerce Coupon Card
+			var meta = msg.metadata ? (typeof msg.metadata === 'string' ? JSON.parse(msg.metadata) : msg.metadata) : {};
+			var couponCode = meta.code || msg.content;
+			contentHtml = '<div class="poshtibank-coupon-card">' +
+				'<span class="poshtibank-coupon-badge">' + escapeHtml(meta.label || 'کد تخفیف ویژه') + '</span>' +
+				'<div class="poshtibank-coupon-code">' + escapeHtml(couponCode) + '</div>' +
+				'<button type="button" class="poshtibank-btn-copy-coupon" data-code="' + escapeHtml(couponCode) + '">' + config.i18n.copyCoupon + '</button>' +
+			'</div>';
 		} else {
 			// Plain text message
 			contentHtml = formatMessageContent(msg.content);
@@ -1120,6 +1166,154 @@
 		state.unreadCount = 0;
 		elements.badge.textContent = '0';
 		elements.badge.style.display = 'none';
+	}
+
+	/*
+	|--------------------------------------------------------------------------
+	| Proactive Triggers, Handoff & CSAT (Phase 6)
+	|--------------------------------------------------------------------------
+	*/
+
+	/**
+	 * Smart Proactive Triggers: Exit-Intent and Checkout Delay.
+	 */
+	function initProactiveTriggers() {
+		// 1. Exit-Intent Trigger (detect mouse moving towards close button)
+		if (!sessionStorage.getItem('pb_exit_triggered')) {
+			document.addEventListener('mouseleave', function (e) {
+				if (e.clientY <= 0 && !state.isOpen && !sessionStorage.getItem('pb_exit_triggered')) {
+					sessionStorage.setItem('pb_exit_triggered', '1');
+					showProactiveToast(config.i18n.exitPrompt);
+				}
+			});
+		}
+
+		// 2. Checkout Delay / Hesitation Trigger (30 seconds on checkout page)
+		if (config.wc && config.wc.type === 'checkout' && !sessionStorage.getItem('pb_checkout_triggered')) {
+			setTimeout(function () {
+				if (!state.isOpen && !sessionStorage.getItem('pb_checkout_triggered')) {
+					sessionStorage.setItem('pb_checkout_triggered', '1');
+					showProactiveToast(config.i18n.checkoutPrompt);
+				}
+			}, 30000);
+		}
+	}
+
+	/**
+	 * Show proactive toast prompt above launcher button.
+	 *
+	 * @param {string} promptText
+	 */
+	function showProactiveToast(promptText) {
+		if (document.getElementById('poshtibank-proactive-toast')) return;
+
+		var toast = document.createElement('div');
+		toast.id = 'poshtibank-proactive-toast';
+		toast.className = 'poshtibank-proactive-toast';
+		toast.innerHTML = '<div class="poshtibank-proactive-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>' +
+			'<div class="poshtibank-proactive-content"><p>' + escapeHtml(promptText) + '</p></div>' +
+			'<button type="button" class="poshtibank-proactive-close" aria-label="بستن">&times;</button>';
+
+		toast.addEventListener('click', function (e) {
+			if (e.target.classList.contains('poshtibank-proactive-close')) {
+				e.stopPropagation();
+				toast.remove();
+				return;
+			}
+			toast.remove();
+			openWindow();
+			startOrResumeChat();
+		});
+
+		elements.root.appendChild(toast);
+
+		// Play pleasant chime
+		playNotificationSound();
+
+		// Auto dismiss after 15 seconds
+		setTimeout(function () {
+			if (toast.parentNode) toast.remove();
+		}, 15000);
+	}
+
+	/**
+	 * Render CSAT Satisfaction Survey Card inside message stream.
+	 */
+	function renderCsatSurvey() {
+		if (document.getElementById('poshtibank-csat-box')) return;
+
+		var card = document.createElement('div');
+		card.id = 'poshtibank-csat-box';
+		card.className = 'poshtibank-csat-card';
+
+		card.innerHTML = '<h5>' + escapeHtml(config.i18n.ratingTitle) + '</h5>' +
+			'<div class="poshtibank-csat-stars" id="pb-csat-stars">' +
+				'<button type="button" class="poshtibank-star-btn" data-val="1">★</button>' +
+				'<button type="button" class="poshtibank-star-btn" data-val="2">★</button>' +
+				'<button type="button" class="poshtibank-star-btn" data-val="3">★</button>' +
+				'<button type="button" class="poshtibank-star-btn" data-val="4">★</button>' +
+				'<button type="button" class="poshtibank-star-btn active" data-val="5">★</button>' +
+			'</div>' +
+			'<textarea class="poshtibank-csat-comment" id="pb-csat-comment" rows="2" placeholder="توضیحات یا نظر شما (اختیاری)..."></textarea>' +
+			'<button type="button" class="poshtibank-btn-csat-submit" id="pb-btn-csat">' + escapeHtml(config.i18n.ratingSubmit) + '</button>';
+
+		var selectedRating = 5;
+		var starBtns = card.querySelectorAll('.poshtibank-star-btn');
+		starBtns.forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				selectedRating = parseInt(this.getAttribute('data-val'), 10);
+				starBtns.forEach(function (b) {
+					var v = parseInt(b.getAttribute('data-val'), 10);
+					if (v <= selectedRating) {
+						b.classList.add('active');
+					} else {
+						b.classList.remove('active');
+					}
+				});
+			});
+		});
+
+		var submitBtn = card.querySelector('#pb-btn-csat');
+		submitBtn.addEventListener('click', function () {
+			var comment = card.querySelector('#pb-csat-comment').value.trim();
+			submitBtn.disabled = true;
+
+			apiRequest('session/feedback', 'POST', {
+				session_id: state.sessionId,
+				rating: selectedRating,
+				comment: comment
+			}, function () {
+				card.innerHTML = '<p style="color:#16a34a; font-weight:700; margin:4px 0;">' + escapeHtml(config.i18n.ratingThanks) + '</p>';
+			});
+		});
+
+		elements.stream.appendChild(card);
+		scrollStreamToBottom();
+	}
+
+	/**
+	 * Render Seamless Handoff Banner at the bottom of the chat view.
+	 */
+	function renderHandoffBanner() {
+		if (!config.handoff || (!config.handoff.telegram && !config.handoff.bale)) return;
+		if (document.getElementById('poshtibank-handoff-banner')) return;
+
+		var banner = document.createElement('div');
+		banner.id = 'poshtibank-handoff-banner';
+		banner.className = 'poshtibank-handoff-banner';
+
+		var linksHtml = '';
+		if (config.handoff.telegram) {
+			var tgUrl = config.handoff.telegram + (state.sessionId ? '?start=pb_' + encodeURIComponent(state.sessionId) : '');
+			linksHtml += '<a href="' + escapeHtml(tgUrl) + '" target="_blank" rel="noopener noreferrer" class="poshtibank-btn-handoff">✈️ تلگرام</a>';
+		}
+		if (config.handoff.bale) {
+			var baleUrl = config.handoff.bale + (state.sessionId ? '?start=pb_' + encodeURIComponent(state.sessionId) : '');
+			linksHtml += '<a href="' + escapeHtml(baleUrl) + '" target="_blank" rel="noopener noreferrer" class="poshtibank-btn-handoff">🌿 بله</a>';
+		}
+
+		banner.innerHTML = '<span>' + escapeHtml(config.i18n.handoffText) + ':</span><div class="poshtibank-handoff-links">' + linksHtml + '</div>';
+		elements.viewChat.insertBefore(banner, elements.stream.nextSibling);
 	}
 
 	// Initialize on DOM ready

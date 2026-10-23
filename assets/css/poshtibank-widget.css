@@ -920,6 +920,289 @@
 	transform: rotate(180deg); /* Adjust for RTL */
 }
 
+/* WooCommerce Rich Cards (Phase 6) */
+
+/* Product Card */
+.poshtibank-product-card {
+	background: #ffffff;
+	border: 1px solid var(--pb-border);
+	border-radius: 12px;
+	overflow: hidden;
+	margin-top: 4px;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+	max-width: 250px;
+}
+
+.poshtibank-product-thumb {
+	width: 100%;
+	height: 130px;
+	background: #f1f5f9;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.poshtibank-product-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.poshtibank-product-details {
+	padding: 10px 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.poshtibank-product-title {
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--pb-text);
+	margin: 0;
+}
+
+.poshtibank-product-price {
+	font-size: 13px;
+	font-weight: 800;
+	color: var(--pb-primary);
+}
+
+.poshtibank-btn-product-buy {
+	display: block;
+	text-align: center;
+	padding: 8px 12px;
+	background: var(--pb-primary);
+	color: #ffffff !important;
+	border-radius: 8px;
+	font-size: 12px;
+	font-weight: 700;
+	text-decoration: none;
+	transition: background-color 0.2s;
+	margin-top: 4px;
+}
+
+.poshtibank-btn-product-buy:hover {
+	background: var(--pb-primary-hover);
+}
+
+/* Coupon Card */
+.poshtibank-coupon-card {
+	background: #fffbeb;
+	border: 2px dashed #f59e0b;
+	border-radius: 12px;
+	padding: 12px 14px;
+	margin-top: 4px;
+	max-width: 250px;
+	text-align: center;
+}
+
+.poshtibank-coupon-badge {
+	display: inline-block;
+	background: #fef3c7;
+	color: #b45309;
+	font-size: 11px;
+	font-weight: 700;
+	padding: 2px 8px;
+	border-radius: 999px;
+	margin-bottom: 6px;
+}
+
+.poshtibank-coupon-code {
+	font-family: monospace;
+	font-size: 16px;
+	font-weight: 800;
+	letter-spacing: 1px;
+	color: #92400e;
+	margin: 4px 0 8px;
+}
+
+.poshtibank-btn-copy-coupon {
+	width: 100%;
+	padding: 7px 10px;
+	background: #f59e0b;
+	color: #ffffff;
+	border: none;
+	border-radius: 8px;
+	font-size: 11px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.poshtibank-btn-copy-coupon:hover {
+	background: #d97706;
+}
+
+.poshtibank-btn-copy-coupon.copied {
+	background: #16a34a;
+}
+
+/* CSAT Satisfaction Survey Card */
+.poshtibank-csat-card {
+	background: #ffffff;
+	border: 1px solid var(--pb-border);
+	border-radius: 12px;
+	padding: 14px;
+	margin: 10px 0;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+	text-align: center;
+}
+
+.poshtibank-csat-card h5 {
+	margin: 0 0 10px;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--pb-text);
+}
+
+.poshtibank-csat-stars {
+	display: flex;
+	justify-content: center;
+	gap: 6px;
+	margin-bottom: 10px;
+	direction: ltr;
+}
+
+.poshtibank-star-btn {
+	background: none;
+	border: none;
+	font-size: 22px;
+	cursor: pointer;
+	opacity: 0.35;
+	transition: transform 0.15s, opacity 0.15s;
+}
+
+.poshtibank-star-btn:hover,
+.poshtibank-star-btn.active {
+	opacity: 1;
+	transform: scale(1.15);
+}
+
+.poshtibank-csat-comment {
+	width: 100%;
+	border: 1px solid var(--pb-border);
+	border-radius: 8px;
+	padding: 6px 10px;
+	font-size: 12px;
+	resize: none;
+	margin-bottom: 8px;
+	outline: none;
+}
+
+.poshtibank-csat-comment:focus {
+	border-color: var(--pb-primary);
+}
+
+.poshtibank-btn-csat-submit {
+	padding: 6px 14px;
+	background: var(--pb-primary);
+	color: #ffffff;
+	border: none;
+	border-radius: 6px;
+	font-size: 12px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+/* Proactive Toast Notification (Exit-Intent / Checkout) */
+.poshtibank-proactive-toast {
+	position: absolute;
+	bottom: 75px;
+	background: #ffffff;
+	border-radius: 14px;
+	border: 1px solid var(--pb-border);
+	box-shadow: var(--pb-shadow);
+	padding: 12px 14px;
+	max-width: 280px;
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	cursor: pointer;
+	z-index: 100;
+	animation: pbSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#poshtibank-widget-root.pos-bottom-right .poshtibank-proactive-toast {
+	right: 0;
+}
+
+#poshtibank-widget-root.pos-bottom-left .poshtibank-proactive-toast {
+	left: 0;
+}
+
+.poshtibank-proactive-avatar {
+	width: 32px;
+	height: 32px;
+	background: var(--pb-primary);
+	color: #ffffff;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.poshtibank-proactive-avatar svg {
+	width: 18px;
+	height: 18px;
+}
+
+.poshtibank-proactive-content p {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--pb-text);
+	font-weight: 600;
+}
+
+.poshtibank-proactive-close {
+	background: none;
+	border: none;
+	color: var(--pb-text-muted);
+	font-size: 16px;
+	cursor: pointer;
+	padding: 0 0 4px 4px;
+	line-height: 1;
+}
+
+/* Seamless Handoff Banner */
+.poshtibank-handoff-banner {
+	background: #f1f5f9;
+	border-top: 1px solid var(--pb-border);
+	padding: 8px 14px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 11px;
+	color: var(--pb-text-muted);
+}
+
+.poshtibank-handoff-links {
+	display: flex;
+	gap: 6px;
+}
+
+.poshtibank-btn-handoff {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px 8px;
+	border-radius: 6px;
+	background: #ffffff;
+	border: 1px solid var(--pb-border);
+	color: var(--pb-text);
+	text-decoration: none;
+	font-weight: 700;
+	font-size: 11px;
+}
+
+.poshtibank-btn-handoff:hover {
+	border-color: var(--pb-primary);
+	color: var(--pb-primary);
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 480px) {
 	#poshtibank-widget-root.pos-bottom-right,

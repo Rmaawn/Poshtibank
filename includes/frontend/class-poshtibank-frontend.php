@@ -80,6 +80,9 @@ class Poshtibank_Frontend {
 		);
 		$faqs = apply_filters( 'poshtibank_prechat_faqs', $default_faqs );
 
+		require_once POSHTIBANK_PATH . 'includes/woocommerce/class-poshtibank-woocommerce.php';
+		$wc_context = Poshtibank_WooCommerce::get_page_context();
+
 		// Localize script with REST endpoint, nonce, settings & translations
 		wp_localize_script(
 			'poshtibank-widget-script',
@@ -96,29 +99,43 @@ class Poshtibank_Frontend {
 					'channels'       => $settings['channels'] ?? array(),
 					'offlineMessage' => $settings['business_hours']['offline_message'] ?? '',
 				),
+				'handoff'     => array(
+					'telegram' => ! empty( $settings['channels']['telegram_url'] ) ? $settings['channels']['telegram_url'] : '',
+					'bale'     => ! empty( $settings['channels']['bale_url'] ) ? $settings['channels']['bale_url'] : '',
+				),
 				'faqs'        => $faqs,
+				'wc'          => $wc_context,
 				'user'        => $user_data,
 				'page'        => array(
 					'url'   => esc_url_raw( ( is_ssl() ? 'https://' : 'http://' ) . ( $_SERVER['HTTP_HOST'] ?? '' ) . ( $_SERVER['REQUEST_URI'] ?? '' ) ),
 					'title' => wp_get_document_title(),
 				),
 				'i18n'        => array(
-					'startChat'       => __( 'شروع گفتگوی آنلاین', 'poshtibank' ),
-					'contactHub'      => __( 'دیگر راه‌های ارتباط با ما', 'poshtibank' ),
-					'faqTitle'        => __( 'سوالات پرتکرار', 'poshtibank' ),
-					'inputPlaceholder'=> __( 'پیام خود را بنویسید...', 'poshtibank' ),
-					'send'            => __( 'ارسال', 'poshtibank' ),
-					'nameLabel'       => __( 'نام شما', 'poshtibank' ),
-					'phoneLabel'      => __( 'شماره موبایل', 'poshtibank' ),
+					'startChat'        => __( 'شروع گفتگوی آنلاین', 'poshtibank' ),
+					'contactHub'       => __( 'دیگر راه‌های ارتباط با ما', 'poshtibank' ),
+					'faqTitle'         => __( 'سوالات پرتکرار', 'poshtibank' ),
+					'inputPlaceholder' => __( 'پیام خود را بنویسید...', 'poshtibank' ),
+					'send'             => __( 'ارسال', 'poshtibank' ),
+					'nameLabel'        => __( 'نام شما', 'poshtibank' ),
+					'phoneLabel'       => __( 'شماره موبایل', 'poshtibank' ),
 					'startConversation'=> __( 'ورود به گفتگو', 'poshtibank' ),
-					'namePlaceholder' => __( 'مثال: علی رضایی', 'poshtibank' ),
-					'phonePlaceholder'=> __( 'مثال: ۰۹۱۲۳۴۵۶۷۸۹', 'poshtibank' ),
-					'online'          => __( 'آنلاین و آماده پاسخگویی', 'poshtibank' ),
-					'offline'         => __( 'در حال حاضر آفلاین', 'poshtibank' ),
-					'newMsgTitle'     => __( '(پیام جدید!)', 'poshtibank' ),
-					'requiredFields'  => __( 'لطفاً نام و شماره همراه خود را وارد کنید.', 'poshtibank' ),
-					'phoneInvalid'    => __( 'شماره موبایل وارد شده صحیح نیست.', 'poshtibank' ),
-					'chatClosed'      => __( 'این گفتگو بسته شده است. با ارسال پیام جدید گفتگو مجدداً باز خواهد شد.', 'poshtibank' ),
+					'namePlaceholder'  => __( 'مثال: علی رضایی', 'poshtibank' ),
+					'phonePlaceholder' => __( 'مثال: ۰۹۱۲۳۴۵۶۷۸۹', 'poshtibank' ),
+					'online'           => __( 'آنلاین و آماده پاسخگویی', 'poshtibank' ),
+					'offline'          => __( 'در حال حاضر آفلاین', 'poshtibank' ),
+					'newMsgTitle'      => __( '(پیام جدید!)', 'poshtibank' ),
+					'requiredFields'   => __( 'لطفاً نام و شماره همراه خود را وارد کنید.', 'poshtibank' ),
+					'phoneInvalid'     => __( 'شماره موبایل وارد شده صحیح نیست.', 'poshtibank' ),
+					'chatClosed'       => __( 'این گفتگو بسته شده است.', 'poshtibank' ),
+					'handoffText'      => __( 'ادامه گفتگو در تلگرام / بله', 'poshtibank' ),
+					'ratingTitle'      => __( 'میزان رضایت شما از پاسخگویی چطور بود؟', 'poshtibank' ),
+					'ratingSubmit'     => __( 'ثبت نظر', 'poshtibank' ),
+					'ratingThanks'     => __( 'با تشکر از ثبت نظر شما!', 'poshtibank' ),
+					'exitPrompt'       => __( 'قبل از رفتن، سوالی درباره محصولات یا نحوه خرید دارید؟ خوشحال می‌شویم کمکتان کنیم!', 'poshtibank' ),
+					'checkoutPrompt'   => __( 'آیا در ثبت سفارش یا پرداخت مشکلی پیش آمده است؟ پشتیبان ما آنلاین است و می‌تواند راهنماییتان کند.', 'poshtibank' ),
+					'viewProduct'      => __( 'مشاهده و خرید محصول', 'poshtibank' ),
+					'copyCoupon'       => __( 'کپی کد تخفیف', 'poshtibank' ),
+					'couponCopied'     => __( 'کد کپی شد!', 'poshtibank' ),
 				),
 			)
 		);

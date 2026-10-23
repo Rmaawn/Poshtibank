@@ -72,6 +72,17 @@ class Poshtibank_REST_Client {
 				'permission_callback' => '__return_true',
 			)
 		);
+
+		// 6. Session Feedback (CSAT): /poshtibank/v1/session/feedback
+		register_rest_route(
+			'poshtibank/v1',
+			'/session/feedback',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'session_feedback' ),
+				'permission_callback' => '__return_true',
+			)
+		);
 	}
 
 	/**
@@ -136,6 +147,22 @@ class Poshtibank_REST_Client {
 			if ( ! empty( $update_data ) ) {
 				Poshtibank_DB::update_session( $session->session_id, $update_data );
 			}
+		}
+
+		// Store WooCommerce Context if provided
+		if ( ! empty( $params['wc'] ) && is_array( $params['wc'] ) ) {
+			$meta = ! empty( $session->metadata ) ? ( is_array( $session->metadata ) ? $session->metadata : json_decode( $session->metadata, true ) ) : array();
+			if ( ! empty( $params['wc']['product'] ) ) {
+				$meta['wc_product'] = $params['wc']['product'];
+			}
+			if ( ! empty( $params['wc']['cart'] ) ) {
+				$meta['wc_cart'] = $params['wc']['cart'];
+			}
+			if ( get_current_user_id() > 0 ) {
+				require_once POSHTIBANK_PATH . 'includes/woocommerce/class-poshtibank-woocommerce.php';
+				$meta['wc_customer'] = Poshtibank_WooCommerce::get_customer_summary( get_current_user_id() );
+			}
+			Poshtibank_DB::update_session( $session->session_id, array( 'metadata' => $meta ) );
 		}
 
 		// Retrieve recent messages
@@ -449,6 +476,59 @@ class Poshtibank_REST_Client {
 			),
 			201
 		);
+	}
+
+	/**
+	 * Endpoint: Submit CSAT satisfaction rating and feedback.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public function session_feedback( WP_REST_Request $request ) {
+		$params     = $request->get_json_params();
+		$session_id = ! empty( $params['session_id'] ) ? sanitize_text_field( $params['session_id'] ) : '';
+		$rating     = ! empty( $params['rating'] ) ? min( 5, max( 1, absint( $params['rating'] ) ) ) : 5;
+		$comment    = ! empty( $params['comment'] ) ? sanitize_textarea_field( $params['comment'] ) : '';
+
+		if ( empty( $session_id ) ) {
+			return new WP_REST_Response( array( 'error' => __( 'شناسه نشست الزامی است.', 'poshtibank' ) ), 400 );
+		}
+
+		$session = Poshtibank_DB::get_session( $session_id );
+		if ( ! $session ) {
+			return new WP_REST_Response( array( 'error' => __( 'نشست یافت نشد.', 'poshtibank' ) ), 404 );
+		}
+
+		$meta = ! empty( $session->metadata ) ? ( is_array( $session->metadata ) ? $session->metadata : json_decode( $session->metadata, true ) ) : array();
+		$meta['csat'] = array(
+			'rating'     => $rating,
+			'comment'    => $comment,
+			'created_at' => current_time( 'mysql' ),
+		);
+
+		Poshtibank_DB::update_session( $session_id, array( 'metadata' => $meta ) );
+
+		// Send feedback notice to Telegram / Bale
+		require_once POSHTIBANK_PATH . 'includes/bridges/class-poshtibank-bridge-manager.php';
+		$bridge_manager = new Poshtibank_Bridge_Manager();
+
+		$stars = str_repeat( '⭐️', $rating );
+		$notice = sprintf(
+			"📊 <b>ثبت رضایت مشتری (CSAT):</b>\nامتیاز: %s (%d از ۵)\nکاربر: %s\nنظر: %s",
+			$stars,
+			$rating,
+			esc_html( $session->user_name ?: 'مهمان' ),
+			esc_html( $comment ?: 'بدون توضیح' )
+		);
+
+		$msg_data = array(
+			'message_id' => Poshtibank_DB::generate_uuid(),
+			'type'       => 'system',
+			'content'    => $notice,
+		);
+		$bridge_manager->dispatch_to_bridges( $session, $msg_data );
+
+		return new WP_REST_Response( array( 'success' => true ), 200 );
 	}
 
 	/**
