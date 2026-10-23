@@ -1,0 +1,42 @@
+# Poshtibank WordPress Plugin .gitignore
+
+# Dependencies
+/node_modules/
+/vendor/
+
+# Environment & Local Configuration
+.env
+.env.*
+!.env.example
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# Archives and build artifacts
+*.zip
+*.tar.gz
+*.phar
+
+# WordPress specific local files
+wp-config.php
+/wp-content/uploads/
