@@ -340,6 +340,64 @@ class Poshtibank_DB {
 	}
 
 	/**
+	 * Retrieve a single message by UUID.
+	 *
+	 * @param string $message_id Message UUID.
+	 * @return object|null
+	 */
+	public static function get_message( $message_id ) {
+		global $wpdb;
+		$table = self::get_messages_table();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$table} WHERE message_id = %s LIMIT 1",
+				$message_id
+			)
+		);
+	}
+
+	/**
+	 * Retrieve session by external platform message ID (for Reply tracking).
+	 *
+	 * @param string $platform    'telegram' or 'bale'.
+	 * @param int    $external_id External platform message_id.
+	 * @return object|null
+	 */
+	public static function get_session_by_external_message_id( $platform, $external_id ) {
+		global $wpdb;
+		$table = self::get_messages_table();
+		$key   = ( 'telegram' === $platform ) ? 'telegram_message_id' : 'bale_message_id';
+		$search = '%"' . $key . '":' . intval( $external_id ) . '%';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$session_id = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT session_id FROM {$table} WHERE metadata LIKE %s ORDER BY id DESC LIMIT 1",
+				$search
+			)
+		);
+
+		return $session_id ? self::get_session( $session_id ) : null;
+	}
+
+	/**
+	 * Retrieve the most recently active open session.
+	 *
+	 * @return object|null
+	 */
+	public static function get_latest_active_session() {
+		global $wpdb;
+		$table = self::get_sessions_table();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		return $wpdb->get_row(
+			"SELECT * FROM {$table} WHERE status = 'open' ORDER BY last_activity DESC LIMIT 1"
+		);
+	}
+
+	/**
 	 * Retrieve messages for a given session.
 	 *
 	 * @param string $session_id UUID of the session.
