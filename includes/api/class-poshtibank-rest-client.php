@@ -1,0 +1,374 @@
+<?php
+/**
+ * REST API Client Controller: Handles frontend chat widget endpoints.
+ *
+ * @package Poshtibank
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Class Poshtibank_REST_Client
+ */
+class Poshtibank_REST_Client {
+
+	/**
+	 * Register client endpoints.
+	 */
+	public function register_routes() {
+		// 1. Session Init: /poshtibank/v1/session/init
+		register_rest_route(
+			'poshtibank/v1',
+			'/session/init',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'session_init' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		// 2. Send Message: /poshtibank/v1/messages/send
+		register_rest_route(
+			'poshtibank/v1',
+			'/messages/send',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'send_message' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		// 3. Adaptive Poll: /poshtibank/v1/messages/poll
+		register_rest_route(
+			'poshtibank/v1',
+			'/messages/poll',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'poll_messages' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		// 4. Session Close: /poshtibank/v1/session/close
+		register_rest_route(
+			'poshtibank/v1',
+			'/session/close',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'session_close' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+	}
+
+	/**
+	 * Endpoint: Initialize or resume a chat session.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public function session_init( WP_REST_Request $request ) {
+		$params     = $request->get_json_params();
+		$session_id = ! empty( $params['session_id'] ) ? sanitize_text_field( $params['session_id'] ) : '';
+		$client_ip  = Poshtibank_DB::get_client_ip();
+
+		// Check if IP is blacklisted
+		if ( Poshtibank_DB::is_blocked( $session_id, $client_ip ) ) {
+			return new WP_REST_Response(
+				array(
+					'status'  => 'blocked',
+					'message' => __( 'امکان دسترسی به چت آنلاین برای شما مسدود شده است.', 'poshtibank' ),
+				),
+				403
+			);
+		}
+
+		$session = null;
+		if ( ! empty( $session_id ) ) {
+			$session = Poshtibank_DB::get_session( $session_id );
+		}
+
+		// Create new session if does not exist
+		if ( ! $session ) {
+			$new_session_id = Poshtibank_DB::create_session(
+				array(
+					'session_id'   => $session_id,
+					'user_name'    => ! empty( $params['user_name'] ) ? sanitize_text_field( $params['user_name'] ) : '',
+					'user_phone'   => ! empty( $params['user_phone'] ) ? sanitize_text_field( $params['user_phone'] ) : '',
+					'user_email'   => ! empty( $params['user_email'] ) ? sanitize_email( $params['user_email'] ) : '',
+					'current_page' => ! empty( $params['current_page'] ) ? esc_url_raw( $params['current_page'] ) : '',
+					'referer'      => ! empty( $params['referer'] ) ? esc_url_raw( $params['referer'] ) : '',
+					'ip_address'   => $client_ip,
+				)
+			);
+
+			if ( ! $new_session_id ) {
+				return new WP_REST_Response( array( 'error' => __( 'خطا در ایجاد نشست گفتگو.', 'poshtibank' ) ), 500 );
+			}
+
+			$session = Poshtibank_DB::get_session( $new_session_id );
+		} else {
+			// Update context on resume
+			$update_data = array();
+			if ( ! empty( $params['current_page'] ) ) {
+				$update_data['current_page'] = esc_url_raw( $params['current_page'] );
+			}
+			if ( ! empty( $params['user_name'] ) && empty( $session->user_name ) ) {
+				$update_data['user_name'] = sanitize_text_field( $params['user_name'] );
+			}
+			if ( ! empty( $params['user_phone'] ) && empty( $session->user_phone ) ) {
+				$update_data['user_phone'] = sanitize_text_field( $params['user_phone'] );
+			}
+
+			if ( ! empty( $update_data ) ) {
+				Poshtibank_DB::update_session( $session->session_id, $update_data );
+			}
+		}
+
+		// Retrieve recent messages
+		$messages = Poshtibank_DB::get_messages( $session->session_id, 50 );
+
+		$settings = Poshtibank_Admin::get_settings();
+
+		// Check business hours
+		$is_online = $this->is_business_hours( $settings );
+
+		return new WP_REST_Response(
+			array(
+				'session_id'       => $session->session_id,
+				'status'           => $session->status,
+				'is_online'        => $is_online,
+				'offline_message'  => $settings['business_hours']['offline_message'] ?? '',
+				'require_contact'  => ! empty( $settings['general']['require_contact'] ),
+				'primary_color'    => $settings['general']['primary_color'] ?? '#2563eb',
+				'widget_title'     => $settings['general']['widget_title'] ?? 'پشتیبانی آنلاین',
+				'widget_subtitle'  => $settings['general']['widget_subtitle'] ?? '',
+				'channels'         => $settings['channels'] ?? array(),
+				'messages'         => $messages,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Endpoint: Send message from client widget.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public function send_message( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+
+		// 1. Honeypot check (Anti-Spam)
+		if ( ! empty( $params['hp_check'] ) ) {
+			return new WP_REST_Response( array( 'error' => 'Spam detected.' ), 400 );
+		}
+
+		// 2. Validate session
+		$session_id = ! empty( $params['session_id'] ) ? sanitize_text_field( $params['session_id'] ) : '';
+		if ( empty( $session_id ) ) {
+			return new WP_REST_Response( array( 'error' => __( 'شناسه نشست الزامی است.', 'poshtibank' ) ), 400 );
+		}
+
+		$session = Poshtibank_DB::get_session( $session_id );
+		if ( ! $session ) {
+			return new WP_REST_Response( array( 'error' => __( 'نشست گفتگو یافت نشد.', 'poshtibank' ) ), 404 );
+		}
+
+		$client_ip = Poshtibank_DB::get_client_ip();
+
+		// 3. Blocked check
+		if ( 'blocked' === $session->status || Poshtibank_DB::is_blocked( $session_id, $client_ip ) ) {
+			return new WP_REST_Response( array( 'error' => __( 'دسترسی شما به این گفتگو مسدود است.', 'poshtibank' ) ), 403 );
+		}
+
+		// 4. Rate Limiting check
+		if ( ! $this->check_rate_limit( $session_id, $client_ip ) ) {
+			return new WP_REST_Response(
+				array( 'error' => __( 'تعداد پیام‌های ارسالی شما بیش از حد مجاز است. لطفاً یک دقیقه صبور باشید.', 'poshtibank' ) ),
+				429
+			);
+		}
+
+		// 5. Validate content
+		$content = ! empty( $params['content'] ) ? trim( $params['content'] ) : '';
+		$type    = ! empty( $params['type'] ) ? sanitize_key( $params['type'] ) : 'text';
+
+		if ( empty( $content ) ) {
+			return new WP_REST_Response( array( 'error' => __( 'متن پیام نمی‌تواند خالی باشد.', 'poshtibank' ) ), 400 );
+		}
+
+		// If session was closed, reopen it
+		if ( 'closed' === $session->status ) {
+			Poshtibank_DB::update_session( $session_id, array( 'status' => 'open' ) );
+			$session->status = 'open';
+		}
+
+		// 6. Create message record in database
+		$message_id = Poshtibank_DB::create_message(
+			array(
+				'session_id'  => $session_id,
+				'sender'      => 'user',
+				'sender_id'   => (string) get_current_user_id(),
+				'sender_name' => ! empty( $session->user_name ) ? $session->user_name : __( 'کاربر', 'poshtibank' ),
+				'type'        => $type,
+				'content'     => $content,
+				'metadata'    => ! empty( $params['metadata'] ) ? (array) $params['metadata'] : null,
+			)
+		);
+
+		if ( ! $message_id ) {
+			return new WP_REST_Response( array( 'error' => __( 'خطا در ثبت پیام.', 'poshtibank' ) ), 500 );
+		}
+
+		$created_message = Poshtibank_DB::get_message( $message_id );
+
+		// 7. Dispatch message to Telegram & Bale bridges
+		require_once POSHTIBANK_PATH . 'includes/bridges/class-poshtibank-bridge-manager.php';
+		$bridge_manager = new Poshtibank_Bridge_Manager();
+		$bridge_manager->dispatch_to_bridges(
+			$session,
+			array(
+				'message_id' => $message_id,
+				'type'       => $type,
+				'content'    => $content,
+				'metadata'   => ! empty( $params['metadata'] ) ? (array) $params['metadata'] : array(),
+			)
+		);
+
+		return new WP_REST_Response(
+			array(
+				'success' => true,
+				'message' => $created_message,
+			),
+			201
+		);
+	}
+
+	/**
+	 * Endpoint: Adaptive Short Polling for new messages.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public function poll_messages( WP_REST_Request $request ) {
+		$session_id = sanitize_text_field( $request->get_param( 'session_id' ) );
+		$after_id   = absint( $request->get_param( 'after_id' ) );
+
+		if ( empty( $session_id ) ) {
+			return new WP_REST_Response( array( 'error' => __( 'شناسه نشست نامعتبر است.', 'poshtibank' ) ), 400 );
+		}
+
+		$session = Poshtibank_DB::get_session( $session_id );
+		if ( ! $session ) {
+			return new WP_REST_Response( array( 'error' => __( 'نشست یافت نشد.', 'poshtibank' ) ), 404 );
+		}
+
+		// Fetch new messages sent by admin, ai, or system
+		$new_messages = Poshtibank_DB::get_new_messages_since( $session_id, $after_id, 'user' );
+
+		// If new messages found, mark admin messages as read
+		if ( ! empty( $new_messages ) ) {
+			Poshtibank_DB::mark_messages_as_read( $session_id, 'user' );
+		}
+
+		return new WP_REST_Response(
+			array(
+				'status'       => $session->status,
+				'new_messages' => $new_messages,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Endpoint: Close active session by user.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public function session_close( WP_REST_Request $request ) {
+		$params     = $request->get_json_params();
+		$session_id = ! empty( $params['session_id'] ) ? sanitize_text_field( $params['session_id'] ) : '';
+
+		if ( empty( $session_id ) ) {
+			return new WP_REST_Response( array( 'error' => __( 'شناسه نشست نامعتبر است.', 'poshtibank' ) ), 400 );
+		}
+
+		Poshtibank_DB::update_session( $session_id, array( 'status' => 'closed' ) );
+
+		return new WP_REST_Response( array( 'success' => true ), 200 );
+	}
+
+	/**
+	 * Check Rate Limit for Anti-Spam protection.
+	 *
+	 * @param string $session_id Session UUID.
+	 * @param string $ip         Client IP.
+	 * @return bool True if allowed, false if limit exceeded.
+	 */
+	protected function check_rate_limit( $session_id, $ip ) {
+		global $wpdb;
+
+		$settings = Poshtibank_Admin::get_settings();
+		$max_msgs = $settings['security']['rate_limit_messages'] ?? 10;
+		$window   = $settings['security']['rate_limit_window'] ?? 60;
+
+		$cutoff = gmdate( 'Y-m-d H:i:s', time() - $window );
+		$table  = Poshtibank_DB::get_messages_table();
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$count = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(id) FROM {$table} WHERE session_id = %s AND sender = 'user' AND created_at > %s",
+				$session_id,
+				$cutoff
+			)
+		);
+
+		return intval( $count ) < intval( $max_msgs );
+	}
+
+	/**
+	 * Check whether the current time falls within configured business hours.
+	 *
+	 * @param array $settings Plugin settings.
+	 * @return bool
+	 */
+	protected function is_business_hours( array $settings ) {
+		if ( empty( $settings['business_hours']['enabled'] ) ) {
+			return true; // Business hours not restricted -> Always online
+		}
+
+		// Current day of week in Tehran / WP timezone
+		$wp_timestamp = current_time( 'timestamp' );
+		$day_num      = intval( gmdate( 'w', $wp_timestamp ) ); // 0 (Sun) to 6 (Sat)
+
+		// Map PHP date('w') to Poshtibank days:
+		// 6 => sat, 0 => sun, 1 => mon, 2 => tue, 3 => wed, 4 => thu, 5 => fri
+		$map = array(
+			6 => 'sat',
+			0 => 'sun',
+			1 => 'mon',
+			2 => 'tue',
+			3 => 'wed',
+			4 => 'thu',
+			5 => 'fri',
+		);
+
+		$current_day_key = $map[ $day_num ] ?? 'sat';
+		$day_cfg         = $settings['business_hours']['schedule'][ $current_day_key ] ?? null;
+
+		if ( ! $day_cfg || empty( $day_cfg['active'] ) ) {
+			return false; // Closed today
+		}
+
+		$current_time = gmdate( 'H:i', $wp_timestamp );
+		$start_time   = $day_cfg['start'] ?? '09:00';
+		$end_time     = $day_cfg['end'] ?? '18:00';
+
+		return ( $current_time >= $start_time && $current_time <= $end_time );
+	}
+}

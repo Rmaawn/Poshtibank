@@ -53,6 +53,7 @@ class Poshtibank {
 		$this->set_locale();
 		$this->define_cron_hooks();
 		$this->define_admin_hooks();
+		$this->define_api_hooks();
 		$this->define_public_hooks();
 	}
 
@@ -99,6 +100,15 @@ class Poshtibank {
 			$admin = new Poshtibank_Admin();
 			$admin->init();
 		}
+	}
+
+	/**
+	 * Register all REST API endpoints for Client & Webhooks (Phase 3).
+	 */
+	private function define_api_hooks() {
+		require_once POSHTIBANK_PATH . 'includes/api/class-poshtibank-rest-api.php';
+		$api = new Poshtibank_REST_API();
+		$this->loader->add_action( 'rest_api_init', $api, 'register_routes' );
 	}
 
 	/**
