@@ -65,12 +65,18 @@ class Poshtibank {
 		require_once POSHTIBANK_PATH . 'includes/class-poshtibank-loader.php';
 		require_once POSHTIBANK_PATH . 'includes/class-poshtibank-i18n.php';
 
+		// Global settings and configuration manager.
+		require_once POSHTIBANK_PATH . 'includes/class-poshtibank-settings.php';
+
 		// Database layer.
 		require_once POSHTIBANK_PATH . 'includes/db/class-poshtibank-db.php';
 		require_once POSHTIBANK_PATH . 'includes/db/class-poshtibank-schema.php';
 
 		// Cron scheduler.
 		require_once POSHTIBANK_PATH . 'includes/cron/class-poshtibank-cron.php';
+
+		// Admin controller & views.
+		require_once POSHTIBANK_PATH . 'includes/admin/class-poshtibank-admin.php';
 
 		$this->loader = new Poshtibank_Loader();
 	}
@@ -96,7 +102,6 @@ class Poshtibank {
 	 */
 	private function define_admin_hooks() {
 		if ( is_admin() ) {
-			require_once POSHTIBANK_PATH . 'includes/admin/class-poshtibank-admin.php';
 			$admin = new Poshtibank_Admin();
 			$admin->init();
 		}

@@ -34,7 +34,7 @@ class Poshtibank_Cron {
 	 * @return array
 	 */
 	public function execute_cleanup() {
-		$settings = get_option( 'poshtibank_settings', array() );
+		$settings       = Poshtibank_Settings::get_settings();
 		$retention_days = isset( $settings['general']['retention_days'] ) ? absint( $settings['general']['retention_days'] ) : 30;
 
 		if ( $retention_days <= 0 ) {

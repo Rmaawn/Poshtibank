@@ -28,7 +28,7 @@ class Poshtibank_Frontend {
 	 * Enqueue CSS and Vanilla JS for the chat widget.
 	 */
 	public function enqueue_assets() {
-		$settings = Poshtibank_Admin::get_settings();
+		$settings = Poshtibank_Settings::get_settings();
 
 		// Check if chat is globally enabled
 		if ( empty( $settings['general']['enabled'] ) ) {
@@ -51,8 +51,6 @@ class Poshtibank_Frontend {
 			POSHTIBANK_VERSION,
 			true // in footer
 		);
-
-		$settings = Poshtibank_Admin::get_settings();
 
 		// Check user session / login
 		$current_user = wp_get_current_user();
@@ -145,7 +143,7 @@ class Poshtibank_Frontend {
 	 * Output widget container markup in footer.
 	 */
 	public function render_widget_markup() {
-		$settings = Poshtibank_Admin::get_settings();
+		$settings = Poshtibank_Settings::get_settings();
 		if ( empty( $settings['general']['enabled'] ) ) {
 			return;
 		}

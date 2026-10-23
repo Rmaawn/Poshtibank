@@ -53,7 +53,7 @@ class Poshtibank_REST_Webhook {
 	 * @return WP_REST_Response
 	 */
 	public function handle_telegram( WP_REST_Request $request ) {
-		$settings = Poshtibank_Admin::get_settings();
+		$settings = Poshtibank_Settings::get_settings();
 
 		// 1. Verify Secret Token header if configured
 		$secret_token = $settings['telegram']['webhook_secret'] ?? '';
@@ -192,7 +192,7 @@ class Poshtibank_REST_Webhook {
 			'sender_username'     => $message['from']['username'] ?? '',
 		);
 
-		$settings = Poshtibank_Admin::get_settings();
+		$settings = Poshtibank_Settings::get_settings();
 		$tg_token = $settings['telegram']['bot_token'] ?? '';
 		$tg_proxy = $settings['telegram']['proxy_url'] ?? '';
 

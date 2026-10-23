@@ -48,8 +48,7 @@ class Poshtibank_Bridge_Telegram implements Poshtibank_Bridge_Interface {
 	 * Constructor.
 	 */
 	public function __construct() {
-		$settings = get_option( 'poshtibank_settings', array() );
-		$tg       = $settings['telegram'] ?? array();
+		$tg = Poshtibank_Settings::get( 'telegram', null, array() );
 
 		$this->token      = trim( $tg['bot_token'] ?? '' );
 		$this->proxy_url  = trim( $tg['proxy_url'] ?? '' );

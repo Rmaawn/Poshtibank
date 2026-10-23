@@ -168,7 +168,7 @@ class Poshtibank_REST_Client {
 		// Retrieve recent messages
 		$messages = Poshtibank_DB::get_messages( $session->session_id, 50 );
 
-		$settings = Poshtibank_Admin::get_settings();
+		$settings = Poshtibank_Settings::get_settings();
 
 		// Check business hours
 		$is_online = $this->is_business_hours( $settings );
@@ -361,7 +361,7 @@ class Poshtibank_REST_Client {
 	protected function check_rate_limit( $session_id, $ip ) {
 		global $wpdb;
 
-		$settings = Poshtibank_Admin::get_settings();
+		$settings = Poshtibank_Settings::get_settings();
 		$max_msgs = $settings['security']['rate_limit_messages'] ?? 10;
 		$window   = $settings['security']['rate_limit_window'] ?? 60;
 
@@ -379,12 +379,12 @@ class Poshtibank_REST_Client {
 
 		// If aggressive spamming detected (2x limit), automatically blacklist IP
 		if ( intval( $count ) >= ( intval( $max_msgs ) * 2 ) && filter_var( $ip, FILTER_VALIDATE_IP ) ) {
-			$raw_settings = get_option( Poshtibank_Admin::OPTION_KEY, array() );
+			$raw_settings = get_option( Poshtibank_Settings::OPTION_KEY, array() );
 			$current_blocked = (array) ( $raw_settings['security']['blocked_ips'] ?? array() );
 			if ( ! in_array( $ip, $current_blocked, true ) ) {
 				$current_blocked[] = $ip;
 				$raw_settings['security']['blocked_ips'] = $current_blocked;
-				update_option( Poshtibank_Admin::OPTION_KEY, $raw_settings );
+				Poshtibank_Settings::update_settings( $raw_settings );
 			}
 			return false;
 		}

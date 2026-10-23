@@ -17,7 +17,7 @@ class Poshtibank_Admin {
 	/**
 	 * Settings option key in wp_options.
 	 */
-	const OPTION_KEY = 'poshtibank_settings';
+	const OPTION_KEY = Poshtibank_Settings::OPTION_KEY;
 
 	/**
 	 * Initialize admin hooks.
@@ -139,71 +139,7 @@ class Poshtibank_Admin {
 	 * @return array
 	 */
 	public static function get_settings() {
-		$saved = get_option( self::OPTION_KEY, array() );
-
-		$defaults = array(
-			'general' => array(
-				'enabled'         => 1,
-				'widget_title'    => 'پشتیبانی آنلاین پشتیبانک',
-				'widget_subtitle' => 'معمولاً در کمتر از چند دقیقه پاسخگوییم',
-				'retention_days'  => 30,
-				'primary_color'   => '#2563eb',
-				'widget_position' => 'bottom-right',
-				'require_contact' => 0,
-			),
-			'telegram' => array(
-				'enabled'        => 0,
-				'bot_token'      => '',
-				'chat_id'        => '',
-				'proxy_url'      => '',
-				'use_topics'     => 1,
-				'webhook_secret' => Poshtibank_DB::generate_secret( 32 ),
-			),
-			'bale' => array(
-				'enabled'        => 0,
-				'bot_token'      => '',
-				'chat_id'        => '',
-				'webhook_secret' => Poshtibank_DB::generate_secret( 32 ),
-			),
-			'business_hours' => array(
-				'enabled'         => 0,
-				'offline_message' => 'در حال حاضر همکاران ما آفلاین هستند. لطفاً پیام و شماره تماس خود را ارسال کنید.',
-				'schedule'        => array(
-					'sat' => array( 'active' => 1, 'start' => '09:00', 'end' => '18:00' ),
-					'sun' => array( 'active' => 1, 'start' => '09:00', 'end' => '18:00' ),
-					'mon' => array( 'active' => 1, 'start' => '09:00', 'end' => '18:00' ),
-					'tue' => array( 'active' => 1, 'start' => '09:00', 'end' => '18:00' ),
-					'wed' => array( 'active' => 1, 'start' => '09:00', 'end' => '18:00' ),
-					'thu' => array( 'active' => 1, 'start' => '09:00', 'end' => '14:00' ),
-					'fri' => array( 'active' => 0, 'start' => '00:00', 'end' => '00:00' ),
-				),
-			),
-			'channels' => array(
-				'telegram_url'  => '',
-				'whatsapp_url'  => '',
-				'bale_url'      => '',
-				'eitaa_url'     => '',
-				'instagram_url' => '',
-				'phone_number'  => '',
-			),
-			'ai' => array(
-				'enabled'       => 0,
-				'provider'      => 'gemini',
-				'api_key'       => '',
-				'model'         => 'gemini-1.5-flash',
-				'system_prompt' => 'شما دستیار هوشمند و مودب پشتیبانی سایت هستید. به سوالات کاربران با دقت و صبوری پاسخ دهید.',
-			),
-			'security' => array(
-				'rate_limit_messages' => 10,
-				'rate_limit_window'   => 60,
-				'blocked_ips'         => array(),
-			),
-			'advanced' => array(
-				'delete_data_on_uninstall' => 0,
-			),
-		);
-
-		return wp_parse_args( $saved, $defaults );
+		return Poshtibank_Settings::get_settings();
 	}
 
 	/**
@@ -358,7 +294,7 @@ class Poshtibank_Admin {
 			'delete_data_on_uninstall' => ! empty( $raw['advanced']['delete_data_on_uninstall'] ) ? 1 : 0,
 		);
 
-		update_option( self::OPTION_KEY, $clean );
+		Poshtibank_Settings::update_settings( $clean );
 
 		wp_send_json_success(
 			array(

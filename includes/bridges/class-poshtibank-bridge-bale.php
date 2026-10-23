@@ -39,8 +39,7 @@ class Poshtibank_Bridge_Bale implements Poshtibank_Bridge_Interface {
 	 * Constructor.
 	 */
 	public function __construct() {
-		$settings = get_option( 'poshtibank_settings', array() );
-		$bale     = $settings['bale'] ?? array();
+		$bale = Poshtibank_Settings::get( 'bale', null, array() );
 
 		$this->token   = trim( $bale['bot_token'] ?? '' );
 		$this->chat_id = trim( $bale['chat_id'] ?? '' );

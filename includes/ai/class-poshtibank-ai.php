@@ -28,8 +28,7 @@ class Poshtibank_AI {
 	 * Constructor.
 	 */
 	public function __construct() {
-		$all_settings   = get_option( 'poshtibank_settings', array() );
-		$this->settings = $all_settings['ai'] ?? array();
+		$this->settings = Poshtibank_Settings::get( 'ai', null, array() );
 	}
 
 	/**
