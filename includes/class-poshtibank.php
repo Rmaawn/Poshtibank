@@ -112,14 +112,12 @@ class Poshtibank {
 	}
 
 	/**
-	 * Register all of the hooks related to the public-facing functionality (Phase 3 & 4+).
+	 * Register all of the hooks related to the public-facing widget (Phase 4).
 	 */
 	private function define_public_hooks() {
-		// Placeholder for Phase 3 (REST API) & Phase 4 (Public widget).
-		if ( file_exists( POSHTIBANK_PATH . 'includes/frontend/class-poshtibank-frontend.php' ) ) {
-			require_once POSHTIBANK_PATH . 'includes/frontend/class-poshtibank-frontend.php';
-			// Phase 4 hook registration.
-		}
+		require_once POSHTIBANK_PATH . 'includes/frontend/class-poshtibank-frontend.php';
+		$frontend = new Poshtibank_Frontend();
+		$frontend->init();
 	}
 
 	/**
