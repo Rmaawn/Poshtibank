@@ -1,41 +1,59 @@
 /**
  * Poshtibank Admin Stylesheet
  *
+ * Modern SaaS Dashboard Design, Soft Rounded Corners, Elegant Hover States, Full RTL
  * @package Poshtibank
  */
 
 :root {
 	--poshtibank-primary: #2563eb;
 	--poshtibank-primary-hover: #1d4ed8;
+	--poshtibank-primary-light: #eff6ff;
+	--poshtibank-primary-glow: rgba(37, 99, 235, 0.2);
 	--poshtibank-bg: #f8fafc;
 	--poshtibank-card-bg: #ffffff;
 	--poshtibank-border: #e2e8f0;
-	--poshtibank-text: #1e293b;
+	--poshtibank-border-hover: #cbd5e1;
+	--poshtibank-text: #0f172a;
+	--poshtibank-text-secondary: #334155;
 	--poshtibank-text-muted: #64748b;
-	--poshtibank-success: #16a34a;
-	--poshtibank-error: #dc2626;
-	--poshtibank-warning: #d97706;
-	--poshtibank-radius: 10px;
-	--poshtibank-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+	--poshtibank-success: #10b981;
+	--poshtibank-success-bg: #ecfdf5;
+	--poshtibank-error: #ef4444;
+	--poshtibank-error-bg: #fef2f2;
+	--poshtibank-warning: #f59e0b;
+	--poshtibank-warning-bg: #fffbeb;
+	--poshtibank-radius-sm: 8px;
+	--poshtibank-radius: 12px;
+	--poshtibank-radius-lg: 18px;
+	--poshtibank-radius-xl: 22px;
+	--poshtibank-radius-full: 9999px;
+	--poshtibank-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+	--poshtibank-shadow: 0 6px 18px -3px rgba(15, 23, 42, 0.05), 0 2px 6px -2px rgba(15, 23, 42, 0.03);
+	--poshtibank-shadow-lg: 0 16px 30px -6px rgba(15, 23, 42, 0.08), 0 6px 12px -3px rgba(15, 23, 42, 0.04);
+	--poshtibank-transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .poshtibank-wrap {
 	max-width: 1100px;
-	margin: 20px 20px 60px 0;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	margin: 24px 20px 60px 0;
+	font-family: -apple-system, BlinkMacSystemFont, "IRANSans", "Vazirmatn", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 	color: var(--poshtibank-text);
+	-webkit-font-smoothing: antialiased;
 }
 
-/* Header */
+/* ==========================================================================
+   Header
+   ========================================================================== */
 .poshtibank-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 20px 24px;
+	padding: 22px 26px;
 	background: #ffffff;
-	border-radius: var(--poshtibank-radius);
+	border-radius: var(--poshtibank-radius-lg);
 	box-shadow: var(--poshtibank-shadow);
-	margin-bottom: 20px;
+	margin-bottom: 22px;
 	border: 1px solid var(--poshtibank-border);
 }
 
@@ -46,14 +64,15 @@
 }
 
 .poshtibank-logo {
-	width: 48px;
-	height: 48px;
-	background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-	border-radius: 12px;
+	width: 50px;
+	height: 50px;
+	background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+	border-radius: 14px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	color: #ffffff;
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .poshtibank-logo .dashicons {
@@ -64,43 +83,58 @@
 
 .poshtibank-brand h1 {
 	margin: 0;
-	font-size: 22px;
+	font-size: 21px;
 	font-weight: 800;
-	color: #0f172a;
+	color: var(--poshtibank-text);
+	letter-spacing: -0.01em;
 }
 
 .poshtibank-slogan {
-	margin: 4px 0 0;
+	margin: 5px 0 0;
 	font-size: 13px;
 	color: var(--poshtibank-text-muted);
 }
 
 .poshtibank-badge {
-	background: #dbeafe;
+	background: #eff6ff;
 	color: #1e40af;
 	font-size: 11px;
-	padding: 2px 8px;
-	border-radius: 999px;
-	font-weight: 600;
+	padding: 3px 9px;
+	border-radius: var(--poshtibank-radius-full);
+	font-weight: 700;
 	margin-right: 6px;
+	border: 1px solid #dbeafe;
 }
 
-/* Alerts */
+.poshtibank-header-actions .button {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border-radius: var(--poshtibank-radius);
+	padding: 6px 14px;
+	font-weight: 600;
+	transition: var(--poshtibank-transition);
+}
+
+/* ==========================================================================
+   Alerts
+   ========================================================================== */
 .poshtibank-alert {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	padding: 14px 18px;
+	gap: 14px;
+	padding: 16px 20px;
 	border-radius: var(--poshtibank-radius);
-	margin-bottom: 20px;
-	font-size: 13px;
+	margin-bottom: 22px;
+	font-size: 13.5px;
 	line-height: 1.6;
 }
 
 .poshtibank-alert-warning {
 	background: #fffbeb;
-	border: 1px solid #fde68a;
+	border: 1px solid #fef3c7;
 	color: #92400e;
+	box-shadow: var(--poshtibank-shadow-sm);
 }
 
 .poshtibank-alert .dashicons {
@@ -110,30 +144,32 @@
 	flex-shrink: 0;
 }
 
-/* Tabs Navigation */
+/* ==========================================================================
+   Tabs Navigation (Segmented Control Design)
+   ========================================================================== */
 .poshtibank-tabs-nav {
 	display: flex;
-	gap: 6px;
-	background: #ffffff;
-	padding: 8px 12px;
-	border-radius: var(--poshtibank-radius);
+	gap: 5px;
+	background: #f1f5f9;
+	padding: 6px;
+	border-radius: 16px;
 	border: 1px solid var(--poshtibank-border);
-	margin-bottom: 20px;
+	margin-bottom: 24px;
 	overflow-x: auto;
-	box-shadow: var(--poshtibank-shadow);
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .poshtibank-tab-link {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	padding: 10px 16px;
-	border-radius: 8px;
+	padding: 10px 18px;
+	border-radius: 11px;
 	color: var(--poshtibank-text-muted);
 	text-decoration: none;
 	font-size: 13px;
 	font-weight: 600;
-	transition: all 0.2s ease;
+	transition: var(--poshtibank-transition);
 	white-space: nowrap;
 }
 
@@ -141,50 +177,81 @@
 	font-size: 18px;
 	width: 18px;
 	height: 18px;
+	transition: transform 0.2s ease;
 }
 
+/* Soft, pleasant hover instead of harsh jump */
 .poshtibank-tab-link:hover {
-	color: var(--poshtibank-primary);
-	background: #f1f5f9;
+	color: var(--poshtibank-text);
+	background: rgba(255, 255, 255, 0.7);
 }
 
 .poshtibank-tab-link.active {
-	color: #ffffff;
-	background: var(--poshtibank-primary);
+	color: var(--poshtibank-primary);
+	background: #ffffff;
+	font-weight: 700;
+	box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.poshtibank-tab-link.active .dashicons {
+	color: var(--poshtibank-primary);
 }
 
 /* Tab Panels */
 .poshtibank-tab-panel {
 	display: none;
+	animation: pbAdminFade 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .poshtibank-tab-panel.active {
 	display: block;
 }
 
-/* Card */
+@keyframes pbAdminFade {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* ==========================================================================
+   Cards
+   ========================================================================== */
 .poshtibank-card {
 	background: #ffffff;
-	border-radius: var(--poshtibank-radius);
+	border-radius: var(--poshtibank-radius-lg);
 	border: 1px solid var(--poshtibank-border);
-	padding: 24px;
+	padding: 26px 28px;
 	margin-bottom: 24px;
 	box-shadow: var(--poshtibank-shadow);
 }
 
 .poshtibank-card-title {
-	margin: 0 0 20px;
-	padding-bottom: 12px;
-	font-size: 16px;
-	font-weight: 700;
+	margin: 0 0 22px;
+	padding-bottom: 14px;
+	font-size: 16.5px;
+	font-weight: 800;
 	border-bottom: 1px solid var(--poshtibank-border);
-	color: #0f172a;
+	color: var(--poshtibank-text);
+	letter-spacing: -0.01em;
 }
 
-/* Grids and Fields */
+.poshtibank-divider {
+	border: 0;
+	border-top: 1px solid var(--poshtibank-border);
+	margin: 26px 0;
+}
+
+/* ==========================================================================
+   Grids and Form Fields
+   ========================================================================== */
 .poshtibank-grid {
 	display: grid;
-	gap: 20px;
+	gap: 22px;
 	margin-bottom: 20px;
 }
 
@@ -208,13 +275,14 @@
 .poshtibank-form-field label {
 	font-weight: 600;
 	font-size: 13px;
-	color: #334155;
+	color: var(--poshtibank-text-secondary);
 }
 
 .poshtibank-form-field .description {
 	font-size: 12px;
 	color: var(--poshtibank-text-muted);
-	margin-top: 2px;
+	margin-top: 3px;
+	line-height: 1.5;
 }
 
 .poshtibank-form-field input[type="text"],
@@ -224,12 +292,14 @@
 .poshtibank-form-field input[type="time"],
 .poshtibank-form-field select,
 .poshtibank-form-field textarea {
-	padding: 8px 12px;
+	padding: 9px 13px;
 	border: 1px solid #cbd5e1;
-	border-radius: 6px;
-	font-size: 13px;
-	transition: border-color 0.2s;
+	border-radius: var(--poshtibank-radius);
+	font-size: 13.5px;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
 	background: #ffffff;
+	font-family: inherit;
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .poshtibank-form-field input:focus,
@@ -237,44 +307,64 @@
 .poshtibank-form-field textarea:focus {
 	border-color: var(--poshtibank-primary);
 	outline: none;
-	box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+	box-shadow: 0 0 0 3px var(--poshtibank-primary-glow);
 }
 
 .poshtibank-input-with-btn {
 	display: flex;
-	gap: 8px;
+	gap: 10px;
 }
 
-/* Form Group with Switch */
+.poshtibank-input-with-btn .button {
+	border-radius: var(--poshtibank-radius);
+	padding: 6px 14px;
+	font-weight: 600;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	transition: var(--poshtibank-transition);
+}
+
+/* ==========================================================================
+   Form Group with Toggle Switch
+   ========================================================================== */
 .poshtibank-form-group {
 	display: flex;
 	align-items: center;
-	gap: 16px;
-	padding: 14px 16px;
+	gap: 18px;
+	padding: 16px 20px;
 	background: #f8fafc;
 	border: 1px solid var(--poshtibank-border);
-	border-radius: 8px;
-	margin-bottom: 20px;
+	border-radius: 14px;
+	margin-bottom: 22px;
+	transition: var(--poshtibank-transition);
+}
+
+.poshtibank-form-group:hover {
+	background: #f1f5f9;
+	border-color: var(--poshtibank-border-hover);
 }
 
 .poshtibank-label-desc strong {
 	display: block;
 	font-size: 14px;
-	color: #0f172a;
+	font-weight: 700;
+	color: var(--poshtibank-text);
 }
 
 .poshtibank-label-desc p {
-	margin: 2px 0 0;
-	font-size: 12px;
+	margin: 3px 0 0;
+	font-size: 12.5px;
 	color: var(--poshtibank-text-muted);
+	line-height: 1.5;
 }
 
-/* Switch UI */
+/* Modern iOS Style Switch */
 .poshtibank-switch {
 	position: relative;
 	display: inline-block;
-	width: 44px;
-	height: 24px;
+	width: 48px;
+	height: 26px;
 	flex-shrink: 0;
 }
 
@@ -292,20 +382,21 @@
 	right: 0;
 	bottom: 0;
 	background-color: #cbd5e1;
-	transition: 0.3s;
-	border-radius: 24px;
+	transition: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+	border-radius: var(--poshtibank-radius-full);
 }
 
 .poshtibank-slider:before {
 	position: absolute;
 	content: "";
-	height: 18px;
-	width: 18px;
+	height: 20px;
+	width: 20px;
 	left: 3px;
 	bottom: 3px;
-	background-color: white;
-	transition: 0.3s;
-	border-radius: 50%;
+	background-color: #ffffff;
+	transition: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+	border-radius: var(--poshtibank-radius-full);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .poshtibank-switch input:checked + .poshtibank-slider {
@@ -313,14 +404,24 @@
 }
 
 .poshtibank-switch input:checked + .poshtibank-slider:before {
-	transform: translateX(20px);
+	transform: translateX(22px);
+}
+
+.poshtibank-switch-inline {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
 }
 
 .poshtibank-switch-sm {
 	position: relative;
 	display: inline-block;
-	width: 36px;
-	height: 20px;
+	width: 38px;
+	height: 22px;
+	flex-shrink: 0;
 }
 
 .poshtibank-switch-sm input {
@@ -330,39 +431,46 @@
 }
 
 .poshtibank-switch-sm .poshtibank-slider:before {
-	height: 14px;
-	width: 14px;
+	height: 16px;
+	width: 16px;
+	left: 3px;
+	bottom: 3px;
 }
 
 .poshtibank-switch-sm input:checked + .poshtibank-slider:before {
 	transform: translateX(16px);
 }
 
-/* Webhook Box */
+/* ==========================================================================
+   Webhook Box & Code Block
+   ========================================================================== */
 .poshtibank-webhook-box {
 	background: #f8fafc;
-	border: 1px solid #cbd5e1;
-	border-radius: 8px;
-	padding: 18px 20px;
-	margin-top: 20px;
+	border: 1px solid var(--poshtibank-border);
+	border-radius: 14px;
+	padding: 20px 22px;
+	margin-top: 22px;
 }
 
 .poshtibank-webhook-box h4 {
 	margin: 0 0 8px;
-	font-size: 14px;
-	color: #0f172a;
+	font-size: 14.5px;
+	font-weight: 700;
+	color: var(--poshtibank-text);
 }
 
 .poshtibank-code-block {
 	display: block;
-	padding: 10px 14px;
-	background: #1e293b;
+	padding: 12px 16px;
+	background: #0f172a;
 	color: #38bdf8;
-	border-radius: 6px;
+	border-radius: var(--poshtibank-radius);
 	font-family: monospace;
 	font-size: 13px;
-	margin: 10px 0 16px;
+	margin: 12px 0 16px;
 	word-break: break-all;
+	border: 1px solid #1e293b;
+	box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .poshtibank-webhook-actions {
@@ -373,72 +481,95 @@
 }
 
 .poshtibank-status-message {
-	margin-top: 12px;
-	padding: 10px 14px;
-	border-radius: 6px;
+	margin-top: 14px;
+	padding: 11px 16px;
+	border-radius: var(--poshtibank-radius);
 	font-size: 13px;
+	font-weight: 500;
 	display: none;
 }
 
 .poshtibank-status-message.success {
-	background: #dcfce7;
-	border: 1px solid #bbf7d0;
-	color: #166534;
+	background: var(--poshtibank-success-bg);
+	border: 1px solid #a7f3d0;
+	color: #065f46;
 }
 
 .poshtibank-status-message.error {
-	background: #fee2e2;
+	background: var(--poshtibank-error-bg);
 	border: 1px solid #fecaca;
 	color: #991b1b;
 }
 
 .poshtibank-status-message.loading {
-	background: #eff6ff;
+	background: var(--poshtibank-primary-light);
 	border: 1px solid #bfdbfe;
-	color: #1d4ed8;
+	color: #1e40af;
 }
 
-/* Schedule Table */
+/* ==========================================================================
+   Schedule Table
+   ========================================================================== */
 .poshtibank-table-schedule {
 	width: 100%;
-	border-collapse: collapse;
-	margin-top: 12px;
+	border-collapse: separate;
+	border-spacing: 0;
+	margin-top: 14px;
+	border: 1px solid var(--poshtibank-border);
+	border-radius: var(--poshtibank-radius);
+	overflow: hidden;
 }
 
 .poshtibank-table-schedule th,
 .poshtibank-table-schedule td {
-	padding: 10px 14px;
+	padding: 12px 16px;
 	text-align: right;
 	border-bottom: 1px solid var(--poshtibank-border);
 }
 
 .poshtibank-table-schedule th {
 	background: #f8fafc;
-	font-size: 12px;
+	font-size: 12.5px;
+	font-weight: 700;
 	color: var(--poshtibank-text-muted);
 }
 
-/* Buttons */
+.poshtibank-table-schedule tr:last-child td {
+	border-bottom: none;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
 .poshtibank-btn {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	padding: 9px 18px;
-	border-radius: 6px;
-	font-size: 13px;
-	font-weight: 600;
+	padding: 10px 20px;
+	border-radius: var(--poshtibank-radius);
+	font-size: 13.5px;
+	font-weight: 700;
 	cursor: pointer;
-	transition: background-color 0.2s;
+	transition: var(--poshtibank-transition);
 	border: none;
+	line-height: 1.4;
+	box-shadow: var(--poshtibank-shadow-sm);
 }
 
 .poshtibank-btn-primary {
 	background: var(--poshtibank-primary);
 	color: #ffffff;
+	box-shadow: 0 4px 12px -2px var(--poshtibank-primary-glow);
 }
 
 .poshtibank-btn-primary:hover {
 	background: var(--poshtibank-primary-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 6px 16px -2px var(--poshtibank-primary-glow);
+}
+
+.poshtibank-btn-primary:active {
+	transform: translateY(0);
 }
 
 .poshtibank-btn .dashicons {
@@ -447,23 +578,27 @@
 	height: 18px;
 }
 
-/* Sticky Action Bar */
+/* ==========================================================================
+   Sticky Action Bar
+   ========================================================================== */
 .poshtibank-sticky-bar {
 	position: sticky;
 	bottom: 20px;
-	background: #ffffff;
-	padding: 14px 20px;
-	border-radius: var(--poshtibank-radius);
+	background: rgba(255, 255, 255, 0.94);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	padding: 15px 24px;
+	border-radius: var(--poshtibank-radius-lg);
 	border: 1px solid var(--poshtibank-border);
-	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--poshtibank-shadow-lg);
 	display: flex;
 	align-items: center;
-	gap: 16px;
+	gap: 18px;
 	z-index: 100;
 }
 
 .poshtibank-save-status {
-	font-size: 13px;
+	font-size: 13.5px;
 	font-weight: 600;
 }
 
@@ -475,39 +610,148 @@
 	color: var(--poshtibank-error);
 }
 
+/* ==========================================================================
+   Live Chats Management Page
+   ========================================================================== */
+.poshtibank-table-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 18px;
+	padding-bottom: 14px;
+	border-bottom: 1px solid var(--poshtibank-border);
+}
+
+.poshtibank-table-header h3 {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 800;
+	color: var(--poshtibank-text);
+}
+
+.poshtibank-table-header .button {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border-radius: var(--poshtibank-radius);
+	padding: 6px 14px;
+	font-weight: 600;
+	transition: var(--poshtibank-transition);
+}
+
+.poshtibank-empty-state {
+	text-align: center;
+	padding: 50px 20px;
+}
+
+.poshtibank-empty-state .dashicons {
+	font-size: 52px;
+	width: 52px;
+	height: 52px;
+	color: #cbd5e1;
+	margin-bottom: 12px;
+}
+
+.poshtibank-empty-state h4 {
+	margin: 0 0 6px;
+	font-size: 16px;
+	font-weight: 700;
+	color: var(--poshtibank-text);
+}
+
+.poshtibank-empty-state p {
+	margin: 0;
+	font-size: 13px;
+	color: var(--poshtibank-text-muted);
+}
+
+.poshtibank-chats-table {
+	border: 1px solid var(--poshtibank-border) !important;
+	border-radius: var(--poshtibank-radius) !important;
+	overflow: hidden !important;
+	border-collapse: separate !important;
+	border-spacing: 0 !important;
+	box-shadow: none !important;
+}
+
+.poshtibank-chats-table thead th {
+	background: #f8fafc !important;
+	color: var(--poshtibank-text-muted) !important;
+	font-weight: 700 !important;
+	font-size: 12.5px !important;
+	padding: 12px 14px !important;
+	border-bottom: 1px solid var(--poshtibank-border) !important;
+}
+
+.poshtibank-chats-table tbody td {
+	padding: 12px 14px !important;
+	vertical-align: middle !important;
+	border-bottom: 1px solid #f1f5f9 !important;
+	font-size: 13px !important;
+	transition: background-color 0.15s ease;
+}
+
+.poshtibank-chats-table tbody tr:hover td {
+	background-color: #fafbfc !important;
+}
+
+.poshtibank-chats-table code {
+	background: #f1f5f9;
+	color: #0f172a;
+	padding: 3px 7px;
+	border-radius: 6px;
+	font-size: 12px;
+}
+
+.poshtibank-chats-table .button-small {
+	border-radius: var(--poshtibank-radius-sm);
+	padding: 3px 10px;
+	font-size: 12px;
+	font-weight: 600;
+	transition: var(--poshtibank-transition);
+}
+
 /* Status Badges */
 .poshtibank-status-badge {
 	display: inline-block;
-	padding: 3px 8px;
-	border-radius: 999px;
-	font-size: 11px;
+	padding: 4px 10px;
+	border-radius: var(--poshtibank-radius-full);
+	font-size: 11.5px;
 	font-weight: 700;
+	line-height: 1;
 }
 
 .badge-open {
-	background: #dcfce7;
-	color: #15803d;
+	background: var(--poshtibank-success-bg);
+	color: #065f46;
+	border: 1px solid #a7f3d0;
 }
 
 .badge-closed {
 	background: #f1f5f9;
-	color: #64748b;
+	color: #475569;
+	border: 1px solid #e2e8f0;
 }
 
 .badge-blocked {
-	background: #fee2e2;
-	color: #b91c1c;
+	background: var(--poshtibank-error-bg);
+	color: #991b1b;
+	border: 1px solid #fecaca;
 }
 
 .poshtibank-topic-tag {
-	background: #f0fdf4;
-	color: #166534;
-	padding: 2px 6px;
-	border-radius: 4px;
-	font-size: 11px;
+	background: #eff6ff;
+	color: #1e40af;
+	padding: 3px 8px;
+	border-radius: var(--poshtibank-radius-sm);
+	font-size: 11.5px;
+	font-weight: 600;
+	border: 1px solid #dbeafe;
 }
 
-/* Modal */
+/* ==========================================================================
+   Chat History Modal
+   ========================================================================== */
 .poshtibank-modal {
 	position: fixed;
 	top: 0;
@@ -526,34 +770,40 @@
 	right: 0;
 	bottom: 0;
 	left: 0;
-	background: rgba(15, 23, 42, 0.6);
-	backdrop-filter: blur(2px);
+	background: rgba(15, 23, 42, 0.55);
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
 }
 
 .poshtibank-modal-content {
 	position: relative;
 	background: #ffffff;
-	border-radius: 12px;
+	border-radius: var(--poshtibank-radius-xl);
 	width: 90%;
-	max-width: 600px;
+	max-width: 620px;
 	max-height: 85vh;
 	display: flex;
 	flex-direction: column;
-	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
 	z-index: 1;
+	overflow: hidden;
+	animation: pbSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .poshtibank-modal-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 16px 20px;
+	padding: 18px 24px;
 	border-bottom: 1px solid var(--poshtibank-border);
+	background: #fafbfc;
 }
 
 .poshtibank-modal-header h3 {
 	margin: 0;
-	font-size: 16px;
+	font-size: 16.5px;
+	font-weight: 800;
+	color: var(--poshtibank-text);
 }
 
 .poshtibank-modal-close {
@@ -562,29 +812,46 @@
 	font-size: 24px;
 	cursor: pointer;
 	color: var(--poshtibank-text-muted);
+	line-height: 1;
+	padding: 4px;
+	border-radius: var(--poshtibank-radius-sm);
+	transition: var(--poshtibank-transition);
+}
+
+.poshtibank-modal-close:hover {
+	color: var(--poshtibank-text);
+	background: #f1f5f9;
 }
 
 .poshtibank-modal-body {
-	padding: 20px;
+	padding: 22px 24px;
 	overflow-y: auto;
 	flex: 1;
+	background: var(--poshtibank-bg);
 }
 
 .poshtibank-modal-footer {
-	padding: 14px 20px;
+	padding: 14px 24px;
 	border-top: 1px solid var(--poshtibank-border);
 	display: flex;
 	justify-content: flex-end;
+	background: #fafbfc;
+}
+
+.poshtibank-modal-footer .button {
+	border-radius: var(--poshtibank-radius);
+	padding: 6px 16px;
+	font-weight: 600;
 }
 
 /* Chat bubble styling in modal */
 .poshtibank-chat-bubble {
 	margin-bottom: 12px;
-	padding: 10px 14px;
-	border-radius: 8px;
-	font-size: 13px;
-	line-height: 1.5;
-	max-width: 80%;
+	padding: 11px 16px;
+	font-size: 13.5px;
+	line-height: 1.6;
+	max-width: 82%;
+	box-shadow: var(--poshtibank-shadow-sm);
 }
 
 .bubble-user {
@@ -592,13 +859,15 @@
 	border: 1px solid #bfdbfe;
 	margin-left: auto;
 	color: #1e3a8a;
+	border-radius: 16px 16px 4px 16px;
 }
 
 .bubble-admin {
-	background: #f0fdf4;
-	border: 1px solid #bbf7d0;
+	background: #ffffff;
+	border: 1px solid var(--poshtibank-border);
 	margin-right: auto;
-	color: #14532d;
+	color: var(--poshtibank-text);
+	border-radius: 16px 16px 16px 4px;
 }
 
 .bubble-ai {
@@ -606,11 +875,14 @@
 	border: 1px solid #f5d0fe;
 	margin-right: auto;
 	color: #701a75;
+	border-radius: 16px 16px 16px 4px;
 }
 
 .bubble-time {
 	display: block;
-	font-size: 10px;
-	opacity: 0.7;
+	font-size: 10.5px;
+	opacity: 0.75;
 	margin-top: 4px;
+	direction: ltr;
+	text-align: left;
 }

@@ -1,7 +1,7 @@
 /**
  * Poshtibank Frontend Widget Stylesheet
  *
- * Ultra-lightweight, CSS Variables, Full RTL support, Mobile Responsive
+ * Modern, Ultra-sleek, CSS Variables, Fluid Micro-interactions, Full RTL support, Mobile Responsive
  * @package Poshtibank
  */
 
@@ -9,15 +9,32 @@
 	--pb-primary: #2563eb;
 	--pb-primary-hover: #1d4ed8;
 	--pb-primary-light: #eff6ff;
+	--pb-primary-glow: rgba(37, 99, 235, 0.35);
 	--pb-bg: #ffffff;
 	--pb-surface: #f8fafc;
+	--pb-surface-card: #ffffff;
+	--pb-surface-subtle: #f1f5f9;
 	--pb-border: #e2e8f0;
+	--pb-border-subtle: #f1f5f9;
 	--pb-text: #0f172a;
+	--pb-text-secondary: #475569;
 	--pb-text-muted: #64748b;
-	--pb-success: #16a34a;
-	--pb-danger: #dc2626;
-	--pb-radius: 16px;
-	--pb-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+	--pb-text-light: #94a3b8;
+	--pb-success: #10b981;
+	--pb-danger: #ef4444;
+	--pb-warning: #f59e0b;
+	--pb-radius-sm: 8px;
+	--pb-radius-md: 12px;
+	--pb-radius-lg: 16px;
+	--pb-radius-xl: 22px;
+	--pb-radius-full: 9999px;
+	--pb-radius: var(--pb-radius-xl);
+	--pb-shadow-sm: 0 2px 6px -1px rgba(15, 23, 42, 0.06), 0 1px 3px -1px rgba(15, 23, 42, 0.04);
+	--pb-shadow-md: 0 8px 20px -3px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+	--pb-shadow-lg: 0 20px 35px -8px rgba(15, 23, 42, 0.14), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
+	--pb-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.18), 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15, 23, 42, 0.05);
+	--pb-ease: cubic-bezier(0.16, 1, 0.3, 1);
+	--pb-transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 	--pb-zindex: 999999;
 }
 
@@ -25,11 +42,19 @@
 	position: fixed;
 	bottom: 24px;
 	z-index: var(--pb-zindex);
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "IRANSans", "Vazirmatn", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 	font-size: 14px;
 	line-height: 1.5;
 	direction: rtl;
 	box-sizing: border-box;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+
+	/* Dynamic color-mix tokens supporting custom branding */
+	--pb-primary-hover: color-mix(in srgb, var(--pb-primary) 85%, #000);
+	--pb-primary-light: color-mix(in srgb, var(--pb-primary) 10%, #fff);
+	--pb-primary-glow: color-mix(in srgb, var(--pb-primary) 32%, transparent);
+	--pb-primary-glow-strong: color-mix(in srgb, var(--pb-primary) 50%, transparent);
 }
 
 #poshtibank-widget-root *,
@@ -49,94 +74,123 @@
 	right: auto;
 }
 
-/* Launcher Floating Action Button */
+/* ==========================================================================
+   Launcher Floating Action Button (FAB)
+   ========================================================================== */
 .poshtibank-launcher {
-	width: 60px;
-	height: 60px;
-	border-radius: 50%;
+	width: 62px;
+	height: 62px;
+	border-radius: var(--pb-radius-full);
 	background: var(--pb-primary);
+	background: linear-gradient(135deg, var(--pb-primary) 0%, color-mix(in srgb, var(--pb-primary) 88%, #000) 100%);
 	color: #ffffff;
 	border: none;
 	cursor: pointer;
-	box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+	box-shadow: 0 8px 24px -4px var(--pb-primary-glow), 0 4px 10px rgba(0, 0, 0, 0.08);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	position: relative;
-	transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+	transition: transform 0.28s var(--pb-ease), box-shadow 0.28s var(--pb-ease);
 	outline: none;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
 }
 
+/* Subtle, pleasing lift instead of harsh scale jump */
 .poshtibank-launcher:hover {
-	transform: scale(1.06);
-	box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+	transform: translateY(-3px);
+	box-shadow: 0 14px 30px -4px var(--pb-primary-glow-strong), 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+.poshtibank-launcher:active {
+	transform: translateY(-1px) scale(0.98);
+	box-shadow: 0 6px 16px -2px var(--pb-primary-glow), 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .poshtibank-launcher-icon {
-	width: 26px;
-	height: 26px;
+	width: 28px;
+	height: 28px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	transition: transform 0.25s var(--pb-ease), opacity 0.2s ease;
 }
 
 .poshtibank-launcher-icon svg {
 	width: 26px;
 	height: 26px;
-	stroke-width: 2;
+	stroke-width: 2.1;
 }
 
 /* Unread Badge */
 .poshtibank-badge {
 	position: absolute;
-	top: -4px;
-	left: -4px;
+	top: -3px;
+	left: -3px;
 	background: var(--pb-danger);
+	background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 	color: #ffffff;
 	font-size: 11px;
 	font-weight: 700;
-	min-width: 20px;
-	height: 20px;
-	padding: 0 6px;
-	border-radius: 10px;
+	min-width: 22px;
+	height: 22px;
+	padding: 0 7px;
+	border-radius: var(--pb-radius-full);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border: 2px solid #ffffff;
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+	border: 2.5px solid #ffffff;
+	box-shadow: 0 3px 8px rgba(239, 68, 68, 0.45);
+	line-height: 1;
+	animation: pbBadgePulse 2s infinite ease-in-out;
 }
 
-/* Main Chat Window */
+@keyframes pbBadgePulse {
+	0%, 100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.08);
+	}
+}
+
+/* ==========================================================================
+   Main Chat Window
+   ========================================================================== */
 .poshtibank-window {
 	position: absolute;
-	bottom: 75px;
-	width: 380px;
-	height: 580px;
-	max-height: calc(85vh - 80px);
+	bottom: 78px;
+	width: 385px;
+	height: 590px;
+	max-height: calc(85vh - 85px);
 	background: var(--pb-bg);
 	border-radius: var(--pb-radius);
 	box-shadow: var(--pb-shadow);
-	border: 1px solid var(--pb-border);
+	border: 1px solid rgba(226, 232, 240, 0.85);
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	animation: pbSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+	animation: pbSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+	transform-origin: bottom center;
 }
 
 #poshtibank-widget-root.pos-bottom-right .poshtibank-window {
 	right: 0;
 	left: auto;
+	transform-origin: bottom right;
 }
 
 #poshtibank-widget-root.pos-bottom-left .poshtibank-window {
 	left: 0;
 	right: auto;
+	transform-origin: bottom left;
 }
 
 @keyframes pbSlideUp {
 	from {
 		opacity: 0;
-		transform: translateY(20px) scale(0.96);
+		transform: translateY(16px) scale(0.97);
 	}
 	to {
 		opacity: 1;
@@ -144,15 +198,21 @@
 	}
 }
 
-/* Header */
+/* ==========================================================================
+   Window Header
+   ========================================================================== */
 .poshtibank-win-header {
-	background: linear-gradient(135deg, var(--pb-primary) 0%, #1e40af 100%);
+	background: var(--pb-primary);
+	background: linear-gradient(135deg, var(--pb-primary) 0%, color-mix(in srgb, var(--pb-primary) 82%, #0f172a) 100%);
 	color: #ffffff;
-	padding: 14px 18px;
+	padding: 15px 18px;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	flex-shrink: 0;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+	position: relative;
+	z-index: 5;
 }
 
 .poshtibank-header-user {
@@ -163,15 +223,18 @@
 
 .poshtibank-avatar {
 	position: relative;
-	width: 40px;
-	height: 40px;
-	background: rgba(255, 255, 255, 0.2);
-	border-radius: 50%;
+	width: 42px;
+	height: 42px;
+	background: rgba(255, 255, 255, 0.22);
+	backdrop-filter: blur(8px);
+	border-radius: var(--pb-radius-full);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	color: #ffffff;
 	flex-shrink: 0;
+	border: 1.5px solid rgba(255, 255, 255, 0.35);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .poshtibank-avatar svg {
@@ -181,18 +244,19 @@
 
 .poshtibank-status-indicator {
 	position: absolute;
-	bottom: 0;
-	right: 0;
+	bottom: -1px;
+	right: -1px;
 	width: 12px;
 	height: 12px;
 	background: #cbd5e1;
-	border: 2px solid #ffffff;
-	border-radius: 50%;
+	border: 2.5px solid #ffffff;
+	border-radius: var(--pb-radius-full);
+	transition: background-color 0.2s ease;
 }
 
 .poshtibank-status-indicator.online {
 	background: var(--pb-success);
-	box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.4);
+	box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
 }
 
 .poshtibank-win-titles h4 {
@@ -200,80 +264,127 @@
 	font-size: 15px;
 	font-weight: 700;
 	color: #ffffff;
+	letter-spacing: -0.01em;
+	line-height: 1.3;
 }
 
 .poshtibank-win-status {
-	font-size: 11px;
-	opacity: 0.9;
+	font-size: 11.5px;
+	opacity: 0.88;
 	display: block;
-	margin-top: 1px;
+	margin-top: 2px;
+	font-weight: 400;
+}
+
+.poshtibank-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
 }
 
 .poshtibank-btn-icon {
-	background: none;
+	background: rgba(255, 255, 255, 0.1);
 	border: none;
 	color: #ffffff;
 	cursor: pointer;
-	padding: 4px;
-	border-radius: 6px;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border-radius: var(--pb-radius-md);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	opacity: 0.85;
-	transition: opacity 0.2s, background-color 0.2s;
+	opacity: 0.9;
+	transition: var(--pb-transition);
 }
 
 .poshtibank-btn-icon:hover {
 	opacity: 1;
-	background: rgba(255, 255, 255, 0.15);
+	background: rgba(255, 255, 255, 0.22);
+	transform: translateY(-1px);
+}
+
+.poshtibank-btn-icon:active {
+	transform: translateY(0);
 }
 
 .poshtibank-btn-icon svg {
-	width: 20px;
-	height: 20px;
+	width: 18px;
+	height: 18px;
 }
 
-/* Views Container */
+/* ==========================================================================
+   Views Container
+   ========================================================================== */
 .poshtibank-view {
 	display: none;
 	flex-direction: column;
 	flex: 1;
 	overflow-y: auto;
 	background: var(--pb-surface);
+	scroll-behavior: smooth;
 }
 
 .poshtibank-view.active {
 	display: flex;
 }
 
-/* View 1: Hub & FAQ */
+/* Custom Scrollbars */
+.poshtibank-view::-webkit-scrollbar,
+.poshtibank-messages-stream::-webkit-scrollbar {
+	width: 5px;
+}
+
+.poshtibank-view::-webkit-scrollbar-track,
+.poshtibank-messages-stream::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.poshtibank-view::-webkit-scrollbar-thumb,
+.poshtibank-messages-stream::-webkit-scrollbar-thumb {
+	background: rgba(148, 163, 184, 0.35);
+	border-radius: var(--pb-radius-full);
+}
+
+.poshtibank-view::-webkit-scrollbar-thumb:hover,
+.poshtibank-messages-stream::-webkit-scrollbar-thumb:hover {
+	background: rgba(100, 116, 139, 0.55);
+}
+
+/* ==========================================================================
+   View 1: Hub & FAQ
+   ========================================================================== */
 .poshtibank-hub-hero {
-	padding: 24px 20px 20px;
+	padding: 26px 22px 22px;
 	text-align: center;
 	background: #ffffff;
 	border-bottom: 1px solid var(--pb-border);
+	box-shadow: 0 4px 12px -4px rgba(15, 23, 42, 0.03);
 }
 
 .poshtibank-hub-hero h3 {
-	margin: 0 0 6px;
-	font-size: 17px;
+	margin: 0 0 8px;
+	font-size: 17.5px;
 	font-weight: 800;
 	color: var(--pb-text);
+	letter-spacing: -0.01em;
 }
 
 .poshtibank-hub-hero p {
-	margin: 0 0 16px;
+	margin: 0 0 18px;
 	font-size: 13px;
 	color: var(--pb-text-muted);
+	line-height: 1.55;
 }
 
 .poshtibank-btn-primary-hub {
 	width: 100%;
-	padding: 12px 18px;
+	padding: 13px 20px;
 	background: var(--pb-primary);
+	background: linear-gradient(135deg, var(--pb-primary) 0%, color-mix(in srgb, var(--pb-primary) 88%, #000) 100%);
 	color: #ffffff;
 	border: none;
-	border-radius: 12px;
+	border-radius: var(--pb-radius-md);
 	font-size: 14px;
 	font-weight: 700;
 	cursor: pointer;
@@ -281,48 +392,63 @@
 	align-items: center;
 	justify-content: center;
 	gap: 10px;
-	box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
-	transition: background-color 0.2s;
+	box-shadow: 0 6px 18px -2px var(--pb-primary-glow), 0 2px 6px rgba(0, 0, 0, 0.05);
+	transition: var(--pb-transition);
 }
 
 .poshtibank-btn-primary-hub:hover {
-	background: var(--pb-primary-hover);
+	transform: translateY(-2px);
+	box-shadow: 0 10px 24px -2px var(--pb-primary-glow-strong), 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.poshtibank-btn-primary-hub:active {
+	transform: translateY(0);
 }
 
 .poshtibank-btn-primary-hub svg {
-	width: 18px;
-	height: 18px;
+	width: 19px;
+	height: 19px;
 }
 
 .poshtibank-hub-section {
-	padding: 16px 20px;
+	padding: 18px 20px;
 }
 
 .poshtibank-hub-section h5 {
-	margin: 0 0 10px;
-	font-size: 13px;
+	margin: 0 0 12px;
+	font-size: 12.5px;
 	font-weight: 700;
 	color: var(--pb-text-muted);
-	text-transform: uppercase;
+	letter-spacing: 0.03em;
 }
 
 /* FAQ Accordion */
 .poshtibank-faq-list {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 9px;
 }
 
 .poshtibank-faq-item {
 	background: #ffffff;
 	border: 1px solid var(--pb-border);
-	border-radius: 10px;
+	border-radius: var(--pb-radius-md);
 	overflow: hidden;
-	transition: border-color 0.2s;
+	box-shadow: var(--pb-shadow-sm);
+	transition: border-color 0.22s var(--pb-ease), box-shadow 0.22s var(--pb-ease);
+}
+
+.poshtibank-faq-item:hover {
+	border-color: #cbd5e1;
+	box-shadow: var(--pb-shadow-md);
+}
+
+.poshtibank-faq-item.open {
+	border-color: color-mix(in srgb, var(--pb-primary) 40%, var(--pb-border));
 }
 
 .poshtibank-faq-q {
-	padding: 12px 14px;
+	padding: 13px 15px;
 	font-size: 13px;
 	font-weight: 600;
 	color: var(--pb-text);
@@ -330,30 +456,41 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	transition: background-color 0.15s ease;
+	user-select: none;
+}
+
+.poshtibank-faq-q:hover {
+	background-color: #fafbfc;
 }
 
 .poshtibank-faq-q svg {
 	width: 16px;
 	height: 16px;
 	color: var(--pb-text-muted);
-	transition: transform 0.2s;
+	transition: transform 0.24s var(--pb-ease);
+	flex-shrink: 0;
+	margin-right: 8px;
 }
 
 .poshtibank-faq-item.open .poshtibank-faq-q svg {
 	transform: rotate(180deg);
+	color: var(--pb-primary);
 }
 
 .poshtibank-faq-a {
 	display: none;
-	padding: 0 14px 12px;
-	font-size: 12px;
-	line-height: 1.6;
-	color: var(--pb-text-muted);
-	border-top: 1px solid #f1f5f9;
+	padding: 0 15px 14px;
+	font-size: 12.5px;
+	line-height: 1.65;
+	color: var(--pb-text-secondary);
+	border-top: 1px solid #f8fafc;
+	background: #ffffff;
 }
 
 .poshtibank-faq-item.open .poshtibank-faq-a {
 	display: block;
+	animation: pbFadeIn 0.2s ease;
 }
 
 /* Channels Grid */
@@ -366,43 +503,56 @@
 .poshtibank-channel-card {
 	background: #ffffff;
 	border: 1px solid var(--pb-border);
-	border-radius: 10px;
-	padding: 10px 12px;
+	border-radius: var(--pb-radius-md);
+	padding: 11px 13px;
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 11px;
 	text-decoration: none;
 	color: var(--pb-text);
-	font-size: 12px;
+	font-size: 12.5px;
 	font-weight: 600;
-	transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+	box-shadow: var(--pb-shadow-sm);
+	transition: var(--pb-transition);
 }
 
 .poshtibank-channel-card:hover {
 	transform: translateY(-2px);
-	border-color: var(--pb-primary);
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+	border-color: color-mix(in srgb, var(--pb-primary) 35%, var(--pb-border));
+	box-shadow: 0 8px 18px -3px rgba(15, 23, 42, 0.08);
+}
+
+.poshtibank-channel-card:active {
+	transform: translateY(0);
 }
 
 .poshtibank-channel-icon {
-	width: 28px;
-	height: 28px;
-	border-radius: 8px;
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	color: #ffffff;
 	flex-shrink: 0;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
-/* Pre-chat Form */
+.poshtibank-channel-icon svg {
+	width: 17px;
+	height: 17px;
+}
+
+/* ==========================================================================
+   View 2: Pre-chat Form
+   ========================================================================== */
 .poshtibank-prechat-card {
-	padding: 24px 20px;
+	padding: 26px 22px;
 	background: #ffffff;
 	margin: auto 16px;
-	border-radius: 14px;
+	border-radius: var(--pb-radius-lg);
 	border: 1px solid var(--pb-border);
-	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+	box-shadow: var(--pb-shadow-md);
 }
 
 .poshtibank-prechat-card h4 {
@@ -413,16 +563,17 @@
 }
 
 .poshtibank-prechat-card p {
-	margin: 0 0 16px;
-	font-size: 12px;
+	margin: 0 0 18px;
+	font-size: 12.5px;
 	color: var(--pb-text-muted);
+	line-height: 1.5;
 }
 
 .poshtibank-input-group {
 	margin-bottom: 14px;
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 5px;
 }
 
 .poshtibank-input-group label {
@@ -431,63 +582,88 @@
 	color: #334155;
 }
 
+.poshtibank-input-group label .required {
+	color: var(--pb-danger);
+}
+
 .poshtibank-input-group input {
-	padding: 10px 12px;
-	border: 1px solid var(--pb-border);
-	border-radius: 8px;
+	padding: 11px 13px;
+	border: 1px solid #cbd5e1;
+	border-radius: var(--pb-radius-md);
 	font-size: 13px;
 	outline: none;
-	transition: border-color 0.2s;
+	background: #ffffff;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+	font-family: inherit;
 }
 
 .poshtibank-input-group input:focus {
 	border-color: var(--pb-primary);
+	box-shadow: 0 0 0 3px var(--pb-primary-glow);
 }
 
 .poshtibank-form-error {
-	padding: 8px 12px;
+	padding: 9px 13px;
 	background: #fef2f2;
 	color: var(--pb-danger);
-	border-radius: 6px;
+	border-radius: var(--pb-radius-sm);
 	font-size: 12px;
 	margin-bottom: 12px;
+	border: 1px solid #fee2e2;
+	font-weight: 500;
 }
 
 .poshtibank-btn-submit {
 	width: 100%;
-	padding: 11px;
+	padding: 12px;
 	background: var(--pb-primary);
 	color: #ffffff;
 	border: none;
-	border-radius: 8px;
-	font-size: 13px;
+	border-radius: var(--pb-radius-md);
+	font-size: 13.5px;
 	font-weight: 700;
 	cursor: pointer;
 	margin-top: 6px;
+	box-shadow: 0 4px 12px -2px var(--pb-primary-glow);
+	transition: var(--pb-transition);
 }
 
-/* Chat Messages Stream */
+.poshtibank-btn-submit:hover {
+	background: var(--pb-primary-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 6px 16px -2px var(--pb-primary-glow-strong);
+}
+
+.poshtibank-btn-submit:active {
+	transform: translateY(0);
+}
+
+/* ==========================================================================
+   View 3: Chat Messages Stream
+   ========================================================================== */
 .poshtibank-messages-stream {
 	flex: 1;
 	overflow-y: auto;
-	padding: 16px 14px;
+	padding: 18px 16px;
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 12px;
+	background: var(--pb-surface);
 }
 
 .poshtibank-chat-date-separator {
 	text-align: center;
-	margin: 6px 0 12px;
+	margin: 4px 0 10px;
 }
 
 .poshtibank-chat-date-separator span {
-	background: #e2e8f0;
+	background: #f1f5f9;
 	color: #64748b;
 	font-size: 11px;
-	padding: 3px 10px;
-	border-radius: 999px;
+	padding: 4px 12px;
+	border-radius: var(--pb-radius-full);
 	font-weight: 600;
+	border: 1px solid #e2e8f0;
 }
 
 /* Message Bubble */
@@ -496,7 +672,7 @@
 	flex-direction: column;
 	max-width: 82%;
 	position: relative;
-	animation: pbFadeIn 0.2s ease;
+	animation: pbFadeIn 0.22s ease-out;
 }
 
 @keyframes pbFadeIn {
@@ -510,77 +686,88 @@
 	}
 }
 
-/* User Message Bubble */
+/* User Message Bubble - smooth continuous curves */
 .poshtibank-msg.msg-user {
 	align-self: flex-start;
 	background: var(--pb-primary);
+	background: linear-gradient(135deg, var(--pb-primary) 0%, color-mix(in srgb, var(--pb-primary) 90%, #0f172a) 100%);
 	color: #ffffff;
-	border-radius: 14px 14px 2px 14px;
-	padding: 10px 14px;
-	box-shadow: 0 2px 4px rgba(37, 99, 235, 0.15);
+	border-radius: 18px 18px 4px 18px;
+	padding: 11px 15px;
+	box-shadow: 0 4px 14px -3px var(--pb-primary-glow), 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
-/* Admin Message Bubble */
+/* Admin Message Bubble - crisp white surface with soft border & shadow */
 .poshtibank-msg.msg-admin {
 	align-self: flex-end;
 	background: #ffffff;
 	color: var(--pb-text);
-	border: 1px solid var(--pb-border);
-	border-radius: 14px 14px 14px 2px;
-	padding: 10px 14px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+	border: 1px solid rgba(226, 232, 240, 0.9);
+	border-radius: 18px 18px 18px 4px;
+	padding: 11px 15px;
+	box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
 }
 
-/* AI Message Bubble */
+/* AI Message Bubble - modern subtle violet/indigo aura */
 .poshtibank-msg.msg-ai {
 	align-self: flex-end;
-	background: #fdf4ff;
-	color: #701a75;
-	border: 1px solid #f5d0fe;
-	border-radius: 14px 14px 14px 2px;
-	padding: 10px 14px;
+	background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+	color: #4a044e;
+	border: 1px solid #f0abfc;
+	border-radius: 18px 18px 18px 4px;
+	padding: 11px 15px;
+	box-shadow: 0 4px 14px -2px rgba(217, 70, 239, 0.12);
 }
 
-/* System Message Bubble */
+/* System Message Bubble - clean badge style */
 .poshtibank-msg.msg-system {
 	align-self: center;
 	background: #fffbeb;
 	color: #92400e;
 	border: 1px solid #fef3c7;
-	border-radius: 10px;
-	padding: 8px 12px;
-	font-size: 12px;
+	border-radius: var(--pb-radius-full);
+	padding: 6px 14px;
+	font-size: 11.5px;
 	text-align: center;
+	box-shadow: var(--pb-shadow-sm);
 }
 
 .poshtibank-msg-sender {
 	font-size: 11px;
 	font-weight: 700;
-	margin-bottom: 2px;
-	opacity: 0.9;
+	margin-bottom: 3px;
+	opacity: 0.85;
+}
+
+.msg-ai .poshtibank-msg-sender {
+	color: #86198f;
+	display: flex;
+	align-items: center;
+	gap: 4px;
 }
 
 .poshtibank-msg-content {
 	font-size: 13px;
-	line-height: 1.6;
+	line-height: 1.62;
 	word-break: break-word;
 }
 
 .poshtibank-msg-time {
 	font-size: 10px;
-	margin-top: 4px;
-	opacity: 0.7;
+	margin-top: 5px;
+	opacity: 0.75;
 	text-align: left;
 	direction: ltr;
+	font-weight: 500;
 }
 
 /* Typing Indicator */
 .poshtibank-typing {
 	display: flex;
 	align-items: center;
-	gap: 4px;
-	padding: 6px 16px;
-	font-size: 11px;
+	gap: 5px;
+	padding: 8px 18px;
+	font-size: 11.5px;
 	color: var(--pb-text-muted);
 }
 
@@ -588,7 +775,7 @@
 	width: 6px;
 	height: 6px;
 	background: var(--pb-text-muted);
-	border-radius: 50%;
+	border-radius: var(--pb-radius-full);
 	display: inline-block;
 	animation: pbBounce 1.4s infinite ease-in-out both;
 }
@@ -601,7 +788,9 @@
 	40% { transform: scale(1.0); }
 }
 
-/* Input Bar */
+/* ==========================================================================
+   Input Bar Area
+   ========================================================================== */
 .poshtibank-input-bar {
 	position: relative;
 	background: #ffffff;
@@ -609,33 +798,41 @@
 	padding: 10px 14px;
 	display: flex;
 	align-items: flex-end;
-	gap: 6px;
+	gap: 8px;
 	flex-shrink: 0;
+	box-shadow: 0 -2px 10px rgba(15, 23, 42, 0.02);
 }
 
 .poshtibank-input-tools {
 	display: flex;
 	align-items: center;
-	gap: 2px;
-	margin-bottom: 4px;
+	gap: 3px;
+	margin-bottom: 3px;
 }
 
 .poshtibank-btn-tool {
 	background: none;
 	border: none;
-	color: var(--pb-text-muted);
-	padding: 6px;
-	border-radius: 8px;
+	color: #64748b;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border-radius: 9px;
 	cursor: pointer;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	transition: color 0.2s, background-color 0.2s;
+	transition: var(--pb-transition);
 }
 
 .poshtibank-btn-tool:hover {
 	color: var(--pb-primary);
 	background: var(--pb-primary-light);
+	transform: translateY(-1px);
+}
+
+.poshtibank-btn-tool:active {
+	transform: translateY(0);
 }
 
 .poshtibank-btn-tool svg {
@@ -643,7 +840,68 @@
 	height: 18px;
 }
 
-/* Voice Recording Bar Overlay */
+.poshtibank-input-bar textarea {
+	flex: 1;
+	border: 1px solid var(--pb-border);
+	border-radius: 14px;
+	padding: 9px 14px;
+	font-size: 13px;
+	resize: none;
+	max-height: 110px;
+	outline: none;
+	line-height: 1.45;
+	font-family: inherit;
+	background: #f8fafc;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.poshtibank-input-bar textarea:focus {
+	background: #ffffff;
+	border-color: var(--pb-primary);
+	box-shadow: 0 0 0 3px var(--pb-primary-glow);
+}
+
+.poshtibank-input-actions {
+	display: flex;
+	align-items: center;
+	margin-bottom: 2px;
+}
+
+.poshtibank-btn-send {
+	width: 38px;
+	height: 38px;
+	border-radius: var(--pb-radius-full);
+	background: var(--pb-primary);
+	background: linear-gradient(135deg, var(--pb-primary) 0%, color-mix(in srgb, var(--pb-primary) 85%, #000) 100%);
+	color: #ffffff;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	box-shadow: 0 4px 12px -2px var(--pb-primary-glow);
+	transition: var(--pb-transition);
+}
+
+.poshtibank-btn-send:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 6px 16px -2px var(--pb-primary-glow-strong);
+}
+
+.poshtibank-btn-send:active {
+	transform: translateY(0) scale(0.96);
+}
+
+.poshtibank-btn-send svg {
+	width: 17px;
+	height: 17px;
+	transform: rotate(180deg); /* Adjust for RTL */
+}
+
+/* ==========================================================================
+   Voice Recording Bar Overlay
+   ========================================================================== */
 .poshtibank-voice-bar {
 	position: absolute;
 	top: 0;
@@ -656,25 +914,26 @@
 	justify-content: space-between;
 	padding: 0 16px;
 	z-index: 10;
+	border-radius: 0;
 	animation: pbFadeIn 0.2s ease;
 }
 
 .poshtibank-voice-rec-dot {
-	width: 12px;
-	height: 12px;
+	width: 11px;
+	height: 11px;
 	background: #dc2626;
-	border-radius: 50%;
-	animation: pbRecPulse 1.2s infinite;
+	border-radius: var(--pb-radius-full);
+	animation: pbRecPulse 1.3s infinite;
 }
 
 @keyframes pbRecPulse {
 	0% {
 		transform: scale(0.95);
-		box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+		box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.65);
 	}
 	70% {
-		transform: scale(1.1);
-		box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+		transform: scale(1.05);
+		box-shadow: 0 0 0 7px rgba(220, 38, 38, 0);
 	}
 	100% {
 		transform: scale(0.95);
@@ -698,14 +957,14 @@
 .poshtibank-btn-vaction {
 	width: 34px;
 	height: 34px;
-	border-radius: 50%;
+	border-radius: var(--pb-radius-full);
 	border: none;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
 	color: #ffffff;
-	transition: transform 0.15s ease;
+	transition: var(--pb-transition);
 }
 
 .poshtibank-btn-vaction.btn-cancel {
@@ -715,17 +974,18 @@
 
 .poshtibank-btn-vaction.btn-cancel:hover {
 	background: #fecaca;
-	transform: scale(1.05);
+	transform: translateY(-1px);
 }
 
 .poshtibank-btn-vaction.btn-confirm {
 	background: var(--pb-primary);
 	color: #ffffff;
+	box-shadow: 0 3px 8px -1px var(--pb-primary-glow);
 }
 
 .poshtibank-btn-vaction.btn-confirm:hover {
 	background: var(--pb-primary-hover);
-	transform: scale(1.05);
+	transform: translateY(-1px);
 }
 
 .poshtibank-btn-vaction svg {
@@ -733,21 +993,23 @@
 	height: 16px;
 }
 
-/* Rich Media Message Bubbles */
+/* ==========================================================================
+   Rich Media Message Bubbles
+   ========================================================================== */
 
 /* Voice Audio Player */
 .poshtibank-audio-player {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	min-width: 200px;
-	padding: 4px 0;
+	gap: 12px;
+	min-width: 210px;
+	padding: 5px 0;
 }
 
 .poshtibank-audio-play-btn {
-	width: 32px;
-	height: 32px;
-	border-radius: 50%;
+	width: 34px;
+	height: 34px;
+	border-radius: var(--pb-radius-full);
 	background: rgba(0, 0, 0, 0.08);
 	border: none;
 	cursor: pointer;
@@ -756,17 +1018,26 @@
 	justify-content: center;
 	color: inherit;
 	flex-shrink: 0;
-	transition: background-color 0.2s;
+	transition: var(--pb-transition);
+}
+
+.poshtibank-audio-play-btn:hover {
+	background: rgba(0, 0, 0, 0.14);
+	transform: scale(1.04);
 }
 
 .msg-user .poshtibank-audio-play-btn {
-	background: rgba(255, 255, 255, 0.25);
+	background: rgba(255, 255, 255, 0.28);
 	color: #ffffff;
 }
 
+.msg-user .poshtibank-audio-play-btn:hover {
+	background: rgba(255, 255, 255, 0.38);
+}
+
 .poshtibank-audio-play-btn svg {
-	width: 14px;
-	height: 14px;
+	width: 15px;
+	height: 15px;
 }
 
 .poshtibank-audio-track {
@@ -778,22 +1049,24 @@
 
 .poshtibank-audio-progress {
 	width: 100%;
-	height: 4px;
-	background: rgba(0, 0, 0, 0.15);
-	border-radius: 2px;
+	height: 5px;
+	background: rgba(0, 0, 0, 0.12);
+	border-radius: var(--pb-radius-full);
 	cursor: pointer;
 	position: relative;
+	overflow: hidden;
 }
 
 .msg-user .poshtibank-audio-progress {
-	background: rgba(255, 255, 255, 0.35);
+	background: rgba(255, 255, 255, 0.3);
 }
 
 .poshtibank-audio-progress-bar {
 	height: 100%;
 	background: var(--pb-primary);
-	border-radius: 2px;
+	border-radius: var(--pb-radius-full);
 	width: 0%;
+	transition: width 0.1s linear;
 }
 
 .msg-user .poshtibank-audio-progress-bar {
@@ -801,141 +1074,103 @@
 }
 
 .poshtibank-audio-time {
-	font-size: 10px;
+	font-size: 10.5px;
 	direction: ltr;
-	opacity: 0.8;
+	opacity: 0.82;
+	font-weight: 500;
 }
 
 /* Image Message Bubble */
 .poshtibank-msg-image {
-	max-width: 220px;
-	border-radius: 10px;
+	max-width: 230px;
+	border-radius: var(--pb-radius-md);
 	overflow: hidden;
 	cursor: pointer;
 	margin-bottom: 4px;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 .poshtibank-msg-image img {
 	width: 100%;
 	height: auto;
 	display: block;
-	transition: transform 0.2s;
+	transition: opacity 0.2s ease, filter 0.2s ease;
 }
 
 .poshtibank-msg-image img:hover {
-	transform: scale(1.02);
+	opacity: 0.95;
+	filter: brightness(0.97);
 }
 
 /* Document/File Bubble */
 .poshtibank-msg-file {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding: 4px 0;
+	gap: 11px;
+	padding: 5px 0;
 	text-decoration: none;
 	color: inherit;
 }
 
 .poshtibank-file-icon {
-	width: 32px;
-	height: 32px;
-	background: rgba(0, 0, 0, 0.08);
-	border-radius: 8px;
+	width: 36px;
+	height: 36px;
+	background: rgba(0, 0, 0, 0.07);
+	border-radius: 10px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	flex-shrink: 0;
+	transition: var(--pb-transition);
 }
 
 .msg-user .poshtibank-file-icon {
-	background: rgba(255, 255, 255, 0.2);
+	background: rgba(255, 255, 255, 0.22);
 }
 
 .poshtibank-file-icon svg {
-	width: 18px;
-	height: 18px;
+	width: 19px;
+	height: 19px;
 }
 
 .poshtibank-file-info {
 	display: flex;
 	flex-direction: column;
+	gap: 2px;
 }
 
 .poshtibank-file-name {
-	font-size: 12px;
+	font-size: 12.5px;
 	font-weight: 700;
 	word-break: break-all;
 }
 
 .poshtibank-file-size {
-	font-size: 10px;
-	opacity: 0.7;
+	font-size: 10.5px;
+	opacity: 0.75;
 	direction: ltr;
 }
 
-.poshtibank-input-bar textarea {
-	flex: 1;
-	border: 1px solid var(--pb-border);
-	border-radius: 10px;
-	padding: 8px 12px;
-	font-size: 13px;
-	resize: none;
-	max-height: 100px;
-	outline: none;
-	line-height: 1.4;
-	font-family: inherit;
-	transition: border-color 0.2s;
-}
-
-.poshtibank-input-bar textarea:focus {
-	border-color: var(--pb-primary);
-}
-
-.poshtibank-btn-send {
-	width: 38px;
-	height: 38px;
-	border-radius: 10px;
-	background: var(--pb-primary);
-	color: #ffffff;
-	border: none;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	transition: background-color 0.2s, transform 0.1s;
-}
-
-.poshtibank-btn-send:hover {
-	background: var(--pb-primary-hover);
-}
-
-.poshtibank-btn-send:active {
-	transform: scale(0.95);
-}
-
-.poshtibank-btn-send svg {
-	width: 18px;
-	height: 18px;
-	transform: rotate(180deg); /* Adjust for RTL */
-}
-
-/* WooCommerce Rich Cards (Phase 6) */
-
-/* Product Card */
+/* WooCommerce Product Card */
 .poshtibank-product-card {
 	background: #ffffff;
 	border: 1px solid var(--pb-border);
-	border-radius: 12px;
+	border-radius: var(--pb-radius-lg);
 	overflow: hidden;
-	margin-top: 4px;
-	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+	margin-top: 5px;
+	box-shadow: var(--pb-shadow-sm);
 	max-width: 250px;
+	transition: var(--pb-transition);
+}
+
+.poshtibank-product-card:hover {
+	box-shadow: var(--pb-shadow-md);
+	border-color: #cbd5e1;
 }
 
 .poshtibank-product-thumb {
 	width: 100%;
-	height: 130px;
+	height: 135px;
 	background: #f1f5f9;
 	display: flex;
 	align-items: center;
@@ -947,10 +1182,11 @@
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+	transition: transform 0.3s ease;
 }
 
 .poshtibank-product-details {
-	padding: 10px 12px;
+	padding: 12px 14px;
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
@@ -961,10 +1197,11 @@
 	font-weight: 700;
 	color: var(--pb-text);
 	margin: 0;
+	line-height: 1.4;
 }
 
 .poshtibank-product-price {
-	font-size: 13px;
+	font-size: 13.5px;
 	font-weight: 800;
 	color: var(--pb-primary);
 }
@@ -972,30 +1209,34 @@
 .poshtibank-btn-product-buy {
 	display: block;
 	text-align: center;
-	padding: 8px 12px;
+	padding: 9px 12px;
 	background: var(--pb-primary);
 	color: #ffffff !important;
-	border-radius: 8px;
+	border-radius: var(--pb-radius-sm);
 	font-size: 12px;
 	font-weight: 700;
 	text-decoration: none;
-	transition: background-color 0.2s;
+	transition: var(--pb-transition);
 	margin-top: 4px;
+	box-shadow: 0 2px 8px -1px var(--pb-primary-glow);
 }
 
 .poshtibank-btn-product-buy:hover {
 	background: var(--pb-primary-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px -1px var(--pb-primary-glow-strong);
 }
 
 /* Coupon Card */
 .poshtibank-coupon-card {
 	background: #fffbeb;
-	border: 2px dashed #f59e0b;
-	border-radius: 12px;
-	padding: 12px 14px;
-	margin-top: 4px;
+	border: 1.5px dashed #f59e0b;
+	border-radius: var(--pb-radius-lg);
+	padding: 14px 16px;
+	margin-top: 5px;
 	max-width: 250px;
 	text-align: center;
+	box-shadow: 0 3px 10px rgba(245, 158, 11, 0.08);
 }
 
 .poshtibank-coupon-badge {
@@ -1004,55 +1245,58 @@
 	color: #b45309;
 	font-size: 11px;
 	font-weight: 700;
-	padding: 2px 8px;
-	border-radius: 999px;
+	padding: 3px 10px;
+	border-radius: var(--pb-radius-full);
 	margin-bottom: 6px;
 }
 
 .poshtibank-coupon-code {
 	font-family: monospace;
-	font-size: 16px;
+	font-size: 16.5px;
 	font-weight: 800;
 	letter-spacing: 1px;
 	color: #92400e;
-	margin: 4px 0 8px;
+	margin: 4px 0 9px;
 }
 
 .poshtibank-btn-copy-coupon {
 	width: 100%;
-	padding: 7px 10px;
+	padding: 8px 12px;
 	background: #f59e0b;
 	color: #ffffff;
 	border: none;
-	border-radius: 8px;
-	font-size: 11px;
+	border-radius: var(--pb-radius-sm);
+	font-size: 11.5px;
 	font-weight: 700;
 	cursor: pointer;
-	transition: background-color 0.2s;
+	box-shadow: 0 3px 8px rgba(245, 158, 11, 0.3);
+	transition: var(--pb-transition);
 }
 
 .poshtibank-btn-copy-coupon:hover {
 	background: #d97706;
+	transform: translateY(-1px);
 }
 
 .poshtibank-btn-copy-coupon.copied {
-	background: #16a34a;
+	background: var(--pb-success);
+	box-shadow: 0 3px 8px rgba(16, 185, 129, 0.3);
 }
 
 /* CSAT Satisfaction Survey Card */
 .poshtibank-csat-card {
 	background: #ffffff;
 	border: 1px solid var(--pb-border);
-	border-radius: 12px;
-	padding: 14px;
+	border-radius: var(--pb-radius-lg);
+	padding: 16px;
 	margin: 10px 0;
-	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+	box-shadow: var(--pb-shadow-md);
 	text-align: center;
 }
 
 .poshtibank-csat-card h5 {
-	margin: 0 0 10px;
-	font-size: 13px;
+	margin: 0 0 12px;
+	font-size: 13.5px;
 	font-weight: 700;
 	color: var(--pb-text);
 }
@@ -1060,68 +1304,89 @@
 .poshtibank-csat-stars {
 	display: flex;
 	justify-content: center;
-	gap: 6px;
-	margin-bottom: 10px;
+	gap: 8px;
+	margin-bottom: 12px;
 	direction: ltr;
 }
 
 .poshtibank-star-btn {
 	background: none;
 	border: none;
-	font-size: 22px;
+	font-size: 24px;
 	cursor: pointer;
-	opacity: 0.35;
-	transition: transform 0.15s, opacity 0.15s;
+	opacity: 0.3;
+	transition: opacity 0.2s ease, transform 0.2s var(--pb-ease), filter 0.2s ease;
+	line-height: 1;
+	padding: 2px;
 }
 
+/* Soft, pleasant hover instead of jarring 1.15 scale pop */
 .poshtibank-star-btn:hover,
 .poshtibank-star-btn.active {
 	opacity: 1;
-	transform: scale(1.15);
+	transform: scale(1.1);
+	filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.4));
 }
 
 .poshtibank-csat-comment {
 	width: 100%;
 	border: 1px solid var(--pb-border);
-	border-radius: 8px;
-	padding: 6px 10px;
-	font-size: 12px;
+	border-radius: var(--pb-radius-md);
+	padding: 8px 12px;
+	font-size: 12.5px;
 	resize: none;
-	margin-bottom: 8px;
+	margin-bottom: 10px;
 	outline: none;
+	font-family: inherit;
+	background: #f8fafc;
+	transition: border-color 0.2s ease;
 }
 
 .poshtibank-csat-comment:focus {
+	background: #ffffff;
 	border-color: var(--pb-primary);
 }
 
 .poshtibank-btn-csat-submit {
-	padding: 6px 14px;
+	padding: 8px 18px;
 	background: var(--pb-primary);
 	color: #ffffff;
 	border: none;
-	border-radius: 6px;
+	border-radius: var(--pb-radius-sm);
 	font-size: 12px;
 	font-weight: 700;
 	cursor: pointer;
+	box-shadow: 0 3px 8px -1px var(--pb-primary-glow);
+	transition: var(--pb-transition);
+}
+
+.poshtibank-btn-csat-submit:hover {
+	background: var(--pb-primary-hover);
+	transform: translateY(-1px);
 }
 
 /* Proactive Toast Notification (Exit-Intent / Checkout) */
 .poshtibank-proactive-toast {
 	position: absolute;
-	bottom: 75px;
+	bottom: 78px;
 	background: #ffffff;
-	border-radius: 14px;
-	border: 1px solid var(--pb-border);
+	border-radius: var(--pb-radius-lg);
+	border: 1px solid rgba(226, 232, 240, 0.9);
 	box-shadow: var(--pb-shadow);
-	padding: 12px 14px;
-	max-width: 280px;
+	padding: 13px 15px;
+	max-width: 290px;
 	display: flex;
 	align-items: flex-start;
-	gap: 10px;
+	gap: 12px;
 	cursor: pointer;
 	z-index: 100;
-	animation: pbSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+	animation: pbSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+	transition: transform 0.2s var(--pb-ease), box-shadow 0.2s var(--pb-ease);
+}
+
+.poshtibank-proactive-toast:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 28px 50px -12px rgba(15, 23, 42, 0.22);
 }
 
 #poshtibank-widget-root.pos-bottom-right .poshtibank-proactive-toast {
@@ -1133,15 +1398,16 @@
 }
 
 .poshtibank-proactive-avatar {
-	width: 32px;
-	height: 32px;
+	width: 34px;
+	height: 34px;
 	background: var(--pb-primary);
 	color: #ffffff;
-	border-radius: 50%;
+	border-radius: var(--pb-radius-full);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	flex-shrink: 0;
+	box-shadow: 0 3px 8px var(--pb-primary-glow);
 }
 
 .poshtibank-proactive-avatar svg {
@@ -1151,8 +1417,8 @@
 
 .poshtibank-proactive-content p {
 	margin: 0;
-	font-size: 12px;
-	line-height: 1.5;
+	font-size: 12.5px;
+	line-height: 1.55;
 	color: var(--pb-text);
 	font-weight: 600;
 }
@@ -1161,21 +1427,26 @@
 	background: none;
 	border: none;
 	color: var(--pb-text-muted);
-	font-size: 16px;
+	font-size: 18px;
 	cursor: pointer;
 	padding: 0 0 4px 4px;
 	line-height: 1;
+	transition: color 0.15s ease;
+}
+
+.poshtibank-proactive-close:hover {
+	color: var(--pb-text);
 }
 
 /* Seamless Handoff Banner */
 .poshtibank-handoff-banner {
-	background: #f1f5f9;
+	background: #f8fafc;
 	border-top: 1px solid var(--pb-border);
-	padding: 8px 14px;
+	padding: 9px 15px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	font-size: 11px;
+	font-size: 11.5px;
 	color: var(--pb-text-muted);
 }
 
@@ -1187,23 +1458,29 @@
 .poshtibank-btn-handoff {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
-	padding: 3px 8px;
-	border-radius: 6px;
+	gap: 5px;
+	padding: 4px 9px;
+	border-radius: var(--pb-radius-sm);
 	background: #ffffff;
 	border: 1px solid var(--pb-border);
 	color: var(--pb-text);
 	text-decoration: none;
 	font-weight: 700;
 	font-size: 11px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	transition: var(--pb-transition);
 }
 
 .poshtibank-btn-handoff:hover {
 	border-color: var(--pb-primary);
 	color: var(--pb-primary);
+	transform: translateY(-1px);
+	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
 }
 
-/* Mobile Responsiveness */
+/* ==========================================================================
+   Mobile Responsiveness
+   ========================================================================== */
 @media (max-width: 480px) {
 	#poshtibank-widget-root.pos-bottom-right,
 	#poshtibank-widget-root.pos-bottom-left {
@@ -1214,8 +1491,8 @@
 
 	.poshtibank-launcher {
 		position: fixed;
-		bottom: 20px;
-		right: 20px;
+		bottom: 18px;
+		right: 18px;
 	}
 
 	.poshtibank-window {
