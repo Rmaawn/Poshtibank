@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: پشتیبانک — Poshtibank
- * Plugin URI:  https://poshtibank.ir
+ * Plugin URI:  https://github.com/Rmaawn/Poshtibank
  * Description: همه پشتیبانی سایت، در یک افزونه. سیستم چت آنلاین حرفه‌ای و رایگان وردپرس متصل به تلگرام و بله، بدون سرور واسط.
  * Version:     1.0.2
- * Author:      پشتیبانک (Poshtibank)
- * Author URI:  https://poshtibank.ir
+ * Author:      آرمان محبعلی
+ * Author URI:  https://armanmohebali.ir/
  * License:     GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain: poshtibank
