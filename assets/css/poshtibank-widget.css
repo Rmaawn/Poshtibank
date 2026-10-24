@@ -1,7 +1,7 @@
 /**
  * Poshtibank Frontend Widget Stylesheet
  *
- * Modern, Ultra-sleek, CSS Variables, Fluid Micro-interactions, Full RTL support, Mobile Responsive
+ * Minimalist, Clean, High-Contrast, CSS Variables, Full RTL, Protected against WordPress Theme Bleed
  * @package Poshtibank
  */
 
@@ -9,188 +9,201 @@
 	--pb-primary: #2563eb;
 	--pb-primary-hover: #1d4ed8;
 	--pb-primary-light: #eff6ff;
-	--pb-primary-glow: rgba(37, 99, 235, 0.35);
+	--pb-primary-glow: rgba(37, 99, 235, 0.25);
 	--pb-bg: #ffffff;
 	--pb-surface: #f8fafc;
-	--pb-surface-card: #ffffff;
-	--pb-surface-subtle: #f1f5f9;
 	--pb-border: #e2e8f0;
-	--pb-border-subtle: #f1f5f9;
+	--pb-border-light: #f1f5f9;
 	--pb-text: #0f172a;
 	--pb-text-secondary: #475569;
 	--pb-text-muted: #64748b;
-	--pb-text-light: #94a3b8;
+	--pb-text-placeholder: #94a3b8;
 	--pb-success: #10b981;
 	--pb-danger: #ef4444;
 	--pb-warning: #f59e0b;
 	--pb-radius-sm: 8px;
 	--pb-radius-md: 12px;
 	--pb-radius-lg: 16px;
-	--pb-radius-xl: 22px;
+	--pb-radius-xl: 20px;
 	--pb-radius-full: 9999px;
-	--pb-radius: var(--pb-radius-xl);
-	--pb-shadow-sm: 0 2px 6px -1px rgba(15, 23, 42, 0.06), 0 1px 3px -1px rgba(15, 23, 42, 0.04);
-	--pb-shadow-md: 0 8px 20px -3px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
-	--pb-shadow-lg: 0 20px 35px -8px rgba(15, 23, 42, 0.14), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
-	--pb-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.18), 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15, 23, 42, 0.05);
-	--pb-ease: cubic-bezier(0.16, 1, 0.3, 1);
-	--pb-transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+	--pb-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+	--pb-shadow-md: 0 4px 14px -2px rgba(15, 23, 42, 0.08);
+	--pb-shadow-lg: 0 16px 36px -6px rgba(15, 23, 42, 0.16), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+	--pb-transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 	--pb-zindex: 999999;
 }
 
+/* ==========================================================================
+   CSS Reset for Poshtibank Widget (Blocks any WordPress Theme Overrides)
+   ========================================================================== */
 #poshtibank-widget-root {
-	position: fixed;
-	bottom: 24px;
-	z-index: var(--pb-zindex);
-	font-family: -apple-system, BlinkMacSystemFont, "IRANSans", "Vazirmatn", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-	font-size: 14px;
-	line-height: 1.5;
-	direction: rtl;
-	box-sizing: border-box;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-
-	/* Dynamic color-mix tokens supporting custom branding */
-	--pb-primary-hover: color-mix(in srgb, var(--pb-primary) 85%, #000);
-	--pb-primary-light: color-mix(in srgb, var(--pb-primary) 10%, #fff);
-	--pb-primary-glow: color-mix(in srgb, var(--pb-primary) 32%, transparent);
-	--pb-primary-glow-strong: color-mix(in srgb, var(--pb-primary) 50%, transparent);
+	position: fixed !important;
+	bottom: 24px !important;
+	z-index: var(--pb-zindex) !important;
+	font-family: -apple-system, BlinkMacSystemFont, "IRANSans", "Vazirmatn", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+	font-size: 14px !important;
+	line-height: 1.5 !important;
+	direction: rtl !important;
+	box-sizing: border-box !important;
+	-webkit-font-smoothing: antialiased !important;
+	-moz-osx-font-smoothing: grayscale !important;
 }
 
 #poshtibank-widget-root *,
 #poshtibank-widget-root *::before,
 #poshtibank-widget-root *::after {
-	box-sizing: border-box;
+	box-sizing: border-box !important;
+	font-family: inherit !important;
+}
+
+#poshtibank-widget-root button {
+	border: none !important;
+	outline: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	background: transparent;
+	line-height: normal !important;
+	text-transform: none !important;
+	letter-spacing: normal !important;
+	box-shadow: none !important;
+	cursor: pointer !important;
+}
+
+#poshtibank-widget-root input,
+#poshtibank-widget-root textarea {
+	box-sizing: border-box !important;
+	margin: 0 !important;
+	line-height: normal !important;
+}
+
+#poshtibank-widget-root svg {
+	display: block !important;
+	vertical-align: middle !important;
+	box-sizing: content-box !important;
 }
 
 /* Position options */
 #poshtibank-widget-root.pos-bottom-right {
-	right: 24px;
-	left: auto;
+	right: 24px !important;
+	left: auto !important;
 }
 
 #poshtibank-widget-root.pos-bottom-left {
-	left: 24px;
-	right: auto;
+	left: 24px !important;
+	right: auto !important;
 }
 
 /* ==========================================================================
    Launcher Floating Action Button (FAB)
    ========================================================================== */
-.poshtibank-launcher {
-	width: 62px;
-	height: 62px;
-	border-radius: var(--pb-radius-full);
-	background: var(--pb-primary);
-	background: linear-gradient(135deg, var(--pb-primary) 0%, color-mix(in srgb, var(--pb-primary) 88%, #000) 100%);
-	color: #ffffff;
-	border: none;
-	cursor: pointer;
-	box-shadow: 0 8px 24px -4px var(--pb-primary-glow), 0 4px 10px rgba(0, 0, 0, 0.08);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	position: relative;
-	transition: transform 0.28s var(--pb-ease), box-shadow 0.28s var(--pb-ease);
-	outline: none;
-	user-select: none;
-	-webkit-tap-highlight-color: transparent;
+#poshtibank-widget-root .poshtibank-launcher,
+#poshtibank-widget-root button.poshtibank-launcher {
+	width: 60px !important;
+	height: 60px !important;
+	min-width: 60px !important;
+	min-height: 60px !important;
+	max-width: 60px !important;
+	max-height: 60px !important;
+	border-radius: 50% !important;
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
+	border: none !important;
+	outline: none !important;
+	cursor: pointer !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	box-shadow: 0 6px 20px -2px rgba(15, 23, 42, 0.22), 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	position: relative !important;
+	transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	user-select: none !important;
+	-webkit-tap-highlight-color: transparent !important;
 }
 
-/* Subtle, pleasing lift instead of harsh scale jump */
-.poshtibank-launcher:hover {
-	transform: translateY(-3px);
-	box-shadow: 0 14px 30px -4px var(--pb-primary-glow-strong), 0 6px 14px rgba(0, 0, 0, 0.12);
+#poshtibank-widget-root .poshtibank-launcher:hover {
+	transform: translateY(-3px) !important;
+	box-shadow: 0 10px 26px -2px rgba(15, 23, 42, 0.28), 0 4px 10px rgba(0, 0, 0, 0.1) !important;
 }
 
-.poshtibank-launcher:active {
-	transform: translateY(-1px) scale(0.98);
-	box-shadow: 0 6px 16px -2px var(--pb-primary-glow), 0 3px 8px rgba(0, 0, 0, 0.1);
+#poshtibank-widget-root .poshtibank-launcher:active {
+	transform: translateY(-1px) scale(0.98) !important;
 }
 
-.poshtibank-launcher-icon {
-	width: 28px;
-	height: 28px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: transform 0.25s var(--pb-ease), opacity 0.2s ease;
+#poshtibank-widget-root .poshtibank-launcher-icon {
+	width: 28px !important;
+	height: 28px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
 }
 
-.poshtibank-launcher-icon svg {
-	width: 26px;
-	height: 26px;
-	stroke-width: 2.1;
+#poshtibank-widget-root .poshtibank-launcher-icon svg {
+	width: 26px !important;
+	height: 26px !important;
+	stroke: #ffffff !important;
+	fill: none !important;
+	stroke-width: 2.2 !important;
 }
 
 /* Unread Badge */
-.poshtibank-badge {
-	position: absolute;
-	top: -3px;
-	left: -3px;
-	background: var(--pb-danger);
-	background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-	color: #ffffff;
-	font-size: 11px;
-	font-weight: 700;
-	min-width: 22px;
-	height: 22px;
-	padding: 0 7px;
-	border-radius: var(--pb-radius-full);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border: 2.5px solid #ffffff;
-	box-shadow: 0 3px 8px rgba(239, 68, 68, 0.45);
-	line-height: 1;
-	animation: pbBadgePulse 2s infinite ease-in-out;
-}
-
-@keyframes pbBadgePulse {
-	0%, 100% {
-		transform: scale(1);
-	}
-	50% {
-		transform: scale(1.08);
-	}
+#poshtibank-widget-root .poshtibank-badge {
+	position: absolute !important;
+	top: -2px !important;
+	left: -2px !important;
+	background: var(--pb-danger) !important;
+	color: #ffffff !important;
+	font-size: 11px !important;
+	font-weight: 700 !important;
+	min-width: 20px !important;
+	height: 20px !important;
+	padding: 0 6px !important;
+	border-radius: var(--pb-radius-full) !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	border: 2px solid #ffffff !important;
+	box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4) !important;
+	line-height: 1 !important;
 }
 
 /* ==========================================================================
    Main Chat Window
    ========================================================================== */
-.poshtibank-window {
-	position: absolute;
-	bottom: 78px;
-	width: 385px;
-	height: 590px;
-	max-height: calc(85vh - 85px);
-	background: var(--pb-bg);
-	border-radius: var(--pb-radius);
-	box-shadow: var(--pb-shadow);
-	border: 1px solid rgba(226, 232, 240, 0.85);
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
-	animation: pbSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-	transform-origin: bottom center;
+#poshtibank-widget-root .poshtibank-window {
+	position: absolute !important;
+	bottom: 76px !important;
+	width: 380px !important;
+	height: 580px !important;
+	max-height: calc(85vh - 85px) !important;
+	background: #ffffff !important;
+	border-radius: var(--pb-radius-xl) !important;
+	box-shadow: var(--pb-shadow-lg) !important;
+	border: 1px solid var(--pb-border) !important;
+	display: flex !important;
+	flex-direction: column !important;
+	overflow: hidden !important;
+	animation: pbSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	transform-origin: bottom center !important;
 }
 
 #poshtibank-widget-root.pos-bottom-right .poshtibank-window {
-	right: 0;
-	left: auto;
-	transform-origin: bottom right;
+	right: 0 !important;
+	left: auto !important;
+	transform-origin: bottom right !important;
 }
 
 #poshtibank-widget-root.pos-bottom-left .poshtibank-window {
-	left: 0;
-	right: auto;
-	transform-origin: bottom left;
+	left: 0 !important;
+	right: auto !important;
+	transform-origin: bottom left !important;
 }
 
 @keyframes pbSlideUp {
 	from {
 		opacity: 0;
-		transform: translateY(16px) scale(0.97);
+		transform: translateY(14px) scale(0.98);
 	}
 	to {
 		opacity: 1;
@@ -199,480 +212,438 @@
 }
 
 /* ==========================================================================
-   Window Header
+   Window Header (Clean Minimalist Design)
    ========================================================================== */
-.poshtibank-win-header {
-	background: var(--pb-primary);
-	background: linear-gradient(135deg, var(--pb-primary) 0%, color-mix(in srgb, var(--pb-primary) 82%, #0f172a) 100%);
-	color: #ffffff;
-	padding: 15px 18px;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	flex-shrink: 0;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-	position: relative;
-	z-index: 5;
+#poshtibank-widget-root .poshtibank-win-header {
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
+	padding: 15px 18px !important;
+	display: flex !important;
+	justify-content: space-between !important;
+	align-items: center !important;
+	flex-shrink: 0 !important;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+	position: relative !important;
+	z-index: 5 !important;
 }
 
-.poshtibank-header-user {
-	display: flex;
-	align-items: center;
-	gap: 12px;
+#poshtibank-widget-root .poshtibank-header-user {
+	display: flex !important;
+	align-items: center !important;
+	gap: 12px !important;
 }
 
-.poshtibank-avatar {
-	position: relative;
-	width: 42px;
-	height: 42px;
-	background: rgba(255, 255, 255, 0.22);
-	backdrop-filter: blur(8px);
-	border-radius: var(--pb-radius-full);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: #ffffff;
-	flex-shrink: 0;
-	border: 1.5px solid rgba(255, 255, 255, 0.35);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+#poshtibank-widget-root .poshtibank-avatar {
+	position: relative !important;
+	width: 40px !important;
+	height: 40px !important;
+	background: rgba(255, 255, 255, 0.2) !important;
+	border-radius: 50% !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	color: #ffffff !important;
+	flex-shrink: 0 !important;
+	border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
 }
 
-.poshtibank-avatar svg {
-	width: 24px;
-	height: 24px;
+#poshtibank-widget-root .poshtibank-avatar svg {
+	width: 22px !important;
+	height: 22px !important;
+	fill: #ffffff !important;
 }
 
-.poshtibank-status-indicator {
-	position: absolute;
-	bottom: -1px;
-	right: -1px;
-	width: 12px;
-	height: 12px;
-	background: #cbd5e1;
-	border: 2.5px solid #ffffff;
-	border-radius: var(--pb-radius-full);
-	transition: background-color 0.2s ease;
+#poshtibank-widget-root .poshtibank-status-indicator {
+	position: absolute !important;
+	bottom: -1px !important;
+	right: -1px !important;
+	width: 11px !important;
+	height: 11px !important;
+	background: #94a3b8 !important;
+	border: 2px solid #ffffff !important;
+	border-radius: 50% !important;
 }
 
-.poshtibank-status-indicator.online {
-	background: var(--pb-success);
-	box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+#poshtibank-widget-root .poshtibank-status-indicator.online {
+	background: var(--pb-success) !important;
+	box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35) !important;
 }
 
-.poshtibank-win-titles h4 {
-	margin: 0;
-	font-size: 15px;
-	font-weight: 700;
-	color: #ffffff;
-	letter-spacing: -0.01em;
-	line-height: 1.3;
+#poshtibank-widget-root .poshtibank-win-titles h4 {
+	margin: 0 !important;
+	font-size: 15px !important;
+	font-weight: 700 !important;
+	color: #ffffff !important;
+	line-height: 1.3 !important;
 }
 
-.poshtibank-win-status {
-	font-size: 11.5px;
-	opacity: 0.88;
-	display: block;
-	margin-top: 2px;
-	font-weight: 400;
+#poshtibank-widget-root .poshtibank-win-status {
+	font-size: 11.5px !important;
+	opacity: 0.9 !important;
+	display: block !important;
+	margin-top: 1px !important;
+	color: #ffffff !important;
 }
 
-.poshtibank-header-actions {
-	display: flex;
-	align-items: center;
-	gap: 4px;
+#poshtibank-widget-root .poshtibank-header-actions {
+	display: flex !important;
+	align-items: center !important;
+	gap: 4px !important;
 }
 
-.poshtibank-btn-icon {
-	background: rgba(255, 255, 255, 0.1);
-	border: none;
-	color: #ffffff;
-	cursor: pointer;
-	width: 32px;
-	height: 32px;
-	padding: 0;
-	border-radius: var(--pb-radius-md);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	opacity: 0.9;
-	transition: var(--pb-transition);
+#poshtibank-widget-root .poshtibank-btn-icon {
+	background: rgba(255, 255, 255, 0.12) !important;
+	color: #ffffff !important;
+	width: 32px !important;
+	height: 32px !important;
+	border-radius: var(--pb-radius-sm) !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	transition: background-color 0.2s ease !important;
 }
 
-.poshtibank-btn-icon:hover {
-	opacity: 1;
-	background: rgba(255, 255, 255, 0.22);
-	transform: translateY(-1px);
+#poshtibank-widget-root .poshtibank-btn-icon:hover {
+	background: rgba(255, 255, 255, 0.25) !important;
 }
 
-.poshtibank-btn-icon:active {
-	transform: translateY(0);
-}
-
-.poshtibank-btn-icon svg {
-	width: 18px;
-	height: 18px;
+#poshtibank-widget-root .poshtibank-btn-icon svg {
+	width: 18px !important;
+	height: 18px !important;
+	stroke: #ffffff !important;
+	fill: none !important;
+	stroke-width: 2 !important;
 }
 
 /* ==========================================================================
-   Views Container
+   Views Container & Scrollbars
    ========================================================================== */
-.poshtibank-view {
+#poshtibank-widget-root .poshtibank-view {
 	display: none;
-	flex-direction: column;
-	flex: 1;
-	overflow-y: auto;
-	background: var(--pb-surface);
-	scroll-behavior: smooth;
+	flex-direction: column !important;
+	flex: 1 1 0% !important;
+	min-height: 0 !important;
+	background: var(--pb-surface) !important;
 }
 
-.poshtibank-view.active {
-	display: flex;
+#poshtibank-widget-root .poshtibank-view.active {
+	display: flex !important;
 }
 
-/* Custom Scrollbars */
-.poshtibank-view::-webkit-scrollbar,
-.poshtibank-messages-stream::-webkit-scrollbar {
-	width: 5px;
+#poshtibank-widget-root #poshtibank-view-hub,
+#poshtibank-widget-root #poshtibank-view-prechat {
+	overflow-y: auto !important;
 }
 
-.poshtibank-view::-webkit-scrollbar-track,
-.poshtibank-messages-stream::-webkit-scrollbar-track {
-	background: transparent;
+#poshtibank-widget-root #poshtibank-view-chat {
+	overflow: hidden !important;
 }
 
-.poshtibank-view::-webkit-scrollbar-thumb,
-.poshtibank-messages-stream::-webkit-scrollbar-thumb {
-	background: rgba(148, 163, 184, 0.35);
-	border-radius: var(--pb-radius-full);
+/* Minimal Custom Scrollbars */
+#poshtibank-widget-root ::-webkit-scrollbar {
+	width: 5px !important;
 }
 
-.poshtibank-view::-webkit-scrollbar-thumb:hover,
-.poshtibank-messages-stream::-webkit-scrollbar-thumb:hover {
-	background: rgba(100, 116, 139, 0.55);
+#poshtibank-widget-root ::-webkit-scrollbar-track {
+	background: transparent !important;
+}
+
+#poshtibank-widget-root ::-webkit-scrollbar-thumb {
+	background: #cbd5e1 !important;
+	border-radius: var(--pb-radius-full) !important;
+}
+
+#poshtibank-widget-root ::-webkit-scrollbar-thumb:hover {
+	background: #94a3b8 !important;
 }
 
 /* ==========================================================================
-   View 1: Hub & FAQ
+   View 1: Hub & FAQ & Channels
    ========================================================================== */
-.poshtibank-hub-hero {
-	padding: 26px 22px 22px;
-	text-align: center;
-	background: #ffffff;
-	border-bottom: 1px solid var(--pb-border);
-	box-shadow: 0 4px 12px -4px rgba(15, 23, 42, 0.03);
+#poshtibank-widget-root .poshtibank-hub-hero {
+	padding: 24px 20px 20px !important;
+	text-align: center !important;
+	background: #ffffff !important;
+	border-bottom: 1px solid var(--pb-border) !important;
 }
 
-.poshtibank-hub-hero h3 {
-	margin: 0 0 8px;
-	font-size: 17.5px;
-	font-weight: 800;
-	color: var(--pb-text);
-	letter-spacing: -0.01em;
+#poshtibank-widget-root .poshtibank-hub-hero h3 {
+	margin: 0 0 6px !important;
+	font-size: 16.5px !important;
+	font-weight: 800 !important;
+	color: var(--pb-text) !important;
 }
 
-.poshtibank-hub-hero p {
-	margin: 0 0 18px;
-	font-size: 13px;
-	color: var(--pb-text-muted);
-	line-height: 1.55;
+#poshtibank-widget-root .poshtibank-hub-hero p {
+	margin: 0 0 16px !important;
+	font-size: 13px !important;
+	color: var(--pb-text-muted) !important;
+	line-height: 1.5 !important;
 }
 
-.poshtibank-btn-primary-hub {
-	width: 100%;
-	padding: 13px 20px;
-	background: var(--pb-primary);
-	background: linear-gradient(135deg, var(--pb-primary) 0%, color-mix(in srgb, var(--pb-primary) 88%, #000) 100%);
-	color: #ffffff;
-	border: none;
-	border-radius: var(--pb-radius-md);
-	font-size: 14px;
-	font-weight: 700;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 10px;
-	box-shadow: 0 6px 18px -2px var(--pb-primary-glow), 0 2px 6px rgba(0, 0, 0, 0.05);
-	transition: var(--pb-transition);
+#poshtibank-widget-root .poshtibank-btn-primary-hub {
+	width: 100% !important;
+	padding: 12px 18px !important;
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
+	border-radius: var(--pb-radius-md) !important;
+	font-size: 13.5px !important;
+	font-weight: 700 !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	gap: 10px !important;
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
+	transition: var(--pb-transition) !important;
 }
 
-.poshtibank-btn-primary-hub:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 10px 24px -2px var(--pb-primary-glow-strong), 0 4px 10px rgba(0, 0, 0, 0.08);
+#poshtibank-widget-root .poshtibank-btn-primary-hub:hover {
+	transform: translateY(-2px) !important;
+	box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35) !important;
 }
 
-.poshtibank-btn-primary-hub:active {
-	transform: translateY(0);
+#poshtibank-widget-root .poshtibank-btn-primary-hub svg {
+	width: 18px !important;
+	height: 18px !important;
+	stroke: #ffffff !important;
+	fill: none !important;
 }
 
-.poshtibank-btn-primary-hub svg {
-	width: 19px;
-	height: 19px;
+#poshtibank-widget-root .poshtibank-hub-section {
+	padding: 16px 20px !important;
 }
 
-.poshtibank-hub-section {
-	padding: 18px 20px;
-}
-
-.poshtibank-hub-section h5 {
-	margin: 0 0 12px;
-	font-size: 12.5px;
-	font-weight: 700;
-	color: var(--pb-text-muted);
-	letter-spacing: 0.03em;
+#poshtibank-widget-root .poshtibank-hub-section h5 {
+	margin: 0 0 10px !important;
+	font-size: 12px !important;
+	font-weight: 700 !important;
+	color: var(--pb-text-muted) !important;
+	text-transform: uppercase !important;
 }
 
 /* FAQ Accordion */
-.poshtibank-faq-list {
-	display: flex;
-	flex-direction: column;
-	gap: 9px;
+#poshtibank-widget-root .poshtibank-faq-list {
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 8px !important;
 }
 
-.poshtibank-faq-item {
-	background: #ffffff;
-	border: 1px solid var(--pb-border);
-	border-radius: var(--pb-radius-md);
-	overflow: hidden;
-	box-shadow: var(--pb-shadow-sm);
-	transition: border-color 0.22s var(--pb-ease), box-shadow 0.22s var(--pb-ease);
+#poshtibank-widget-root .poshtibank-faq-item {
+	background: #ffffff !important;
+	border: 1px solid var(--pb-border) !important;
+	border-radius: var(--pb-radius-md) !important;
+	overflow: hidden !important;
+	transition: border-color 0.2s ease !important;
 }
 
-.poshtibank-faq-item:hover {
-	border-color: #cbd5e1;
-	box-shadow: var(--pb-shadow-md);
+#poshtibank-widget-root .poshtibank-faq-item:hover {
+	border-color: #cbd5e1 !important;
 }
 
-.poshtibank-faq-item.open {
-	border-color: color-mix(in srgb, var(--pb-primary) 40%, var(--pb-border));
+#poshtibank-widget-root .poshtibank-faq-item.open {
+	border-color: var(--pb-primary) !important;
 }
 
-.poshtibank-faq-q {
-	padding: 13px 15px;
-	font-size: 13px;
-	font-weight: 600;
-	color: var(--pb-text);
-	cursor: pointer;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	transition: background-color 0.15s ease;
-	user-select: none;
+#poshtibank-widget-root .poshtibank-faq-q {
+	padding: 12px 14px !important;
+	font-size: 13px !important;
+	font-weight: 600 !important;
+	color: var(--pb-text) !important;
+	cursor: pointer !important;
+	display: flex !important;
+	justify-content: space-between !important;
+	align-items: center !important;
+	background: #ffffff !important;
 }
 
-.poshtibank-faq-q:hover {
-	background-color: #fafbfc;
+#poshtibank-widget-root .poshtibank-faq-q:hover {
+	background: #f8fafc !important;
 }
 
-.poshtibank-faq-q svg {
-	width: 16px;
-	height: 16px;
-	color: var(--pb-text-muted);
-	transition: transform 0.24s var(--pb-ease);
-	flex-shrink: 0;
-	margin-right: 8px;
+#poshtibank-widget-root .poshtibank-faq-q svg {
+	width: 16px !important;
+	height: 16px !important;
+	stroke: var(--pb-text-muted) !important;
+	fill: none !important;
+	transition: transform 0.2s ease !important;
+	margin-right: 8px !important;
 }
 
-.poshtibank-faq-item.open .poshtibank-faq-q svg {
-	transform: rotate(180deg);
-	color: var(--pb-primary);
+#poshtibank-widget-root .poshtibank-faq-item.open .poshtibank-faq-q svg {
+	transform: rotate(180deg) !important;
+	stroke: var(--pb-primary) !important;
 }
 
-.poshtibank-faq-a {
+#poshtibank-widget-root .poshtibank-faq-a {
 	display: none;
-	padding: 0 15px 14px;
-	font-size: 12.5px;
-	line-height: 1.65;
-	color: var(--pb-text-secondary);
-	border-top: 1px solid #f8fafc;
-	background: #ffffff;
+	padding: 0 14px 12px !important;
+	font-size: 12.5px !important;
+	line-height: 1.6 !important;
+	color: var(--pb-text-secondary) !important;
+	border-top: 1px solid var(--pb-border-light) !important;
+	background: #ffffff !important;
 }
 
-.poshtibank-faq-item.open .poshtibank-faq-a {
-	display: block;
-	animation: pbFadeIn 0.2s ease;
+#poshtibank-widget-root .poshtibank-faq-item.open .poshtibank-faq-a {
+	display: block !important;
 }
 
 /* Channels Grid */
-.poshtibank-channels-grid {
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 10px;
+#poshtibank-widget-root .poshtibank-channels-grid {
+	display: grid !important;
+	grid-template-columns: repeat(2, 1fr) !important;
+	gap: 10px !important;
 }
 
-.poshtibank-channel-card {
-	background: #ffffff;
-	border: 1px solid var(--pb-border);
-	border-radius: var(--pb-radius-md);
-	padding: 11px 13px;
-	display: flex;
-	align-items: center;
-	gap: 11px;
-	text-decoration: none;
-	color: var(--pb-text);
-	font-size: 12.5px;
-	font-weight: 600;
-	box-shadow: var(--pb-shadow-sm);
-	transition: var(--pb-transition);
+#poshtibank-widget-root .poshtibank-channel-card {
+	background: #ffffff !important;
+	border: 1px solid var(--pb-border) !important;
+	border-radius: var(--pb-radius-md) !important;
+	padding: 10px 12px !important;
+	display: flex !important;
+	align-items: center !important;
+	gap: 10px !important;
+	text-decoration: none !important;
+	color: var(--pb-text) !important;
+	font-size: 12.5px !important;
+	font-weight: 600 !important;
+	transition: var(--pb-transition) !important;
 }
 
-.poshtibank-channel-card:hover {
-	transform: translateY(-2px);
-	border-color: color-mix(in srgb, var(--pb-primary) 35%, var(--pb-border));
-	box-shadow: 0 8px 18px -3px rgba(15, 23, 42, 0.08);
+#poshtibank-widget-root .poshtibank-channel-card:hover {
+	transform: translateY(-2px) !important;
+	border-color: #cbd5e1 !important;
+	box-shadow: var(--pb-shadow-sm) !important;
 }
 
-.poshtibank-channel-card:active {
-	transform: translateY(0);
-}
-
-.poshtibank-channel-icon {
-	width: 32px;
-	height: 32px;
-	border-radius: 10px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: #ffffff;
-	flex-shrink: 0;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-}
-
-.poshtibank-channel-icon svg {
-	width: 17px;
-	height: 17px;
+#poshtibank-widget-root .poshtibank-channel-icon {
+	width: 32px !important;
+	height: 32px !important;
+	border-radius: var(--pb-radius-sm) !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	color: #ffffff !important;
+	font-size: 15px !important;
+	flex-shrink: 0 !important;
 }
 
 /* ==========================================================================
    View 2: Pre-chat Form
    ========================================================================== */
-.poshtibank-prechat-card {
-	padding: 26px 22px;
-	background: #ffffff;
-	margin: auto 16px;
-	border-radius: var(--pb-radius-lg);
-	border: 1px solid var(--pb-border);
-	box-shadow: var(--pb-shadow-md);
+#poshtibank-widget-root .poshtibank-prechat-card {
+	padding: 24px 20px !important;
+	background: #ffffff !important;
+	margin: auto 16px !important;
+	border-radius: var(--pb-radius-lg) !important;
+	border: 1px solid var(--pb-border) !important;
+	box-shadow: var(--pb-shadow-md) !important;
 }
 
-.poshtibank-prechat-card h4 {
-	margin: 0 0 6px;
-	font-size: 16px;
-	font-weight: 800;
-	color: var(--pb-text);
+#poshtibank-widget-root .poshtibank-prechat-card h4 {
+	margin: 0 0 6px !important;
+	font-size: 16px !important;
+	font-weight: 800 !important;
+	color: var(--pb-text) !important;
 }
 
-.poshtibank-prechat-card p {
-	margin: 0 0 18px;
-	font-size: 12.5px;
-	color: var(--pb-text-muted);
-	line-height: 1.5;
+#poshtibank-widget-root .poshtibank-prechat-card p {
+	margin: 0 0 16px !important;
+	font-size: 12.5px !important;
+	color: var(--pb-text-muted) !important;
 }
 
-.poshtibank-input-group {
-	margin-bottom: 14px;
-	display: flex;
-	flex-direction: column;
-	gap: 5px;
+#poshtibank-widget-root .poshtibank-input-group {
+	margin-bottom: 14px !important;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 5px !important;
 }
 
-.poshtibank-input-group label {
-	font-size: 12px;
-	font-weight: 600;
-	color: #334155;
+#poshtibank-widget-root .poshtibank-input-group label {
+	font-size: 12px !important;
+	font-weight: 600 !important;
+	color: #334155 !important;
 }
 
-.poshtibank-input-group label .required {
-	color: var(--pb-danger);
+#poshtibank-widget-root .poshtibank-input-group input {
+	padding: 10px 12px !important;
+	border: 1px solid #cbd5e1 !important;
+	border-radius: var(--pb-radius-md) !important;
+	font-size: 13px !important;
+	outline: none !important;
+	background: #ffffff !important;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-.poshtibank-input-group input {
-	padding: 11px 13px;
-	border: 1px solid #cbd5e1;
-	border-radius: var(--pb-radius-md);
-	font-size: 13px;
-	outline: none;
-	background: #ffffff;
-	transition: border-color 0.2s ease, box-shadow 0.2s ease;
-	font-family: inherit;
+#poshtibank-widget-root .poshtibank-input-group input:focus {
+	border-color: var(--pb-primary) !important;
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
 }
 
-.poshtibank-input-group input:focus {
-	border-color: var(--pb-primary);
-	box-shadow: 0 0 0 3px var(--pb-primary-glow);
+#poshtibank-widget-root .poshtibank-form-error {
+	padding: 8px 12px !important;
+	background: #fef2f2 !important;
+	color: var(--pb-danger) !important;
+	border-radius: var(--pb-radius-sm) !important;
+	font-size: 12px !important;
+	margin-bottom: 12px !important;
+	border: 1px solid #fee2e2 !important;
 }
 
-.poshtibank-form-error {
-	padding: 9px 13px;
-	background: #fef2f2;
-	color: var(--pb-danger);
-	border-radius: var(--pb-radius-sm);
-	font-size: 12px;
-	margin-bottom: 12px;
-	border: 1px solid #fee2e2;
-	font-weight: 500;
+#poshtibank-widget-root .poshtibank-btn-submit {
+	width: 100% !important;
+	padding: 11px !important;
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
+	border-radius: var(--pb-radius-md) !important;
+	font-size: 13.5px !important;
+	font-weight: 700 !important;
+	margin-top: 6px !important;
+	box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25) !important;
+	transition: var(--pb-transition) !important;
 }
 
-.poshtibank-btn-submit {
-	width: 100%;
-	padding: 12px;
-	background: var(--pb-primary);
-	color: #ffffff;
-	border: none;
-	border-radius: var(--pb-radius-md);
-	font-size: 13.5px;
-	font-weight: 700;
-	cursor: pointer;
-	margin-top: 6px;
-	box-shadow: 0 4px 12px -2px var(--pb-primary-glow);
-	transition: var(--pb-transition);
-}
-
-.poshtibank-btn-submit:hover {
-	background: var(--pb-primary-hover);
-	transform: translateY(-1px);
-	box-shadow: 0 6px 16px -2px var(--pb-primary-glow-strong);
-}
-
-.poshtibank-btn-submit:active {
-	transform: translateY(0);
+#poshtibank-widget-root .poshtibank-btn-submit:hover {
+	transform: translateY(-1px) !important;
 }
 
 /* ==========================================================================
-   View 3: Chat Messages Stream
+   View 3: Messages Stream & Message Bubbles
    ========================================================================== */
-.poshtibank-messages-stream {
-	flex: 1;
-	overflow-y: auto;
-	padding: 18px 16px;
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-	background: var(--pb-surface);
+#poshtibank-widget-root .poshtibank-messages-stream {
+	flex: 1 1 0% !important;
+	min-height: 0 !important;
+	overflow-y: auto !important;
+	overflow-x: hidden !important;
+	padding: 16px 14px !important;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 12px !important;
+	background: var(--pb-surface) !important;
 }
 
-.poshtibank-chat-date-separator {
-	text-align: center;
-	margin: 4px 0 10px;
+#poshtibank-widget-root .poshtibank-chat-date-separator {
+	text-align: center !important;
+	margin: 4px 0 8px !important;
 }
 
-.poshtibank-chat-date-separator span {
-	background: #f1f5f9;
-	color: #64748b;
-	font-size: 11px;
-	padding: 4px 12px;
-	border-radius: var(--pb-radius-full);
-	font-weight: 600;
-	border: 1px solid #e2e8f0;
+#poshtibank-widget-root .poshtibank-chat-date-separator span {
+	background: #e2e8f0 !important;
+	color: #475569 !important;
+	font-size: 11px !important;
+	padding: 3px 12px !important;
+	border-radius: var(--pb-radius-full) !important;
+	font-weight: 600 !important;
 }
 
 /* Message Bubble */
-.poshtibank-msg {
-	display: flex;
-	flex-direction: column;
-	max-width: 82%;
-	position: relative;
-	animation: pbFadeIn 0.22s ease-out;
+#poshtibank-widget-root .poshtibank-msg {
+	display: flex !important;
+	flex-direction: column !important;
+	max-width: 82% !important;
+	position: relative !important;
+	animation: pbFadeIn 0.2s ease-out !important;
 }
 
 @keyframes pbFadeIn {
@@ -686,102 +657,114 @@
 	}
 }
 
-/* User Message Bubble - smooth continuous curves */
-.poshtibank-msg.msg-user {
-	align-self: flex-start;
-	background: var(--pb-primary);
-	background: linear-gradient(135deg, var(--pb-primary) 0%, color-mix(in srgb, var(--pb-primary) 90%, #0f172a) 100%);
-	color: #ffffff;
-	border-radius: 18px 18px 4px 18px;
-	padding: 11px 15px;
-	box-shadow: 0 4px 14px -3px var(--pb-primary-glow), 0 2px 4px rgba(0, 0, 0, 0.04);
+/* User Bubble (Minimal clean primary surface) */
+#poshtibank-widget-root .poshtibank-msg.msg-user {
+	align-self: flex-start !important;
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
+	border-radius: 18px 18px 4px 18px !important;
+	padding: 10px 14px !important;
+	box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2) !important;
 }
 
-/* Admin Message Bubble - crisp white surface with soft border & shadow */
-.poshtibank-msg.msg-admin {
-	align-self: flex-end;
-	background: #ffffff;
-	color: var(--pb-text);
-	border: 1px solid rgba(226, 232, 240, 0.9);
-	border-radius: 18px 18px 18px 4px;
-	padding: 11px 15px;
-	box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
+#poshtibank-widget-root .poshtibank-msg.msg-user .poshtibank-msg-content {
+	color: #ffffff !important;
 }
 
-/* AI Message Bubble - modern subtle violet/indigo aura */
-.poshtibank-msg.msg-ai {
-	align-self: flex-end;
-	background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
-	color: #4a044e;
-	border: 1px solid #f0abfc;
-	border-radius: 18px 18px 18px 4px;
-	padding: 11px 15px;
-	box-shadow: 0 4px 14px -2px rgba(217, 70, 239, 0.12);
+#poshtibank-widget-root .poshtibank-msg.msg-user .poshtibank-msg-time {
+	color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* System Message Bubble - clean badge style */
-.poshtibank-msg.msg-system {
-	align-self: center;
-	background: #fffbeb;
-	color: #92400e;
-	border: 1px solid #fef3c7;
-	border-radius: var(--pb-radius-full);
-	padding: 6px 14px;
-	font-size: 11.5px;
-	text-align: center;
-	box-shadow: var(--pb-shadow-sm);
+/* Admin Bubble (Crisp white card) */
+#poshtibank-widget-root .poshtibank-msg.msg-admin {
+	align-self: flex-end !important;
+	background: #ffffff !important;
+	color: var(--pb-text) !important;
+	border: 1px solid var(--pb-border) !important;
+	border-radius: 18px 18px 18px 4px !important;
+	padding: 10px 14px !important;
+	box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04) !important;
 }
 
-.poshtibank-msg-sender {
-	font-size: 11px;
-	font-weight: 700;
-	margin-bottom: 3px;
-	opacity: 0.85;
+#poshtibank-widget-root .poshtibank-msg.msg-admin .poshtibank-msg-sender {
+	color: var(--pb-primary) !important;
+	font-weight: 700 !important;
 }
 
-.msg-ai .poshtibank-msg-sender {
-	color: #86198f;
-	display: flex;
-	align-items: center;
-	gap: 4px;
+/* AI Bubble (Subtle violet surface) */
+#poshtibank-widget-root .poshtibank-msg.msg-ai {
+	align-self: flex-end !important;
+	background: #fbf7ff !important;
+	border: 1px solid #e9d5ff !important;
+	border-radius: 18px 18px 18px 4px !important;
+	padding: 10px 14px !important;
+	color: #4a044e !important;
+	box-shadow: 0 2px 6px rgba(168, 85, 247, 0.06) !important;
 }
 
-.poshtibank-msg-content {
-	font-size: 13px;
-	line-height: 1.62;
-	word-break: break-word;
+#poshtibank-widget-root .poshtibank-msg.msg-ai .poshtibank-msg-sender {
+	color: #7e22ce !important;
+	font-weight: 700 !important;
 }
 
-.poshtibank-msg-time {
-	font-size: 10px;
-	margin-top: 5px;
-	opacity: 0.75;
-	text-align: left;
-	direction: ltr;
-	font-weight: 500;
+#poshtibank-widget-root .poshtibank-msg.msg-ai .poshtibank-msg-content {
+	color: #3b0764 !important;
+}
+
+/* System Message */
+#poshtibank-widget-root .poshtibank-msg.msg-system {
+	align-self: center !important;
+	background: #fffbeb !important;
+	color: #92400e !important;
+	border: 1px solid #fef3c7 !important;
+	border-radius: var(--pb-radius-full) !important;
+	padding: 5px 14px !important;
+	font-size: 11.5px !important;
+	text-align: center !important;
+}
+
+#poshtibank-widget-root .poshtibank-msg-sender {
+	font-size: 11px !important;
+	font-weight: 700 !important;
+	margin-bottom: 2px !important;
+}
+
+#poshtibank-widget-root .poshtibank-msg-content {
+	font-size: 13px !important;
+	line-height: 1.6 !important;
+	word-break: break-word !important;
+}
+
+#poshtibank-widget-root .poshtibank-msg-time {
+	font-size: 10px !important;
+	margin-top: 4px !important;
+	color: var(--pb-text-muted) !important;
+	text-align: left !important;
+	direction: ltr !important;
+	font-weight: 500 !important;
 }
 
 /* Typing Indicator */
-.poshtibank-typing {
-	display: flex;
-	align-items: center;
-	gap: 5px;
-	padding: 8px 18px;
-	font-size: 11.5px;
-	color: var(--pb-text-muted);
+#poshtibank-widget-root .poshtibank-typing {
+	display: flex !important;
+	align-items: center !important;
+	gap: 5px !important;
+	padding: 6px 16px !important;
+	font-size: 11.5px !important;
+	color: var(--pb-text-muted) !important;
 }
 
-.poshtibank-typing span {
-	width: 6px;
-	height: 6px;
-	background: var(--pb-text-muted);
-	border-radius: var(--pb-radius-full);
-	display: inline-block;
-	animation: pbBounce 1.4s infinite ease-in-out both;
+#poshtibank-widget-root .poshtibank-typing span {
+	width: 6px !important;
+	height: 6px !important;
+	background: var(--pb-text-muted) !important;
+	border-radius: 50% !important;
+	display: inline-block !important;
+	animation: pbBounce 1.4s infinite ease-in-out both !important;
 }
 
-.poshtibank-typing span:nth-child(1) { animation-delay: -0.32s; }
-.poshtibank-typing span:nth-child(2) { animation-delay: -0.16s; }
+#poshtibank-widget-root .poshtibank-typing span:nth-child(1) { animation-delay: -0.32s !important; }
+#poshtibank-widget-root .poshtibank-typing span:nth-child(2) { animation-delay: -0.16s !important; }
 
 @keyframes pbBounce {
 	0%, 80%, 100% { transform: scale(0); }
@@ -789,147 +772,171 @@
 }
 
 /* ==========================================================================
-   Input Bar Area
+   Redesigned Minimalist Message Box (2-Tier Grid Layout)
    ========================================================================== */
-.poshtibank-input-bar {
-	position: relative;
-	background: #ffffff;
-	border-top: 1px solid var(--pb-border);
-	padding: 10px 14px;
-	display: flex;
-	align-items: flex-end;
-	gap: 8px;
-	flex-shrink: 0;
-	box-shadow: 0 -2px 10px rgba(15, 23, 42, 0.02);
+#poshtibank-widget-root .poshtibank-input-bar {
+	display: grid !important;
+	grid-template-columns: 1fr auto !important;
+	grid-template-areas:
+		"text text"
+		"tools actions" !important;
+	gap: 8px 12px !important;
+	background: #ffffff !important;
+	border-top: 1px solid var(--pb-border) !important;
+	padding: 12px 14px !important;
+	position: relative !important;
+	box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.04) !important;
+	flex-shrink: 0 !important;
 }
 
-.poshtibank-input-tools {
-	display: flex;
-	align-items: center;
-	gap: 3px;
-	margin-bottom: 3px;
+#poshtibank-widget-root #poshtibank-input-text {
+	grid-area: text !important;
+	width: 100% !important;
+	min-height: 44px !important;
+	max-height: 100px !important;
+	height: 44px !important;
+	padding: 9px 12px !important;
+	border: 1px solid #e2e8f0 !important;
+	border-radius: var(--pb-radius-md) !important;
+	background: #f8fafc !important;
+	color: #0f172a !important;
+	font-size: 13.5px !important;
+	line-height: 1.5 !important;
+	resize: none !important;
+	outline: none !important;
+	box-shadow: none !important;
+	margin: 0 !important;
+	transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-.poshtibank-btn-tool {
-	background: none;
-	border: none;
-	color: #64748b;
-	width: 32px;
-	height: 32px;
-	padding: 0;
-	border-radius: 9px;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: var(--pb-transition);
+#poshtibank-widget-root #poshtibank-input-text:focus {
+	background: #ffffff !important;
+	border-color: var(--pb-primary) !important;
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
 }
 
-.poshtibank-btn-tool:hover {
-	color: var(--pb-primary);
-	background: var(--pb-primary-light);
-	transform: translateY(-1px);
+#poshtibank-widget-root #poshtibank-input-text::placeholder {
+	color: #94a3b8 !important;
 }
 
-.poshtibank-btn-tool:active {
-	transform: translateY(0);
+#poshtibank-widget-root .poshtibank-input-tools {
+	grid-area: tools !important;
+	display: flex !important;
+	align-items: center !important;
+	gap: 6px !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
-.poshtibank-btn-tool svg {
-	width: 18px;
-	height: 18px;
+#poshtibank-widget-root .poshtibank-btn-tool {
+	width: 32px !important;
+	height: 32px !important;
+	min-width: 32px !important;
+	min-height: 32px !important;
+	border-radius: var(--pb-radius-sm) !important;
+	background: #f1f5f9 !important;
+	border: 1px solid #e2e8f0 !important;
+	color: #475569 !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	cursor: pointer !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	transition: all 0.2s ease !important;
 }
 
-.poshtibank-input-bar textarea {
-	flex: 1;
-	border: 1px solid var(--pb-border);
-	border-radius: 14px;
-	padding: 9px 14px;
-	font-size: 13px;
-	resize: none;
-	max-height: 110px;
-	outline: none;
-	line-height: 1.45;
-	font-family: inherit;
-	background: #f8fafc;
-	transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+#poshtibank-widget-root .poshtibank-btn-tool:hover {
+	background: #e2e8f0 !important;
+	color: var(--pb-primary) !important;
+	border-color: #cbd5e1 !important;
 }
 
-.poshtibank-input-bar textarea:focus {
-	background: #ffffff;
-	border-color: var(--pb-primary);
-	box-shadow: 0 0 0 3px var(--pb-primary-glow);
+#poshtibank-widget-root .poshtibank-btn-tool svg {
+	width: 17px !important;
+	height: 17px !important;
+	stroke: currentColor !important;
+	fill: none !important;
+	stroke-width: 2 !important;
 }
 
-.poshtibank-input-actions {
-	display: flex;
-	align-items: center;
-	margin-bottom: 2px;
+#poshtibank-widget-root .poshtibank-input-actions {
+	grid-area: actions !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: flex-end !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
-.poshtibank-btn-send {
-	width: 38px;
-	height: 38px;
-	border-radius: var(--pb-radius-full);
-	background: var(--pb-primary);
-	background: linear-gradient(135deg, var(--pb-primary) 0%, color-mix(in srgb, var(--pb-primary) 85%, #000) 100%);
-	color: #ffffff;
-	border: none;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	box-shadow: 0 4px 12px -2px var(--pb-primary-glow);
-	transition: var(--pb-transition);
+#poshtibank-widget-root .poshtibank-btn-send {
+	width: 34px !important;
+	height: 34px !important;
+	min-width: 34px !important;
+	min-height: 34px !important;
+	border-radius: 50% !important;
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
+	border: none !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	cursor: pointer !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3) !important;
+	transition: all 0.2s ease !important;
 }
 
-.poshtibank-btn-send:hover {
-	transform: translateY(-1px);
-	box-shadow: 0 6px 16px -2px var(--pb-primary-glow-strong);
+#poshtibank-widget-root .poshtibank-btn-send:hover {
+	transform: scale(1.05) !important;
+	box-shadow: 0 5px 12px rgba(37, 99, 235, 0.4) !important;
 }
 
-.poshtibank-btn-send:active {
-	transform: translateY(0) scale(0.96);
+#poshtibank-widget-root .poshtibank-btn-send:active {
+	transform: scale(0.96) !important;
 }
 
-.poshtibank-btn-send svg {
-	width: 17px;
-	height: 17px;
-	transform: rotate(180deg); /* Adjust for RTL */
+#poshtibank-widget-root .poshtibank-btn-send svg {
+	width: 16px !important;
+	height: 16px !important;
+	stroke: #ffffff !important;
+	fill: none !important;
+	stroke-width: 2 !important;
+	transform: rotate(180deg) !important; /* Adjust for RTL */
 }
 
 /* ==========================================================================
    Voice Recording Bar Overlay
    ========================================================================== */
-.poshtibank-voice-bar {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: #ffffff;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 0 16px;
-	z-index: 10;
-	border-radius: 0;
-	animation: pbFadeIn 0.2s ease;
+#poshtibank-widget-root .poshtibank-voice-bar {
+	position: absolute !important;
+	top: 0 !important;
+	left: 0 !important;
+	right: 0 !important;
+	bottom: 0 !important;
+	background: #ffffff !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+	padding: 0 16px !important;
+	z-index: 10 !important;
+	border-radius: 0 !important;
+	animation: pbFadeIn 0.2s ease !important;
 }
 
-.poshtibank-voice-rec-dot {
-	width: 11px;
-	height: 11px;
-	background: #dc2626;
-	border-radius: var(--pb-radius-full);
-	animation: pbRecPulse 1.3s infinite;
+#poshtibank-widget-root .poshtibank-voice-rec-dot {
+	width: 11px !important;
+	height: 11px !important;
+	background: #dc2626 !important;
+	border-radius: 50% !important;
+	animation: pbRecPulse 1.3s infinite !important;
 }
 
 @keyframes pbRecPulse {
 	0% {
 		transform: scale(0.95);
-		box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.65);
+		box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
 	}
 	70% {
 		transform: scale(1.05);
@@ -941,541 +948,496 @@
 	}
 }
 
-.poshtibank-voice-timer {
-	font-family: monospace;
-	font-size: 14px;
-	font-weight: 700;
-	color: #dc2626;
-	direction: ltr;
+#poshtibank-widget-root .poshtibank-voice-timer {
+	font-family: monospace !important;
+	font-size: 14px !important;
+	font-weight: 700 !important;
+	color: #dc2626 !important;
+	direction: ltr !important;
 }
 
-.poshtibank-voice-actions {
-	display: flex;
-	gap: 8px;
+#poshtibank-widget-root .poshtibank-voice-actions {
+	display: flex !important;
+	gap: 8px !important;
 }
 
-.poshtibank-btn-vaction {
-	width: 34px;
-	height: 34px;
-	border-radius: var(--pb-radius-full);
-	border: none;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-	color: #ffffff;
-	transition: var(--pb-transition);
+#poshtibank-widget-root .poshtibank-btn-vaction {
+	width: 32px !important;
+	height: 32px !important;
+	border-radius: 50% !important;
+	border: none !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	cursor: pointer !important;
+	transition: all 0.2s ease !important;
 }
 
-.poshtibank-btn-vaction.btn-cancel {
-	background: #fee2e2;
-	color: #dc2626;
+#poshtibank-widget-root .poshtibank-btn-vaction.btn-cancel {
+	background: #fee2e2 !important;
+	color: #dc2626 !important;
 }
 
-.poshtibank-btn-vaction.btn-cancel:hover {
-	background: #fecaca;
-	transform: translateY(-1px);
+#poshtibank-widget-root .poshtibank-btn-vaction.btn-cancel:hover {
+	background: #fecaca !important;
 }
 
-.poshtibank-btn-vaction.btn-confirm {
-	background: var(--pb-primary);
-	color: #ffffff;
-	box-shadow: 0 3px 8px -1px var(--pb-primary-glow);
+#poshtibank-widget-root .poshtibank-btn-vaction.btn-confirm {
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
 }
 
-.poshtibank-btn-vaction.btn-confirm:hover {
-	background: var(--pb-primary-hover);
-	transform: translateY(-1px);
+#poshtibank-widget-root .poshtibank-btn-vaction.btn-confirm:hover {
+	transform: scale(1.05) !important;
 }
 
-.poshtibank-btn-vaction svg {
-	width: 16px;
-	height: 16px;
+#poshtibank-widget-root .poshtibank-btn-vaction svg {
+	width: 16px !important;
+	height: 16px !important;
+	stroke: currentColor !important;
+	fill: none !important;
+	stroke-width: 2 !important;
 }
 
 /* ==========================================================================
-   Rich Media Message Bubbles
+   Rich Media Messages (Audio, Images, Files, WooCommerce Cards)
    ========================================================================== */
 
 /* Voice Audio Player */
-.poshtibank-audio-player {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	min-width: 210px;
-	padding: 5px 0;
+#poshtibank-widget-root .poshtibank-audio-player {
+	display: flex !important;
+	align-items: center !important;
+	gap: 12px !important;
+	min-width: 200px !important;
+	padding: 4px 0 !important;
 }
 
-.poshtibank-audio-play-btn {
-	width: 34px;
-	height: 34px;
-	border-radius: var(--pb-radius-full);
-	background: rgba(0, 0, 0, 0.08);
-	border: none;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: inherit;
-	flex-shrink: 0;
-	transition: var(--pb-transition);
+#poshtibank-widget-root .poshtibank-audio-play-btn {
+	width: 32px !important;
+	height: 32px !important;
+	border-radius: 50% !important;
+	border: none !important;
+	cursor: pointer !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	flex-shrink: 0 !important;
+	transition: all 0.2s ease !important;
 }
 
-.poshtibank-audio-play-btn:hover {
-	background: rgba(0, 0, 0, 0.14);
-	transform: scale(1.04);
+#poshtibank-widget-root .msg-admin .poshtibank-audio-play-btn {
+	background: #f1f5f9 !important;
+	color: #0f172a !important;
 }
 
-.msg-user .poshtibank-audio-play-btn {
-	background: rgba(255, 255, 255, 0.28);
-	color: #ffffff;
+#poshtibank-widget-root .msg-admin .poshtibank-audio-play-btn:hover {
+	background: #e2e8f0 !important;
 }
 
-.msg-user .poshtibank-audio-play-btn:hover {
-	background: rgba(255, 255, 255, 0.38);
+#poshtibank-widget-root .msg-user .poshtibank-audio-play-btn {
+	background: rgba(255, 255, 255, 0.25) !important;
+	color: #ffffff !important;
 }
 
-.poshtibank-audio-play-btn svg {
-	width: 15px;
-	height: 15px;
+#poshtibank-widget-root .msg-user .poshtibank-audio-play-btn:hover {
+	background: rgba(255, 255, 255, 0.35) !important;
 }
 
-.poshtibank-audio-track {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
+#poshtibank-widget-root .poshtibank-audio-play-btn svg {
+	width: 14px !important;
+	height: 14px !important;
+	fill: currentColor !important;
+	stroke: none !important;
 }
 
-.poshtibank-audio-progress {
-	width: 100%;
-	height: 5px;
-	background: rgba(0, 0, 0, 0.12);
-	border-radius: var(--pb-radius-full);
-	cursor: pointer;
-	position: relative;
-	overflow: hidden;
+#poshtibank-widget-root .poshtibank-audio-track {
+	flex: 1 1 0% !important;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 4px !important;
 }
 
-.msg-user .poshtibank-audio-progress {
-	background: rgba(255, 255, 255, 0.3);
+#poshtibank-widget-root .poshtibank-audio-progress {
+	width: 100% !important;
+	height: 4px !important;
+	background: rgba(0, 0, 0, 0.1) !important;
+	border-radius: var(--pb-radius-full) !important;
+	cursor: pointer !important;
+	position: relative !important;
 }
 
-.poshtibank-audio-progress-bar {
-	height: 100%;
-	background: var(--pb-primary);
-	border-radius: var(--pb-radius-full);
-	width: 0%;
-	transition: width 0.1s linear;
+#poshtibank-widget-root .msg-user .poshtibank-audio-progress {
+	background: rgba(255, 255, 255, 0.3) !important;
 }
 
-.msg-user .poshtibank-audio-progress-bar {
-	background: #ffffff;
+#poshtibank-widget-root .poshtibank-audio-progress-bar {
+	height: 100% !important;
+	background: var(--pb-primary) !important;
+	border-radius: var(--pb-radius-full) !important;
+	width: 0% !important;
 }
 
-.poshtibank-audio-time {
-	font-size: 10.5px;
-	direction: ltr;
-	opacity: 0.82;
-	font-weight: 500;
+#poshtibank-widget-root .msg-user .poshtibank-audio-progress-bar {
+	background: #ffffff !important;
+}
+
+#poshtibank-widget-root .poshtibank-audio-time {
+	font-size: 10px !important;
+	direction: ltr !important;
+	opacity: 0.8 !important;
+	font-weight: 500 !important;
 }
 
 /* Image Message Bubble */
-.poshtibank-msg-image {
-	max-width: 230px;
-	border-radius: var(--pb-radius-md);
-	overflow: hidden;
-	cursor: pointer;
-	margin-bottom: 4px;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+#poshtibank-widget-root .poshtibank-msg-image {
+	max-width: 220px !important;
+	border-radius: var(--pb-radius-md) !important;
+	overflow: hidden !important;
+	cursor: pointer !important;
+	margin-bottom: 4px !important;
 }
 
-.poshtibank-msg-image img {
-	width: 100%;
-	height: auto;
-	display: block;
-	transition: opacity 0.2s ease, filter 0.2s ease;
+#poshtibank-widget-root .poshtibank-msg-image img {
+	width: 100% !important;
+	height: auto !important;
+	display: block !important;
+	transition: opacity 0.2s ease !important;
 }
 
-.poshtibank-msg-image img:hover {
-	opacity: 0.95;
-	filter: brightness(0.97);
+#poshtibank-widget-root .poshtibank-msg-image img:hover {
+	opacity: 0.9 !important;
 }
 
 /* Document/File Bubble */
-.poshtibank-msg-file {
-	display: flex;
-	align-items: center;
-	gap: 11px;
-	padding: 5px 0;
-	text-decoration: none;
-	color: inherit;
+#poshtibank-widget-root .poshtibank-msg-file {
+	display: flex !important;
+	align-items: center !important;
+	gap: 10px !important;
+	padding: 4px 0 !important;
+	text-decoration: none !important;
+	color: inherit !important;
 }
 
-.poshtibank-file-icon {
-	width: 36px;
-	height: 36px;
-	background: rgba(0, 0, 0, 0.07);
-	border-radius: 10px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	transition: var(--pb-transition);
+#poshtibank-widget-root .poshtibank-file-icon {
+	width: 34px !important;
+	height: 34px !important;
+	border-radius: var(--pb-radius-sm) !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	flex-shrink: 0 !important;
 }
 
-.msg-user .poshtibank-file-icon {
-	background: rgba(255, 255, 255, 0.22);
+#poshtibank-widget-root .msg-admin .poshtibank-file-icon {
+	background: #f1f5f9 !important;
+	color: #0f172a !important;
 }
 
-.poshtibank-file-icon svg {
-	width: 19px;
-	height: 19px;
+#poshtibank-widget-root .msg-user .poshtibank-file-icon {
+	background: rgba(255, 255, 255, 0.25) !important;
+	color: #ffffff !important;
 }
 
-.poshtibank-file-info {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
+#poshtibank-widget-root .poshtibank-file-icon svg {
+	width: 18px !important;
+	height: 18px !important;
+	stroke: currentColor !important;
+	fill: none !important;
 }
 
-.poshtibank-file-name {
-	font-size: 12.5px;
-	font-weight: 700;
-	word-break: break-all;
+#poshtibank-widget-root .poshtibank-file-name {
+	font-size: 12.5px !important;
+	font-weight: 700 !important;
+	word-break: break-all !important;
 }
 
-.poshtibank-file-size {
-	font-size: 10.5px;
-	opacity: 0.75;
-	direction: ltr;
+#poshtibank-widget-root .poshtibank-file-size {
+	font-size: 10px !important;
+	opacity: 0.75 !important;
+	direction: ltr !important;
 }
 
 /* WooCommerce Product Card */
-.poshtibank-product-card {
-	background: #ffffff;
-	border: 1px solid var(--pb-border);
-	border-radius: var(--pb-radius-lg);
-	overflow: hidden;
-	margin-top: 5px;
-	box-shadow: var(--pb-shadow-sm);
-	max-width: 250px;
-	transition: var(--pb-transition);
+#poshtibank-widget-root .poshtibank-product-card {
+	background: #ffffff !important;
+	border: 1px solid var(--pb-border) !important;
+	border-radius: var(--pb-radius-lg) !important;
+	overflow: hidden !important;
+	margin-top: 4px !important;
+	box-shadow: var(--pb-shadow-sm) !important;
+	max-width: 240px !important;
 }
 
-.poshtibank-product-card:hover {
-	box-shadow: var(--pb-shadow-md);
-	border-color: #cbd5e1;
+#poshtibank-widget-root .poshtibank-product-thumb {
+	width: 100% !important;
+	height: 130px !important;
+	background: #f1f5f9 !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	overflow: hidden !important;
 }
 
-.poshtibank-product-thumb {
-	width: 100%;
-	height: 135px;
-	background: #f1f5f9;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	overflow: hidden;
+#poshtibank-widget-root .poshtibank-product-thumb img {
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover !important;
 }
 
-.poshtibank-product-thumb img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	transition: transform 0.3s ease;
+#poshtibank-widget-root .poshtibank-product-details {
+	padding: 10px 12px !important;
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 6px !important;
 }
 
-.poshtibank-product-details {
-	padding: 12px 14px;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
+#poshtibank-widget-root .poshtibank-product-title {
+	font-size: 13px !important;
+	font-weight: 700 !important;
+	color: var(--pb-text) !important;
+	margin: 0 !important;
 }
 
-.poshtibank-product-title {
-	font-size: 13px;
-	font-weight: 700;
-	color: var(--pb-text);
-	margin: 0;
-	line-height: 1.4;
+#poshtibank-widget-root .poshtibank-product-price {
+	font-size: 13px !important;
+	font-weight: 800 !important;
+	color: var(--pb-primary) !important;
 }
 
-.poshtibank-product-price {
-	font-size: 13.5px;
-	font-weight: 800;
-	color: var(--pb-primary);
-}
-
-.poshtibank-btn-product-buy {
-	display: block;
-	text-align: center;
-	padding: 9px 12px;
-	background: var(--pb-primary);
+#poshtibank-widget-root .poshtibank-btn-product-buy {
+	display: block !important;
+	text-align: center !important;
+	padding: 8px 12px !important;
+	background: var(--pb-primary) !important;
 	color: #ffffff !important;
-	border-radius: var(--pb-radius-sm);
-	font-size: 12px;
-	font-weight: 700;
-	text-decoration: none;
-	transition: var(--pb-transition);
-	margin-top: 4px;
-	box-shadow: 0 2px 8px -1px var(--pb-primary-glow);
+	border-radius: var(--pb-radius-sm) !important;
+	font-size: 12px !important;
+	font-weight: 700 !important;
+	text-decoration: none !important;
+	margin-top: 4px !important;
+	transition: background-color 0.2s ease !important;
 }
 
-.poshtibank-btn-product-buy:hover {
-	background: var(--pb-primary-hover);
-	transform: translateY(-1px);
-	box-shadow: 0 4px 12px -1px var(--pb-primary-glow-strong);
+#poshtibank-widget-root .poshtibank-btn-product-buy:hover {
+	background: var(--pb-primary-hover) !important;
 }
 
 /* Coupon Card */
-.poshtibank-coupon-card {
-	background: #fffbeb;
-	border: 1.5px dashed #f59e0b;
-	border-radius: var(--pb-radius-lg);
-	padding: 14px 16px;
-	margin-top: 5px;
-	max-width: 250px;
-	text-align: center;
-	box-shadow: 0 3px 10px rgba(245, 158, 11, 0.08);
+#poshtibank-widget-root .poshtibank-coupon-card {
+	background: #fffbeb !important;
+	border: 1.5px dashed #f59e0b !important;
+	border-radius: var(--pb-radius-lg) !important;
+	padding: 12px 14px !important;
+	margin-top: 4px !important;
+	max-width: 240px !important;
+	text-align: center !important;
 }
 
-.poshtibank-coupon-badge {
-	display: inline-block;
-	background: #fef3c7;
-	color: #b45309;
-	font-size: 11px;
-	font-weight: 700;
-	padding: 3px 10px;
-	border-radius: var(--pb-radius-full);
-	margin-bottom: 6px;
+#poshtibank-widget-root .poshtibank-coupon-badge {
+	display: inline-block !important;
+	background: #fef3c7 !important;
+	color: #b45309 !important;
+	font-size: 11px !important;
+	font-weight: 700 !important;
+	padding: 2px 8px !important;
+	border-radius: var(--pb-radius-full) !important;
+	margin-bottom: 6px !important;
 }
 
-.poshtibank-coupon-code {
-	font-family: monospace;
-	font-size: 16.5px;
-	font-weight: 800;
-	letter-spacing: 1px;
-	color: #92400e;
-	margin: 4px 0 9px;
+#poshtibank-widget-root .poshtibank-coupon-code {
+	font-family: monospace !important;
+	font-size: 16px !important;
+	font-weight: 800 !important;
+	letter-spacing: 1px !important;
+	color: #92400e !important;
+	margin: 4px 0 8px !important;
 }
 
-.poshtibank-btn-copy-coupon {
-	width: 100%;
-	padding: 8px 12px;
-	background: #f59e0b;
-	color: #ffffff;
-	border: none;
-	border-radius: var(--pb-radius-sm);
-	font-size: 11.5px;
-	font-weight: 700;
-	cursor: pointer;
-	box-shadow: 0 3px 8px rgba(245, 158, 11, 0.3);
-	transition: var(--pb-transition);
+#poshtibank-widget-root .poshtibank-btn-copy-coupon {
+	width: 100% !important;
+	padding: 7px 10px !important;
+	background: #f59e0b !important;
+	color: #ffffff !important;
+	border-radius: var(--pb-radius-sm) !important;
+	font-size: 11px !important;
+	font-weight: 700 !important;
+	transition: background-color 0.2s ease !important;
 }
 
-.poshtibank-btn-copy-coupon:hover {
-	background: #d97706;
-	transform: translateY(-1px);
+#poshtibank-widget-root .poshtibank-btn-copy-coupon:hover {
+	background: #d97706 !important;
 }
 
-.poshtibank-btn-copy-coupon.copied {
-	background: var(--pb-success);
-	box-shadow: 0 3px 8px rgba(16, 185, 129, 0.3);
+#poshtibank-widget-root .poshtibank-btn-copy-coupon.copied {
+	background: var(--pb-success) !important;
 }
 
 /* CSAT Satisfaction Survey Card */
-.poshtibank-csat-card {
-	background: #ffffff;
-	border: 1px solid var(--pb-border);
-	border-radius: var(--pb-radius-lg);
-	padding: 16px;
-	margin: 10px 0;
-	box-shadow: var(--pb-shadow-md);
-	text-align: center;
+#poshtibank-widget-root .poshtibank-csat-card {
+	background: #ffffff !important;
+	border: 1px solid var(--pb-border) !important;
+	border-radius: var(--pb-radius-lg) !important;
+	padding: 14px !important;
+	margin: 10px 0 !important;
+	box-shadow: var(--pb-shadow-sm) !important;
+	text-align: center !important;
 }
 
-.poshtibank-csat-card h5 {
-	margin: 0 0 12px;
-	font-size: 13.5px;
-	font-weight: 700;
-	color: var(--pb-text);
+#poshtibank-widget-root .poshtibank-csat-card h5 {
+	margin: 0 0 10px !important;
+	font-size: 13px !important;
+	font-weight: 700 !important;
+	color: var(--pb-text) !important;
 }
 
-.poshtibank-csat-stars {
-	display: flex;
-	justify-content: center;
-	gap: 8px;
-	margin-bottom: 12px;
-	direction: ltr;
+#poshtibank-widget-root .poshtibank-csat-stars {
+	display: flex !important;
+	justify-content: center !important;
+	gap: 6px !important;
+	margin-bottom: 10px !important;
+	direction: ltr !important;
 }
 
-.poshtibank-star-btn {
-	background: none;
-	border: none;
-	font-size: 24px;
-	cursor: pointer;
-	opacity: 0.3;
-	transition: opacity 0.2s ease, transform 0.2s var(--pb-ease), filter 0.2s ease;
-	line-height: 1;
-	padding: 2px;
+#poshtibank-widget-root .poshtibank-star-btn {
+	background: none !important;
+	border: none !important;
+	font-size: 22px !important;
+	cursor: pointer !important;
+	opacity: 0.3 !important;
+	transition: all 0.15s ease !important;
+	line-height: 1 !important;
+	padding: 2px !important;
 }
 
-/* Soft, pleasant hover instead of jarring 1.15 scale pop */
-.poshtibank-star-btn:hover,
-.poshtibank-star-btn.active {
-	opacity: 1;
-	transform: scale(1.1);
-	filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.4));
+#poshtibank-widget-root .poshtibank-star-btn:hover,
+#poshtibank-widget-root .poshtibank-star-btn.active {
+	opacity: 1 !important;
+	transform: scale(1.1) !important;
 }
 
-.poshtibank-csat-comment {
-	width: 100%;
-	border: 1px solid var(--pb-border);
-	border-radius: var(--pb-radius-md);
-	padding: 8px 12px;
-	font-size: 12.5px;
-	resize: none;
-	margin-bottom: 10px;
-	outline: none;
-	font-family: inherit;
-	background: #f8fafc;
-	transition: border-color 0.2s ease;
+#poshtibank-widget-root .poshtibank-csat-comment {
+	width: 100% !important;
+	border: 1px solid var(--pb-border) !important;
+	border-radius: var(--pb-radius-sm) !important;
+	padding: 6px 10px !important;
+	font-size: 12px !important;
+	resize: none !important;
+	margin-bottom: 8px !important;
+	outline: none !important;
+	background: #f8fafc !important;
 }
 
-.poshtibank-csat-comment:focus {
-	background: #ffffff;
-	border-color: var(--pb-primary);
+#poshtibank-widget-root .poshtibank-csat-comment:focus {
+	background: #ffffff !important;
+	border-color: var(--pb-primary) !important;
 }
 
-.poshtibank-btn-csat-submit {
-	padding: 8px 18px;
-	background: var(--pb-primary);
-	color: #ffffff;
-	border: none;
-	border-radius: var(--pb-radius-sm);
-	font-size: 12px;
-	font-weight: 700;
-	cursor: pointer;
-	box-shadow: 0 3px 8px -1px var(--pb-primary-glow);
-	transition: var(--pb-transition);
+#poshtibank-widget-root .poshtibank-btn-csat-submit {
+	padding: 6px 14px !important;
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
+	border-radius: var(--pb-radius-sm) !important;
+	font-size: 12px !important;
+	font-weight: 700 !important;
 }
 
-.poshtibank-btn-csat-submit:hover {
-	background: var(--pb-primary-hover);
-	transform: translateY(-1px);
-}
-
-/* Proactive Toast Notification (Exit-Intent / Checkout) */
-.poshtibank-proactive-toast {
-	position: absolute;
-	bottom: 78px;
-	background: #ffffff;
-	border-radius: var(--pb-radius-lg);
-	border: 1px solid rgba(226, 232, 240, 0.9);
-	box-shadow: var(--pb-shadow);
-	padding: 13px 15px;
-	max-width: 290px;
-	display: flex;
-	align-items: flex-start;
-	gap: 12px;
-	cursor: pointer;
-	z-index: 100;
-	animation: pbSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-	transition: transform 0.2s var(--pb-ease), box-shadow 0.2s var(--pb-ease);
-}
-
-.poshtibank-proactive-toast:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 28px 50px -12px rgba(15, 23, 42, 0.22);
+/* Proactive Toast Notification */
+#poshtibank-widget-root .poshtibank-proactive-toast {
+	position: absolute !important;
+	bottom: 76px !important;
+	background: #ffffff !important;
+	border-radius: var(--pb-radius-lg) !important;
+	border: 1px solid var(--pb-border) !important;
+	box-shadow: var(--pb-shadow-lg) !important;
+	padding: 12px 14px !important;
+	max-width: 280px !important;
+	display: flex !important;
+	align-items: flex-start !important;
+	gap: 10px !important;
+	cursor: pointer !important;
+	z-index: 100 !important;
+	animation: pbSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 #poshtibank-widget-root.pos-bottom-right .poshtibank-proactive-toast {
-	right: 0;
+	right: 0 !important;
 }
 
 #poshtibank-widget-root.pos-bottom-left .poshtibank-proactive-toast {
-	left: 0;
+	left: 0 !important;
 }
 
-.poshtibank-proactive-avatar {
-	width: 34px;
-	height: 34px;
-	background: var(--pb-primary);
-	color: #ffffff;
-	border-radius: var(--pb-radius-full);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	box-shadow: 0 3px 8px var(--pb-primary-glow);
+#poshtibank-widget-root .poshtibank-proactive-avatar {
+	width: 32px !important;
+	height: 32px !important;
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
+	border-radius: 50% !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	flex-shrink: 0 !important;
 }
 
-.poshtibank-proactive-avatar svg {
-	width: 18px;
-	height: 18px;
+#poshtibank-widget-root .poshtibank-proactive-avatar svg {
+	width: 17px !important;
+	height: 17px !important;
+	stroke: #ffffff !important;
+	fill: none !important;
 }
 
-.poshtibank-proactive-content p {
-	margin: 0;
-	font-size: 12.5px;
-	line-height: 1.55;
-	color: var(--pb-text);
-	font-weight: 600;
+#poshtibank-widget-root .poshtibank-proactive-content p {
+	margin: 0 !important;
+	font-size: 12px !important;
+	line-height: 1.5 !important;
+	color: var(--pb-text) !important;
+	font-weight: 600 !important;
 }
 
-.poshtibank-proactive-close {
-	background: none;
-	border: none;
-	color: var(--pb-text-muted);
-	font-size: 18px;
-	cursor: pointer;
-	padding: 0 0 4px 4px;
-	line-height: 1;
-	transition: color 0.15s ease;
-}
-
-.poshtibank-proactive-close:hover {
-	color: var(--pb-text);
+#poshtibank-widget-root .poshtibank-proactive-close {
+	background: none !important;
+	border: none !important;
+	color: var(--pb-text-muted) !important;
+	font-size: 16px !important;
+	cursor: pointer !important;
+	padding: 0 0 4px 4px !important;
+	line-height: 1 !important;
 }
 
 /* Seamless Handoff Banner */
-.poshtibank-handoff-banner {
-	background: #f8fafc;
-	border-top: 1px solid var(--pb-border);
-	padding: 9px 15px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	font-size: 11.5px;
-	color: var(--pb-text-muted);
+#poshtibank-widget-root .poshtibank-handoff-banner {
+	background: #f1f5f9 !important;
+	border-top: 1px solid var(--pb-border) !important;
+	padding: 8px 14px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+	font-size: 11px !important;
+	color: var(--pb-text-muted) !important;
 }
 
-.poshtibank-handoff-links {
-	display: flex;
-	gap: 6px;
+#poshtibank-widget-root .poshtibank-handoff-links {
+	display: flex !important;
+	gap: 6px !important;
 }
 
-.poshtibank-btn-handoff {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	padding: 4px 9px;
-	border-radius: var(--pb-radius-sm);
-	background: #ffffff;
-	border: 1px solid var(--pb-border);
-	color: var(--pb-text);
-	text-decoration: none;
-	font-weight: 700;
-	font-size: 11px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-	transition: var(--pb-transition);
+#poshtibank-widget-root .poshtibank-btn-handoff {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 4px !important;
+	padding: 3px 8px !important;
+	border-radius: var(--pb-radius-sm) !important;
+	background: #ffffff !important;
+	border: 1px solid var(--pb-border) !important;
+	color: var(--pb-text) !important;
+	text-decoration: none !important;
+	font-weight: 700 !important;
+	font-size: 11px !important;
 }
 
-.poshtibank-btn-handoff:hover {
-	border-color: var(--pb-primary);
-	color: var(--pb-primary);
-	transform: translateY(-1px);
-	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+#poshtibank-widget-root .poshtibank-btn-handoff:hover {
+	border-color: var(--pb-primary) !important;
+	color: var(--pb-primary) !important;
 }
 
 /* ==========================================================================
@@ -1484,27 +1446,31 @@
 @media (max-width: 480px) {
 	#poshtibank-widget-root.pos-bottom-right,
 	#poshtibank-widget-root.pos-bottom-left {
-		right: 0;
-		left: 0;
-		bottom: 0;
+		right: 0 !important;
+		left: 0 !important;
+		bottom: 0 !important;
 	}
 
-	.poshtibank-launcher {
-		position: fixed;
-		bottom: 18px;
-		right: 18px;
+	#poshtibank-widget-root .poshtibank-launcher {
+		position: fixed !important;
+		bottom: 18px !important;
+		right: 18px !important;
 	}
 
-	.poshtibank-window {
-		position: fixed;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
+	#poshtibank-widget-root .poshtibank-window {
+		position: fixed !important;
+		top: 0 !important;
+		right: 0 !important;
+		bottom: 0 !important;
+		left: 0 !important;
 		width: 100% !important;
 		height: 100% !important;
 		max-height: 100% !important;
-		border-radius: 0;
-		border: none;
+		border-radius: 0 !important;
+		border: none !important;
+	}
+
+	#poshtibank-widget-root .poshtibank-win-header {
+		border-radius: 0 !important;
 	}
 }
