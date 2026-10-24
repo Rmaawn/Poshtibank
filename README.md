@@ -104,12 +104,6 @@ export default {
 
 ---
 
-## 👨‍💻 توسعه‌دهنده
-توسعه داده شده توسط **[آرمان محبعلی](https://armanmohebali.ir/)**  
-مخزن پروژه در گیت‌هاب: [https://github.com/Rmaawn/Poshtibank](https://github.com/Rmaawn/Poshtibank)
-
----
-
 ## 📄 لایسنس
 پشتیبانک تحت پروانه نرم‌افزار آزاد **GNU General Public License v2 (یا بالاتر)** منتشر شده و ۱۰۰٪ رایگان و متن‌باز است.
 مشاهده متن کامل پروانه: [LICENSE](LICENSE)
