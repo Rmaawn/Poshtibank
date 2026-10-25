@@ -118,7 +118,8 @@
 }
 
 #poshtibank-widget-root svg {
-	display: block !important;
+	/* No !important: the JS toggles play/pause icons through inline styles. */
+	display: block;
 	vertical-align: middle !important;
 	flex-shrink: 0 !important;
 }
@@ -189,7 +190,8 @@
 }
 
 #poshtibank-widget-root .poshtibank-launcher-icon {
-	display: flex !important;
+	/* Visibility is controlled by the JS (inline display), never by CSS. */
+	display: flex;
 	align-items: center !important;
 	justify-content: center !important;
 	width: 26px !important;
@@ -212,7 +214,8 @@
 	position: absolute !important;
 	top: -3px !important;
 	left: -3px !important;
-	display: flex !important;
+	/* Hidden by default via inline style; the JS shows it on unread messages. */
+	display: flex;
 	align-items: center !important;
 	justify-content: center !important;
 	min-width: 20px !important;
@@ -235,7 +238,8 @@
 #poshtibank-widget-root .poshtibank-window {
 	position: absolute !important;
 	bottom: 74px !important;
-	display: flex !important;
+	/* Must stay non-important: JS sets style.display = 'flex' / 'none'. */
+	display: flex;
 	flex-direction: column !important;
 	width: 392px !important;
 	height: 600px !important;
@@ -370,7 +374,8 @@
 
 /* Header icon buttons: dark glyph on a light chip */
 #poshtibank-widget-root .poshtibank-btn-icon {
-	display: flex !important;
+	/* Back button visibility is toggled by the JS inline style. */
+	display: flex;
 	align-items: center !important;
 	justify-content: center !important;
 	width: 34px !important;
@@ -865,7 +870,8 @@
 
 /* Typing indicator */
 #poshtibank-widget-root .poshtibank-typing {
-	display: flex !important;
+	/* Shown/hidden by the JS inline style. */
+	display: flex;
 	align-items: center !important;
 	gap: 4px !important;
 	padding: 0 18px 6px !important;
@@ -1049,7 +1055,8 @@
 #poshtibank-widget-root .poshtibank-voice-bar {
 	position: absolute !important;
 	inset: 0 !important;
-	display: flex !important;
+	/* The overlay must stay hidden until the JS starts a recording. */
+	display: flex;
 	align-items: center !important;
 	justify-content: space-between !important;
 	gap: 12px !important;
