@@ -37,6 +37,8 @@ class Poshtibank_Admin {
 		add_action( 'wp_ajax_poshtibank_test_ai', array( $this, 'ajax_test_ai' ) );
 		add_action( 'admin_post_poshtibank_update_session_status', array( $this, 'handle_update_session_status' ) );
 		add_action( 'admin_notices', array( $this, 'render_admin_notices' ) );
+		add_action( 'wp_ajax_poshtibank_send_admin_reply', array( $this, 'ajax_send_admin_reply' ) );
+		add_action( 'wp_ajax_poshtibank_poll_conversation', array( $this, 'ajax_poll_conversation' ) );
 	}
 
 	/**
@@ -69,7 +71,7 @@ class Poshtibank_Admin {
 			'poshtibank',
 			__( 'گفتگوهای زنده — پشتیبانک', 'poshtibank' ),
 			__( 'گفتگوهای زنده', 'poshtibank' ),
-			'manage_options',
+			$this->chat_capability(),
 			'poshtibank-chats',
 			array( $this, 'render_chats_page' )
 		);
@@ -162,7 +164,9 @@ class Poshtibank_Admin {
 			wp_die( esc_html__( 'شما اجازه دسترسی به این بخش را ندارید.', 'poshtibank' ) );
 		}
 
-		$session_id = isset( $_GET['session_id'] ) ? sanitize_text_field( wp_unslash( $_GET['session_id'] ) ) : '';
+		$session_id = isset( $_GET['session_id'] ) && is_string( $_GET['session_id'] )
+			? sanitize_text_field( wp_unslash( $_GET['session_id'] ) )
+			: '';
 
 		if ( '' !== $session_id ) {
 			$this->render_conversation( $session_id );
@@ -768,11 +772,11 @@ class Poshtibank_Admin {
 	 * Render status notices for the conversations screens.
 	 */
 	public function render_admin_notices() {
-		if ( empty( $_GET['poshtibank_notice'] ) ) {
+		if ( empty( $_GET['poshtibank_notice'] ) || ! is_string( $_GET['poshtibank_notice'] ) ) {
 			return;
 		}
 
-		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		$page = isset( $_GET['page'] ) && is_string( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 		if ( 'poshtibank-chats' !== $page ) {
 			return;
 		}
@@ -795,6 +799,127 @@ class Poshtibank_Admin {
 			'<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
 			esc_attr( $type ),
 			esc_html( $text )
+		);
+	}
+
+	/**
+	 * AJAX: Send a reply from a dashboard administrator to the customer.
+	 */
+	public function ajax_send_admin_reply() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! $this->can_manage_chats() ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ), 403 );
+		}
+
+		$session_id = isset( $_POST['session_id'] ) ? sanitize_text_field( wp_unslash( $_POST['session_id'] ) ) : '';
+		$content    = isset( $_POST['message'] ) ? trim( wp_kses_post( wp_unslash( $_POST['message'] ) ) ) : '';
+
+		if ( '' === $session_id ) {
+			wp_send_json_error( array( 'message' => __( 'شناسه گفتگو نامعتبر است.', 'poshtibank' ) ) );
+		}
+
+		if ( '' === $content ) {
+			wp_send_json_error( array( 'message' => __( 'متن پاسخ نمی‌تواند خالی باشد.', 'poshtibank' ) ) );
+		}
+
+		$session = Poshtibank_DB::get_session( $session_id );
+
+		if ( ! $session ) {
+			wp_send_json_error( array( 'message' => __( 'گفتگوی مورد نظر یافت نشد.', 'poshtibank' ) ) );
+		}
+
+		if ( 'blocked' === $session->status ) {
+			wp_send_json_error( array( 'message' => __( 'این گفتگو مسدود شده است. ابتدا مسدودی را رفع کنید.', 'poshtibank' ) ) );
+		}
+
+		$current_user = wp_get_current_user();
+
+		$message_id = Poshtibank_DB::create_message(
+			array(
+				'session_id'  => $session->session_id,
+				'sender'      => 'admin',
+				'sender_id'   => (string) $current_user->ID,
+				'sender_name' => ! empty( $current_user->display_name ) ? $current_user->display_name : __( 'پشتیبان', 'poshtibank' ),
+				'type'        => 'text',
+				'content'     => $content,
+			)
+		);
+
+		if ( ! $message_id ) {
+			wp_send_json_error( array( 'message' => __( 'خطا در ثبت پاسخ. لطفاً مجدداً تلاش کنید.', 'poshtibank' ) ) );
+		}
+
+		// Answering a closed conversation brings it back to life.
+		if ( 'closed' === $session->status ) {
+			Poshtibank_DB::update_session( $session->session_id, array( 'status' => 'open' ) );
+		}
+
+		// The operator has now read everything the customer sent.
+		Poshtibank_DB::mark_messages_as_read( $session->session_id, 'admin' );
+
+		$message = Poshtibank_DB::get_message( $message_id );
+
+		wp_send_json_success(
+			array(
+				'message' => array(
+					'id'          => (int) $message->id,
+					'message_id'  => $message->message_id,
+					'sender'      => $message->sender,
+					'sender_name' => $message->sender_name,
+					'type'        => $message->type,
+					'content'     => $message->content,
+					'time'        => mysql2date( 'Y/m/d H:i', $message->created_at ),
+				),
+				'status'  => 'closed' === $session->status ? 'open' : $session->status,
+			)
+		);
+	}
+
+	/**
+	 * AJAX: Return messages that arrived after the last one on screen.
+	 */
+	public function ajax_poll_conversation() {
+		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+
+		if ( ! $this->can_manage_chats() ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ), 403 );
+		}
+
+		$session_id = isset( $_POST['session_id'] ) ? sanitize_text_field( wp_unslash( $_POST['session_id'] ) ) : '';
+		$after_id   = isset( $_POST['after_id'] ) ? absint( $_POST['after_id'] ) : 0;
+
+		$session = empty( $session_id ) ? null : Poshtibank_DB::get_session( $session_id );
+
+		if ( ! $session ) {
+			wp_send_json_error( array( 'message' => __( 'گفتگوی مورد نظر یافت نشد.', 'poshtibank' ) ) );
+		}
+
+		$messages = Poshtibank_DB::get_new_messages_since( $session->session_id, $after_id, 'admin' );
+
+		if ( ! empty( $messages ) ) {
+			Poshtibank_DB::mark_messages_as_read( $session->session_id, 'admin' );
+		}
+
+		$payload = array();
+
+		foreach ( $messages as $message ) {
+			$payload[] = array(
+				'id'          => (int) $message->id,
+				'message_id'  => $message->message_id,
+				'sender'      => $message->sender,
+				'sender_name' => $message->sender_name,
+				'type'        => $message->type,
+				'content'     => $message->content,
+				'time'        => mysql2date( 'Y/m/d H:i', $message->created_at ),
+			);
+		}
+
+		wp_send_json_success(
+			array(
+				'messages' => $payload,
+				'status'   => $session->status,
+			)
 		);
 	}
 }

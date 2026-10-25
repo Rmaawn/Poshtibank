@@ -319,5 +319,191 @@
 				$status.removeClass('loading').addClass('error').text(poshtibankAdmin.i18n.error);
 			});
 		});
+		// ==================================================================
+		// Conversation screen: live replies
+		// ==================================================================
+		(function initConversationScreen() {
+			var $stream = $('#poshtibank-admin-stream');
+
+			if (!$stream.length) {
+				return;
+			}
+
+			var $reply = $('#poshtibank-admin-reply');
+			var $send = $('#poshtibank-admin-send');
+			var $error = $('#poshtibank-admin-reply-error');
+			var sessionId = $stream.attr('data-session-id');
+			var lastId = parseInt($stream.attr('data-last-id'), 10) || 0;
+			var sending = false;
+
+			function escapeHtml(value) {
+				return $('<div>').text(value === null || value === undefined ? '' : value).html();
+			}
+
+			function contentHtml(message) {
+				if (message.type === 'image') {
+					return '<a href="' + escapeHtml(message.content) + '" target="_blank" rel="noopener noreferrer">مشاهده تصویر</a>';
+				}
+				if (message.type === 'voice') {
+					return '<audio controls preload="none" src="' + escapeHtml(message.content) + '"></audio>';
+				}
+				if (message.type === 'file') {
+					return '<a href="' + escapeHtml(message.content) + '" target="_blank" rel="noopener noreferrer">دریافت فایل ضمیمه</a>';
+				}
+				return escapeHtml(message.content).replace(/\n/g, '<br>');
+			}
+
+			function senderMeta(message) {
+				if (message.sender === 'admin') {
+					return { className: 'bubble-admin', label: message.sender_name || 'پشتیبان' };
+				}
+				if (message.sender === 'ai') {
+					return { className: 'bubble-ai', label: 'دستیار هوشمند' };
+				}
+				if (message.sender === 'system') {
+					return { className: 'bubble-system', label: 'سیستم' };
+				}
+				return { className: 'bubble-user', label: 'کاربر' };
+			}
+
+			function updateStatusBadge(status) {
+				var labels = { open: 'باز', closed: 'بسته‌شده', blocked: 'مسدود' };
+				var classes = { open: 'badge-open', closed: 'badge-closed', blocked: 'badge-blocked' };
+
+				$('.poshtibank-header .poshtibank-status-badge')
+					.removeClass('badge-open badge-closed badge-blocked')
+					.addClass(classes[status] || 'badge-open')
+					.text(labels[status] || labels.open);
+			}
+
+			function isNearBottom() {
+				var el = $stream[0];
+				return (el.scrollHeight - el.scrollTop - el.clientHeight) < 90;
+			}
+
+			function scrollToBottom() {
+				$stream.scrollTop($stream[0].scrollHeight);
+			}
+
+			function appendMessage(message) {
+				if (message.message_id && $stream.find('[data-message-id="' + message.message_id + '"]').length) {
+					return;
+				}
+
+				var meta = senderMeta(message);
+				var bubble = $('<div class="poshtibank-chat-bubble"></div>')
+					.addClass(meta.className)
+					.attr('data-message-id', message.message_id || '');
+
+				$('<span class="bubble-sender"></span>').text(meta.label).appendTo(bubble);
+				$('<div class="bubble-content"></div>').html(contentHtml(message)).appendTo(bubble);
+				$('<span class="bubble-time" dir="ltr"></span>').text(message.time || '').appendTo(bubble);
+
+				$stream.find('.poshtibank-chat-empty').remove();
+				$stream.append(bubble);
+
+				if (message.id && message.id > lastId) {
+					lastId = message.id;
+				}
+			}
+
+			function poll() {
+				if (document.hidden) {
+					return;
+				}
+
+				$.post(poshtibankAdmin.ajaxUrl, {
+					action: 'poshtibank_poll_conversation',
+					nonce: poshtibankAdmin.nonce,
+					session_id: sessionId,
+					after_id: lastId
+				}, function (res) {
+					if (!res.success || !res.data.messages || !res.data.messages.length) {
+						return;
+					}
+
+					if (res.data.status) {
+						updateStatusBadge(res.data.status);
+					}
+
+					var stick = isNearBottom();
+
+					$.each(res.data.messages, function (index, message) {
+						appendMessage(message);
+					});
+
+					if (stick) {
+						scrollToBottom();
+					}
+				}, 'json');
+			}
+
+			function sendReply() {
+				if (!$reply.length || sending) {
+					return;
+				}
+
+				var text = $.trim($reply.val());
+
+				if (!text) {
+					return;
+				}
+
+				sending = true;
+				$send.prop('disabled', true);
+				$error.hide().text('');
+
+				$.post(poshtibankAdmin.ajaxUrl, {
+					action: 'poshtibank_send_admin_reply',
+					nonce: poshtibankAdmin.nonce,
+					session_id: sessionId,
+					message: text
+				}, function (res) {
+					sending = false;
+					$send.prop('disabled', false);
+
+					if (!res.success) {
+						$error.text((res.data && res.data.message) || poshtibankAdmin.i18n.error).show();
+						return;
+					}
+
+					$reply.val('').css('height', 'auto').trigger('focus');
+					appendMessage(res.data.message);
+
+					if (res.data.status) {
+						updateStatusBadge(res.data.status);
+					}
+
+					scrollToBottom();
+				}, 'json').fail(function () {
+					sending = false;
+					$send.prop('disabled', false);
+					$error.text(poshtibankAdmin.i18n.error).show();
+				});
+			}
+
+			if ($reply.length && $send.length) {
+				$send.on('click', function (e) {
+					e.preventDefault();
+					sendReply();
+				});
+
+				$reply.on('keydown', function (e) {
+					if (e.key === 'Enter' && !e.shiftKey) {
+						e.preventDefault();
+						sendReply();
+					}
+				});
+
+				$reply.on('input', function () {
+					this.style.height = 'auto';
+					this.style.height = Math.min(this.scrollHeight, 140) + 'px';
+				});
+			}
+
+			scrollToBottom();
+			window.setInterval(poll, 5000);
+		})();
+
 	});
 })(jQuery);

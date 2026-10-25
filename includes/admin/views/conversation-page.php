@@ -105,6 +105,20 @@ if ( ! empty( $messages ) ) {
 				</form>
 			<?php endif; ?>
 
+			<?php if ( 'closed' === $status ) : ?>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<input type="hidden" name="action" value="poshtibank_update_session_status">
+					<input type="hidden" name="session_id" value="<?php echo esc_attr( $session->session_id ); ?>">
+					<input type="hidden" name="status" value="open">
+					<input type="hidden" name="redirect_to" value="<?php echo esc_url( $current_url ); ?>">
+					<?php wp_nonce_field( 'poshtibank_update_session_status' ); ?>
+					<button type="submit" class="button button-secondary">
+						<span class="dashicons dashicons-update"></span>
+						<?php esc_html_e( 'بازگشایی گفتگو', 'poshtibank' ); ?>
+					</button>
+				</form>
+			<?php endif; ?>
+
 			<?php if ( 'blocked' === $status ) : ?>
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 					<input type="hidden" name="action" value="poshtibank_update_session_status">
@@ -195,6 +209,24 @@ if ( ! empty( $messages ) ) {
 					<?php endforeach; ?>
 				<?php endif; ?>
 			</div>
+
+			<?php if ( 'blocked' === $status ) : ?>
+				<div class="poshtibank-conversation-blocked">
+					<?php esc_html_e( 'این گفتگو مسدود شده است. برای پاسخ‌دهی ابتدا مسدودی کاربر را رفع کنید.', 'poshtibank' ); ?>
+				</div>
+			<?php else : ?>
+				<div class="poshtibank-conversation-composer">
+					<label class="screen-reader-text" for="poshtibank-admin-reply"><?php esc_html_e( 'متن پاسخ', 'poshtibank' ); ?></label>
+					<textarea id="poshtibank-admin-reply" rows="2" placeholder="<?php esc_attr_e( 'پاسخ خود را بنویسید...', 'poshtibank' ); ?>"></textarea>
+					<p class="poshtibank-composer-error" id="poshtibank-admin-reply-error" style="display:none;"></p>
+					<div class="poshtibank-conversation-composer-actions">
+						<span class="poshtibank-composer-hint"><?php esc_html_e( 'Enter برای ارسال · Shift + Enter برای خط جدید', 'poshtibank' ); ?></span>
+						<button type="button" class="button button-primary" id="poshtibank-admin-send">
+							<?php esc_html_e( 'ارسال پاسخ', 'poshtibank' ); ?>
+						</button>
+					</div>
+				</div>
+			<?php endif; ?>
 		</section>
 
 		<aside class="poshtibank-card poshtibank-conversation-side">
