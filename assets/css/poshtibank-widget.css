@@ -1648,7 +1648,10 @@
 	display: flex !important;
 	align-items: flex-start !important;
 	gap: 10px !important;
-	max-width: 286px !important;
+	/* The root only measures the launcher, so the toast needs a real width:
+	   max-width alone collapsed it to 58px and wrapped one word per line. */
+	width: 288px !important;
+	max-width: calc(100vw - 40px) !important;
 	padding: 12px 13px !important;
 	background: var(--pb-surface-raised) !important;
 	border: 1px solid var(--pb-border) !important;
@@ -1685,6 +1688,11 @@
 	stroke: currentColor !important;
 	fill: none !important;
 	stroke-width: 2 !important;
+}
+
+#poshtibank-widget-root .poshtibank-proactive-content {
+	flex: 1 1 auto !important;
+	min-width: 0 !important;
 }
 
 #poshtibank-widget-root .poshtibank-proactive-content p {
