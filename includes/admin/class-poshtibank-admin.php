@@ -37,6 +37,7 @@ class Poshtibank_Admin {
 		add_action( 'wp_ajax_poshtibank_test_ai', array( $this, 'ajax_test_ai' ) );
 		add_action( 'admin_post_poshtibank_update_session_status', array( $this, 'handle_update_session_status' ) );
 		add_action( 'admin_notices', array( $this, 'render_admin_notices' ) );
+		add_action( 'admin_notices', array( $this, 'render_configuration_notices' ) );
 		add_action( 'wp_ajax_poshtibank_send_admin_reply', array( $this, 'ajax_send_admin_reply' ) );
 		add_action( 'wp_ajax_poshtibank_poll_conversation', array( $this, 'ajax_poll_conversation' ) );
 	}
@@ -801,6 +802,45 @@ class Poshtibank_Admin {
 			esc_attr( $type ),
 			esc_html( $text )
 		);
+	}
+
+	/**
+	 * Warn when an integration is switched on but cannot work.
+	 *
+	 * The connection tests validate what is currently typed into the form, so
+	 * a configuration that was never saved still passes them. These notices
+	 * read the saved option instead, which is what the site actually runs on.
+	 */
+	public function render_configuration_notices() {
+		$page = isset( $_GET['page'] ) && is_string( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		if ( 'poshtibank' !== $page ) {
+			return;
+		}
+
+		$settings = Poshtibank_Settings::get_settings();
+		$warnings = array();
+
+		if ( ! empty( $settings['ai']['enabled'] ) && empty( $settings['ai']['api_key'] ) ) {
+			$warnings[] = __( 'پاسخگوی هوش مصنوعی فعال است اما کلید API ذخیره نشده؛ به همین دلیل گزینه «چت سریع با هوش مصنوعی» در سایت نمایش داده نمی‌شود.', 'poshtibank' );
+		}
+
+		if ( ! empty( $settings['telegram']['enabled'] ) && ( empty( $settings['telegram']['bot_token'] ) || empty( $settings['telegram']['chat_id'] ) ) ) {
+			$warnings[] = __( 'اتصال تلگرام فعال است اما توکن ربات یا شناسه چت ذخیره نشده؛ پیام‌های سایت به تلگرام نمی‌رسند.', 'poshtibank' );
+		}
+
+		if ( ! empty( $settings['bale']['enabled'] ) && ( empty( $settings['bale']['bot_token'] ) || empty( $settings['bale']['chat_id'] ) ) ) {
+			$warnings[] = __( 'اتصال بله فعال است اما توکن ربات یا شناسه چت ذخیره نشده؛ پیام‌های سایت به بله نمی‌رسند.', 'poshtibank' );
+		}
+
+		if ( empty( $warnings ) ) {
+			return;
+		}
+
+		echo '<div class="notice notice-warning"><p><strong>' . esc_html__( 'تنظیمات ناقص', 'poshtibank' ) . '</strong></p><ul style="margin: 6px 0; list-style: disc; padding-inline-start: 22px;">';
+		foreach ( $warnings as $warning ) {
+			echo '<li>' . esc_html( $warning ) . '</li>';
+		}
+		echo '</ul><p>' . esc_html__( 'این هشدارها از تنظیمات ذخیره‌شده خوانده می‌شوند. تست‌های اتصال فقط مقدار فرم را بررسی می‌کنند، پس تا وقتی دکمه «ذخیره تنظیمات» زده نشود، سایت همان تنظیمات قبلی را اجرا می‌کند.', 'poshtibank' ) . '</p></div>';
 	}
 
 	/**
