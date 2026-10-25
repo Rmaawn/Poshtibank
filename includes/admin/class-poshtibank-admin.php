@@ -820,6 +820,10 @@ class Poshtibank_Admin {
 		$settings = Poshtibank_Settings::get_settings();
 		$warnings = array();
 
+		if ( ! Poshtibank_Schema::verify_tables_exist() ) {
+			$warnings[] = __( 'جداول پایگاه‌داده ساخته نشده‌اند؛ تا زمانی که این وضعیت برطرف نشود هیچ گفتگویی ثبت نمی‌شود. یک‌بار افزونه را غیرفعال و دوباره فعال کنید.', 'poshtibank' );
+		}
+
 		if ( ! empty( $settings['ai']['enabled'] ) && empty( $settings['ai']['api_key'] ) ) {
 			$warnings[] = __( 'پاسخگوی هوش مصنوعی فعال است اما کلید API ذخیره نشده؛ به همین دلیل گزینه «چت سریع با هوش مصنوعی» در سایت نمایش داده نمی‌شود.', 'poshtibank' );
 		}

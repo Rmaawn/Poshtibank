@@ -138,7 +138,10 @@ class Poshtibank_REST_Client {
 			);
 
 			if ( ! $new_session_id ) {
-				return new WP_REST_Response( array( 'error' => __( 'خطا در ایجاد نشست گفتگو.', 'poshtibank' ) ), 500 );
+				return new WP_REST_Response(
+					array( 'error' => $this->database_error_message( __( 'خطا در ایجاد نشست گفتگو.', 'poshtibank' ) ) ),
+					500
+				);
 			}
 
 			$session = Poshtibank_DB::get_session( $new_session_id );
@@ -371,7 +374,10 @@ class Poshtibank_REST_Client {
 		);
 
 		if ( ! $message_id ) {
-			return new WP_REST_Response( array( 'error' => __( 'خطا در ثبت پیام.', 'poshtibank' ) ), 500 );
+			return new WP_REST_Response(
+				array( 'error' => $this->database_error_message( __( 'خطا در ثبت پیام.', 'poshtibank' ) ) ),
+				500
+			);
 		}
 
 		$created_message = Poshtibank_DB::get_message( $message_id );
@@ -478,6 +484,28 @@ class Poshtibank_REST_Client {
 		Poshtibank_DB::update_session( $session_id, array( 'status' => 'closed' ) );
 
 		return new WP_REST_Response( array( 'success' => true ), 200 );
+	}
+
+	/**
+	 * Describe a database failure without leaking SQL to visitors.
+	 *
+	 * The reason used to be discarded, which left "خطا در ایجاد نشست گفتگو"
+	 * as the only clue. It is always logged, and shown to site administrators
+	 * who are the ones able to act on it.
+	 *
+	 * @param string $message Message to fall back to.
+	 * @return string
+	 */
+	protected function database_error_message( $message ) {
+		global $wpdb;
+
+		if ( empty( $wpdb->last_error ) ) {
+			return $message;
+		}
+
+		error_log( '[Poshtibank] ' . $wpdb->last_error );
+
+		return current_user_can( 'manage_options' ) ? $message . ' ' . $wpdb->last_error : $message;
 	}
 
 	/**
