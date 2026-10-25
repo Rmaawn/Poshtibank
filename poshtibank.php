@@ -3,7 +3,7 @@
  * Plugin Name: پشتیبانک — Poshtibank
  * Plugin URI:  https://github.com/Rmaawn/Poshtibank
  * Description: همه پشتیبانی سایت، در یک افزونه. سیستم چت آنلاین حرفه‌ای و رایگان وردپرس متصل به تلگرام و بله، بدون سرور واسط.
- * Version:     1.0.10
+ * Version:     1.0.12
  * Author:      آرمان محبعلی
  * Author URI:  https://armanmohebali.ir/
  * License:     GPL-2.0+
@@ -24,12 +24,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Currently active plugin version.
  */
-define( 'POSHTIBANK_VERSION', '1.0.10' );
+define( 'POSHTIBANK_VERSION', '1.0.12' );
 
 /**
  * Database schema version.
  */
-define( 'POSHTIBANK_DB_VERSION', '1.0.1' );
+define( 'POSHTIBANK_DB_VERSION', '1.0.2' );
 
 /**
  * Plugin root file path.
@@ -54,17 +54,21 @@ define( 'POSHTIBANK_BASENAME', plugin_basename( __FILE__ ) );
 /**
  * Code that runs during plugin activation.
  */
-function activate_poshtibank() {
-	require_once POSHTIBANK_PATH . 'includes/class-poshtibank-activator.php';
-	Poshtibank_Activator::activate();
+if ( ! function_exists( 'activate_poshtibank' ) ) {
+	function activate_poshtibank() {
+		require_once POSHTIBANK_PATH . 'includes/class-poshtibank-activator.php';
+		Poshtibank_Activator::activate();
+	}
 }
 
 /**
  * Code that runs during plugin deactivation.
  */
-function deactivate_poshtibank() {
-	require_once POSHTIBANK_PATH . 'includes/class-poshtibank-deactivator.php';
-	Poshtibank_Deactivator::deactivate();
+if ( ! function_exists( 'deactivate_poshtibank' ) ) {
+	function deactivate_poshtibank() {
+		require_once POSHTIBANK_PATH . 'includes/class-poshtibank-deactivator.php';
+		Poshtibank_Deactivator::deactivate();
+	}
 }
 
 register_activation_hook( __FILE__, 'activate_poshtibank' );
@@ -79,8 +83,10 @@ require_once POSHTIBANK_PATH . 'includes/class-poshtibank.php';
 /**
  * Begins execution of the plugin.
  */
-function run_poshtibank() {
-	$plugin = Poshtibank::get_instance();
-	$plugin->run();
+if ( ! function_exists( 'run_poshtibank' ) ) {
+	function run_poshtibank() {
+		$plugin = Poshtibank::get_instance();
+		$plugin->run();
+	}
 }
 run_poshtibank();

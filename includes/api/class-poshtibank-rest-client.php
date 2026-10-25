@@ -125,9 +125,15 @@ class Poshtibank_REST_Client {
 
 		// Create new session if does not exist
 		if ( ! $session ) {
+			// Always let the server mint a fresh UUID for new sessions instead of
+			// reusing whatever session_id the client sent.  A stale id from the
+			// visitor's localStorage may still exist in the DB under a different
+			// record (e.g. after a partial cleanup / re-install), which would
+			// trigger a UNIQUE-key constraint violation and silently fail the
+			// whole widget for that visitor.
 			$new_session_id = Poshtibank_DB::create_session(
 				array(
-					'session_id'   => $session_id,
+					'session_id'   => '',   // let create_session generate a fresh UUID
 					'user_name'    => ! empty( $params['user_name'] ) ? sanitize_text_field( $params['user_name'] ) : '',
 					'user_phone'   => ! empty( $params['user_phone'] ) ? sanitize_text_field( $params['user_phone'] ) : '',
 					'user_email'   => ! empty( $params['user_email'] ) ? sanitize_email( $params['user_email'] ) : '',

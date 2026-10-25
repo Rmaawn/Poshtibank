@@ -121,36 +121,46 @@ class Poshtibank_DB {
 
 		$table = self::get_sessions_table();
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$inserted = $wpdb->insert(
-			$table,
-			array(
-				'session_id'         => $data['session_id'],
-				'user_id'            => absint( $data['user_id'] ),
-				'user_name'          => sanitize_text_field( $data['user_name'] ),
-				'user_phone'         => sanitize_text_field( $data['user_phone'] ),
-				'user_email'         => sanitize_email( $data['user_email'] ),
-				'ip_address'         => sanitize_text_field( $data['ip_address'] ),
-				'user_agent'         => sanitize_textarea_field( $data['user_agent'] ),
-				'current_page'       => esc_url_raw( $data['current_page'] ),
-				'referer'            => esc_url_raw( $data['referer'] ),
-				'status'             => sanitize_key( $data['status'] ),
-				'telegram_topic_id'  => ! empty( $data['telegram_topic_id'] ) ? intval( $data['telegram_topic_id'] ) : null,
-				'telegram_chat_id'   => ! empty( $data['telegram_chat_id'] ) ? sanitize_text_field( $data['telegram_chat_id'] ) : null,
-				'bale_chat_id'       => ! empty( $data['bale_chat_id'] ) ? sanitize_text_field( $data['bale_chat_id'] ) : null,
-				'assigned_to'        => ! empty( $data['assigned_to'] ) ? sanitize_text_field( $data['assigned_to'] ) : null,
-				'unread_admin_count' => absint( $data['unread_admin_count'] ),
-				'unread_user_count'  => absint( $data['unread_user_count'] ),
-				'metadata'           => $data['metadata'],
-				'last_activity'      => $data['last_activity'],
-				'created_at'         => $data['created_at'],
-				'updated_at'         => $data['updated_at'],
-			),
-			array(
-				'%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
-				'%d', '%s', '%s', '%s', '%d', '%d', '%s', '%s', '%s', '%s',
-			)
+		// Ensure tables exist before attempting insert.
+		if ( ! self::verify_tables_exist() ) {
+			Poshtibank_Schema::create_tables();
+		}
+
+		$insert_data = array(
+			'session_id'         => $data['session_id'],
+			'user_id'            => absint( $data['user_id'] ),
+			'user_name'          => sanitize_text_field( $data['user_name'] ),
+			'user_phone'         => sanitize_text_field( $data['user_phone'] ),
+			'user_email'         => sanitize_email( $data['user_email'] ),
+			'ip_address'         => sanitize_text_field( $data['ip_address'] ),
+			'user_agent'         => sanitize_textarea_field( $data['user_agent'] ),
+			'current_page'       => esc_url_raw( $data['current_page'] ),
+			'referer'            => esc_url_raw( $data['referer'] ),
+			'status'             => sanitize_key( $data['status'] ),
+			'telegram_topic_id'  => ! empty( $data['telegram_topic_id'] ) ? intval( $data['telegram_topic_id'] ) : null,
+			'telegram_chat_id'   => ! empty( $data['telegram_chat_id'] ) ? sanitize_text_field( $data['telegram_chat_id'] ) : null,
+			'bale_chat_id'       => ! empty( $data['bale_chat_id'] ) ? sanitize_text_field( $data['bale_chat_id'] ) : null,
+			'assigned_to'        => ! empty( $data['assigned_to'] ) ? sanitize_text_field( $data['assigned_to'] ) : null,
+			'unread_admin_count' => absint( $data['unread_admin_count'] ),
+			'unread_user_count'  => absint( $data['unread_user_count'] ),
+			'metadata'           => $data['metadata'],
+			'last_activity'      => $data['last_activity'],
+			'created_at'         => $data['created_at'],
+			'updated_at'         => $data['updated_at'],
 		);
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$inserted = $wpdb->insert( $table, $insert_data );
+
+		if ( ! $inserted ) {
+			error_log( '[Poshtibank create_session failed] ' . $wpdb->last_error );
+			// If table was missing or corrupted, attempt repair and retry once.
+			if ( ! self::verify_tables_exist() ) {
+				Poshtibank_Schema::create_tables();
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$inserted = $wpdb->insert( $table, $insert_data );
+			}
+		}
 
 		return $inserted ? $data['session_id'] : false;
 	}
@@ -325,26 +335,37 @@ class Poshtibank_DB {
 
 		$table = self::get_messages_table();
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$inserted = $wpdb->insert(
-			$table,
-			array(
-				'message_id'  => $data['message_id'],
-				'session_id'  => sanitize_text_field( $data['session_id'] ),
-				'sender'      => sanitize_key( $data['sender'] ),
-				'sender_id'   => sanitize_text_field( $data['sender_id'] ),
-				'sender_name' => sanitize_text_field( $data['sender_name'] ),
-				'type'        => sanitize_key( $data['type'] ),
-				'content'     => wp_kses_post( $data['content'] ),
-				'metadata'    => $data['metadata'],
-				'is_read'     => absint( $data['is_read'] ),
-				'read_at'     => $data['read_at'],
-				'created_at'  => $data['created_at'],
-			),
-			array(
-				'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s',
-			)
+		// Ensure tables exist before attempting insert.
+		if ( ! self::verify_tables_exist() ) {
+			Poshtibank_Schema::create_tables();
+		}
+
+		$insert_data = array(
+			'message_id'  => $data['message_id'],
+			'session_id'  => sanitize_text_field( $data['session_id'] ),
+			'sender'      => sanitize_key( $data['sender'] ),
+			'sender_id'   => sanitize_text_field( $data['sender_id'] ),
+			'sender_name' => sanitize_text_field( $data['sender_name'] ),
+			'type'        => sanitize_key( $data['type'] ),
+			'content'     => wp_kses_post( $data['content'] ),
+			'metadata'    => $data['metadata'],
+			'is_read'     => absint( $data['is_read'] ),
+			'read_at'     => $data['read_at'],
+			'created_at'  => $data['created_at'],
 		);
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$inserted = $wpdb->insert( $table, $insert_data );
+
+		if ( ! $inserted ) {
+			error_log( '[Poshtibank create_message failed] ' . $wpdb->last_error );
+			// If table was missing or corrupted, attempt repair and retry once.
+			if ( ! self::verify_tables_exist() ) {
+				Poshtibank_Schema::create_tables();
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$inserted = $wpdb->insert( $table, $insert_data );
+			}
+		}
 
 		if ( ! $inserted ) {
 			return false;

@@ -60,9 +60,9 @@ class Poshtibank_Schema {
 			unread_admin_count int(11) NOT NULL DEFAULT 0,
 			unread_user_count int(11) NOT NULL DEFAULT 0,
 			metadata longtext DEFAULT NULL,
-			last_activity datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			last_activity datetime DEFAULT NULL,
+			created_at datetime DEFAULT NULL,
+			updated_at datetime DEFAULT NULL,
 			PRIMARY KEY  (id),
 			UNIQUE KEY session_id (session_id),
 			KEY status (status),
@@ -83,7 +83,7 @@ class Poshtibank_Schema {
 			metadata longtext DEFAULT NULL,
 			is_read tinyint(1) NOT NULL DEFAULT 0,
 			read_at datetime DEFAULT NULL,
-			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			created_at datetime DEFAULT NULL,
 			PRIMARY KEY  (id),
 			UNIQUE KEY message_id (message_id),
 			KEY session_id (session_id),
@@ -97,40 +97,34 @@ class Poshtibank_Schema {
 		$result['sessions'] = dbDelta( $sql_sessions );
 		$result['messages'] = dbDelta( $sql_messages );
 
-		// Only claim the schema is current once it actually is: a failed
-		// dbDelta must leave the version stale so the repair runs again.
+		// Fallback: If dbDelta failed to create any table, execute direct SQL queries.
+		if ( ! self::verify_tables_exist() ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->query( str_replace( 'CREATE TABLE', 'CREATE TABLE IF NOT EXISTS', $sql_sessions ) );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->query( str_replace( 'CREATE TABLE', 'CREATE TABLE IF NOT EXISTS', $sql_messages ) );
+		}
+
+		// Only claim the schema is current once it actually is:
 		if ( self::verify_tables_exist() ) {
 			update_option( 'poshtibank_db_version', POSHTIBANK_DB_VERSION );
+			delete_transient( 'poshtibank_schema_retry' );
 		} else {
-			error_log( '[Poshtibank] Table creation failed: ' . wp_json_encode( $result ) );
+			error_log( '[Poshtibank] Table creation failed: ' . $wpdb->last_error . ' | dbDelta log: ' . wp_json_encode( $result ) );
 		}
 
 		return $result;
 	}
 
 	/**
-	 * Repair the tables when the installed schema is behind.
-	 *
-	 * Activation was the only moment dbDelta ever ran, so a site whose tables
-	 * were never created, or were created by an older version, failed on every
-	 * insert with no way back. The version option is only written once the
-	 * tables verify, so a failed attempt is retried on a later request.
+	 * Repair the tables when the installed schema is behind or tables are missing.
 	 */
 	public static function maybe_upgrade() {
-		if ( POSHTIBANK_DB_VERSION === (string) get_option( 'poshtibank_db_version', '' ) ) {
-			return;
-		}
-
-		// Do not hammer DDL on every request when the database keeps refusing.
-		if ( get_transient( 'poshtibank_schema_retry' ) ) {
+		if ( self::verify_tables_exist() && POSHTIBANK_DB_VERSION === (string) get_option( 'poshtibank_db_version', '' ) ) {
 			return;
 		}
 
 		self::create_tables();
-
-		if ( POSHTIBANK_DB_VERSION !== (string) get_option( 'poshtibank_db_version', '' ) ) {
-			set_transient( 'poshtibank_schema_retry', 1, 5 * MINUTE_IN_SECONDS );
-		}
 	}
 
 	/**

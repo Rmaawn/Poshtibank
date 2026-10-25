@@ -325,6 +325,7 @@
 			return;
 		}
 
+		// Switch to chat view and initialize session.
 		switchView('chat');
 		initSession();
 	}
@@ -409,6 +410,9 @@
 
 		initSession(function () {
 			switchView('chat');
+		}, function (err) {
+			// Session init failed — show error in prechat form.
+			showPrechatError(config.i18n.connectionError);
 		});
 	}
 
@@ -475,9 +479,10 @@
 	/**
 	 * Initialize or resume session with server.
 	 *
-	 * @param {function} onComplete Completion callback.
+	 * @param {function} onComplete Completion callback (called on success).
+	 * @param {function} onError    Error callback (called on failure).
 	 */
-	function initSession(onComplete) {
+	function initSession(onComplete, onError) {
 		var payload = {
 			session_id: state.sessionId,
 			user_name: state.userName,
@@ -491,7 +496,17 @@
 		apiRequest('session/init', 'POST', payload, function (err, res) {
 			if (err) {
 				console.error('[Poshtibank]', err);
+				// If resuming a stored session failed, clear stale id and retry as a fresh session
+				if (state.sessionId && !payload._retriedFresh) {
+					state.sessionId = null;
+					localStorage.removeItem('poshtibank_session_id');
+					payload.session_id = '';
+					payload._retriedFresh = true;
+					initSession(onComplete, onError);
+					return;
+				}
 				reportFailure(err, config.i18n.connectionError);
+				if (onError) onError(err);
 				return;
 			}
 
@@ -584,6 +599,14 @@
 
 		// Honeypot check
 		if (elements.inputHoneypot.value) {
+			return;
+		}
+
+		// Guard: if session is not ready yet, initialize it and retry sending.
+		if (!state.sessionId) {
+			initSession(function () {
+				handleSendMessage();
+			});
 			return;
 		}
 
