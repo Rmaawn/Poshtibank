@@ -319,56 +319,5 @@
 				$status.removeClass('loading').addClass('error').text(poshtibankAdmin.i18n.error);
 			});
 		});
-
-		// Live Chats: View History Modal
-		$('.btn-view-chat').on('click', function () {
-			var sessionId = $(this).data('session-id');
-			var $modal = $('#poshtibank-chat-modal');
-			var $body = $('#modal-chat-messages');
-
-			$modal.fadeIn(200);
-			$body.html('<p style="text-align:center;">در حال بارگذاری گفتگو...</p>');
-
-			$.post(poshtibankAdmin.ajaxUrl, {
-				action: 'poshtibank_get_session_messages',
-				nonce: poshtibankAdmin.nonce,
-				session_id: sessionId
-			}, function (res) {
-				if (res.success && res.data.messages) {
-					if (res.data.messages.length === 0) {
-						$body.html('<p style="text-align:center; color:#94a3b8;">هنوز پیامی در این گفتگو رد و بدل نشده است.</p>');
-						return;
-					}
-
-					var html = '';
-					$.each(res.data.messages, function (idx, msg) {
-						var bubbleClass = 'bubble-user';
-						var senderLabel = 'کاربر';
-
-						if (msg.sender === 'admin') {
-							bubbleClass = 'bubble-admin';
-							senderLabel = 'پشتیبان';
-						} else if (msg.sender === 'ai') {
-							bubbleClass = 'bubble-ai';
-							senderLabel = 'هوش مصنوعی';
-						}
-
-						html += '<div class="poshtibank-chat-bubble ' + bubbleClass + '">';
-						html += '<strong>' + senderLabel + ':</strong> ' + msg.content;
-						html += '<span class="bubble-time" dir="ltr">' + msg.created_at + '</span>';
-						html += '</div>';
-					});
-
-					$body.html(html);
-				} else {
-					$body.html('<p style="color:#dc2626;">خطا در دریافت پیام‌ها.</p>');
-				}
-			}, 'json');
-		});
-
-		// Modal Close
-		$('.poshtibank-modal-close, .poshtibank-modal-overlay').on('click', function () {
-			$('#poshtibank-chat-modal').fadeOut(200);
-		});
 	});
 })(jQuery);

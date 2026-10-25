@@ -35,7 +35,6 @@ class Poshtibank_Admin {
 		add_action( 'wp_ajax_poshtibank_set_bale_webhook', array( $this, 'ajax_set_bale_webhook' ) );
 		add_action( 'wp_ajax_poshtibank_delete_bale_webhook', array( $this, 'ajax_delete_bale_webhook' ) );
 		add_action( 'wp_ajax_poshtibank_test_ai', array( $this, 'ajax_test_ai' ) );
-		add_action( 'wp_ajax_poshtibank_get_session_messages', array( $this, 'ajax_get_session_messages' ) );
 		add_action( 'admin_post_poshtibank_update_session_status', array( $this, 'handle_update_session_status' ) );
 		add_action( 'admin_notices', array( $this, 'render_admin_notices' ) );
 	}
@@ -159,8 +158,15 @@ class Poshtibank_Admin {
 	 * Render the Live Chats page.
 	 */
 	public function render_chats_page() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! $this->can_manage_chats() ) {
 			wp_die( esc_html__( 'شما اجازه دسترسی به این بخش را ندارید.', 'poshtibank' ) );
+		}
+
+		$session_id = isset( $_GET['session_id'] ) ? sanitize_text_field( wp_unslash( $_GET['session_id'] ) ) : '';
+
+		if ( '' !== $session_id ) {
+			$this->render_conversation( $session_id );
+			return;
 		}
 
 		global $wpdb;
@@ -172,6 +178,26 @@ class Poshtibank_Admin {
 		);
 
 		require_once POSHTIBANK_PATH . 'includes/admin/views/chats-page.php';
+	}
+
+	/**
+	 * Render a single conversation.
+	 *
+	 * The history is loaded on the server so the screen never depends on a
+	 * second request to display the messages.
+	 *
+	 * @param string $session_id Session identifier from the URL.
+	 */
+	protected function render_conversation( $session_id ) {
+		$session  = Poshtibank_DB::get_session( $session_id );
+		$messages = $session ? Poshtibank_DB::get_messages( $session->session_id, 200 ) : array();
+
+		if ( $session ) {
+			// Opening the conversation counts as reading the customer's messages.
+			Poshtibank_DB::mark_messages_as_read( $session->session_id, 'admin' );
+		}
+
+		require_once POSHTIBANK_PATH . 'includes/admin/views/conversation-page.php';
 	}
 
 	/*
@@ -663,33 +689,6 @@ class Poshtibank_Admin {
 			$err = $body['error']['message'] ?? __( 'کلید API نامعتبر است یا سهمیه تمام شده است.', 'poshtibank' );
 			wp_send_json_error( array( 'message' => __( 'خطا از سرویس‌دهنده هوش مصنوعی: ', 'poshtibank' ) . $err ) );
 		}
-	}
-
-	/**
-	 * AJAX: Retrieve message history for a session modal.
-	 */
-	public function ajax_get_session_messages() {
-		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
-
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
-		}
-
-		$session_id = isset( $_POST['session_id'] ) ? sanitize_text_field( wp_unslash( $_POST['session_id'] ) ) : '';
-
-		if ( empty( $session_id ) ) {
-			wp_send_json_error( array( 'message' => __( 'شناسه نشست نامعتبر است.', 'poshtibank' ) ) );
-		}
-
-		$session  = Poshtibank_DB::get_session( $session_id );
-		$messages = Poshtibank_DB::get_messages( $session_id, 100 );
-
-		wp_send_json_success(
-			array(
-				'session'  => $session,
-				'messages' => $messages,
-			)
-		);
 	}
 
 	/**

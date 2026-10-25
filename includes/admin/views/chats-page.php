@@ -111,9 +111,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 								<?php echo esc_html( $sess->last_activity ); ?>
 							</td>
 							<td>
-								<button type="button" class="button button-small btn-view-chat" data-session-id="<?php echo esc_attr( $sess->session_id ); ?>">
+								<a class="button button-small" href="<?php echo esc_url( add_query_arg( array( 'page' => 'poshtibank-chats', 'session_id' => $sess->session_id ), admin_url( 'admin.php' ) ) ); ?>">
 									<?php esc_html_e( 'مشاهده', 'poshtibank' ); ?>
-								</button>
+								</a>
 								<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="poshtibank-inline-form">
 									<input type="hidden" name="action" value="poshtibank_update_session_status">
 									<input type="hidden" name="session_id" value="<?php echo esc_attr( $sess->session_id ); ?>">
@@ -137,22 +137,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 				</tbody>
 			</table>
 		<?php endif; ?>
-	</div>
-
-	<!-- Modal for Viewing Chat History -->
-	<div id="poshtibank-chat-modal" class="poshtibank-modal" style="display:none;">
-		<div class="poshtibank-modal-overlay"></div>
-		<div class="poshtibank-modal-content">
-			<div class="poshtibank-modal-header">
-				<h3 id="modal-chat-title"><?php esc_html_e( 'تاریخچه گفتگو', 'poshtibank' ); ?></h3>
-				<button type="button" class="poshtibank-modal-close">&times;</button>
-			</div>
-			<div class="poshtibank-modal-body" id="modal-chat-messages">
-				<p><?php esc_html_e( 'در حال بارگذاری پیام‌ها...', 'poshtibank' ); ?></p>
-			</div>
-			<div class="poshtibank-modal-footer">
-				<button type="button" class="button button-secondary poshtibank-modal-close"><?php esc_html_e( 'بستن', 'poshtibank' ); ?></button>
-			</div>
-		</div>
 	</div>
 </div>
