@@ -491,6 +491,7 @@
 		apiRequest('session/init', 'POST', payload, function (err, res) {
 			if (err) {
 				console.error('[Poshtibank]', err);
+				reportFailure(err, config.i18n.connectionError);
 				return;
 			}
 
@@ -516,6 +517,47 @@
 
 			if (onComplete) onComplete();
 		});
+	}
+
+	/**
+	 * Explain a failed request inside the conversation.
+	 *
+	 * A silent console error looks like a broken widget, so the visitor gets
+	 * the server's own message when there is one.
+	 *
+	 * @param {object|string} err      Error from apiRequest.
+	 * @param {string}        fallback Localised message to use otherwise.
+	 */
+	function reportFailure(err, fallback) {
+		var message = fallback;
+
+		if (err && typeof err.error === 'string' && err.error) {
+			message = err.error;
+		} else if (err && err.code && typeof err.message === 'string' && err.message) {
+			message = err.message;
+		}
+
+		appendSystemNotice(message);
+	}
+
+	/**
+	 * Append a centred system notice to the stream.
+	 *
+	 * @param {string} text Notice text.
+	 */
+	function appendSystemNotice(text) {
+		if (!elements.stream) return;
+
+		var last = elements.stream.lastElementChild;
+		if (last && last.classList.contains('msg-system') && last.textContent === text) {
+			return;
+		}
+
+		var notice = document.createElement('div');
+		notice.className = 'poshtibank-msg msg-system';
+		notice.textContent = text;
+		elements.stream.appendChild(notice);
+		scrollStreamToBottom();
 	}
 
 	/**
@@ -549,8 +591,9 @@
 		elements.inputText.style.height = 'auto';
 
 		// Create optimistic bubble in UI
+		var tempId = 'temp-' + Date.now();
 		var tempMsg = {
-			message_id: 'temp-' + Date.now(),
+			message_id: tempId,
 			sender: 'user',
 			content: text,
 			created_at: formatTime(new Date()),
@@ -573,6 +616,15 @@
 		apiRequest('messages/send', 'POST', payload, function (err, res) {
 			if (err) {
 				console.error('[Poshtibank send error]', err);
+
+				// Withdraw the bubble and give the text back, so the visitor
+				// can retry without retyping.
+				var failed = document.getElementById('msg-' + tempId);
+				if (failed) failed.remove();
+
+				elements.inputText.value = text;
+				elements.inputText.style.height = 'auto';
+				reportFailure(err, config.i18n.sendFailed);
 				return;
 			}
 

@@ -139,6 +139,8 @@ class Poshtibank_Frontend {
 					'requiredFields'   => __( 'لطفاً نام و شماره همراه خود را وارد کنید.', 'poshtibank' ),
 					'phoneInvalid'     => __( 'شماره موبایل وارد شده صحیح نیست.', 'poshtibank' ),
 					'chatClosed'       => __( 'این گفتگو بسته شده است.', 'poshtibank' ),
+					'connectionError'  => __( 'ارتباط با سرور برقرار نشد. لطفاً چند لحظه بعد دوباره تلاش کنید.', 'poshtibank' ),
+					'sendFailed'       => __( 'پیام شما ارسال نشد.', 'poshtibank' ),
 					'handoffText'      => __( 'ادامه گفتگو در تلگرام / بله', 'poshtibank' ),
 					'ratingTitle'      => __( 'میزان رضایت شما از پاسخگویی چطور بود؟', 'poshtibank' ),
 					'ratingSubmit'     => __( 'ثبت نظر', 'poshtibank' ),
