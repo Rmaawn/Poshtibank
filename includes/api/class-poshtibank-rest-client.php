@@ -336,7 +336,7 @@ class Poshtibank_REST_Client {
 		}
 
 		// 4. Rate Limiting check
-		if ( ! $this->check_rate_limit( $session_id, $client_ip ) ) {
+		if ( ! $this->check_rate_limit( $session_id ) ) {
 			return new WP_REST_Response(
 				array( 'error' => __( 'تعداد پیام‌های ارسالی شما بیش از حد مجاز است. لطفاً یک دقیقه صبور باشید.', 'poshtibank' ) ),
 				429
@@ -484,10 +484,9 @@ class Poshtibank_REST_Client {
 	 * Check Rate Limit for Anti-Spam protection.
 	 *
 	 * @param string $session_id Session UUID.
-	 * @param string $ip         Client IP.
 	 * @return bool True if allowed, false if limit exceeded.
 	 */
-	protected function check_rate_limit( $session_id, $ip ) {
+	protected function check_rate_limit( $session_id ) {
 		global $wpdb;
 
 		$settings = Poshtibank_Settings::get_settings();
@@ -506,18 +505,10 @@ class Poshtibank_REST_Client {
 			)
 		);
 
-		// If aggressive spamming detected (2x limit), automatically blacklist IP
-		if ( intval( $count ) >= ( intval( $max_msgs ) * 2 ) && filter_var( $ip, FILTER_VALIDATE_IP ) ) {
-			$raw_settings = get_option( Poshtibank_Settings::OPTION_KEY, array() );
-			$current_blocked = (array) ( $raw_settings['security']['blocked_ips'] ?? array() );
-			if ( ! in_array( $ip, $current_blocked, true ) ) {
-				$current_blocked[] = $ip;
-				$raw_settings['security']['blocked_ips'] = $current_blocked;
-				Poshtibank_Settings::update_settings( $raw_settings );
-			}
-			return false;
-		}
-
+		// Throttling is enough. Banning an address here was permanent and
+		// silent, so a visitor who retried a few times lost the widget for
+		// good with no way to tell why. Operators can block a conversation
+		// explicitly from the dashboard.
 		return intval( $count ) < intval( $max_msgs );
 	}
 
@@ -547,7 +538,7 @@ class Poshtibank_REST_Client {
 		}
 
 		// 3. Rate Limit check
-		if ( ! $this->check_rate_limit( $session_id, $client_ip ) ) {
+		if ( ! $this->check_rate_limit( $session_id ) ) {
 			return new WP_REST_Response(
 				array( 'error' => __( 'تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً کمی صبر کنید.', 'poshtibank' ) ),
 				429
