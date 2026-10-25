@@ -39,6 +39,16 @@ class Poshtibank_DB {
 	}
 
 	/**
+	 * Verify that all required tables exist in the database.
+	 *
+	 * @return bool True if all tables exist, false otherwise.
+	 */
+	public static function verify_tables_exist() {
+		require_once POSHTIBANK_PATH . 'includes/db/class-poshtibank-schema.php';
+		return Poshtibank_Schema::verify_tables_exist();
+	}
+
+	/**
 	 * Generate a standard UUID v4 string.
 	 *
 	 * @return string

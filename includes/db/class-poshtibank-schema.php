@@ -27,7 +27,9 @@ class Poshtibank_Schema {
 	public static function create_tables() {
 		global $wpdb;
 
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		}
 
 		$charset_collate = $wpdb->get_charset_collate();
 
@@ -94,8 +96,10 @@ class Poshtibank_Schema {
 		) {$charset_collate};";
 
 		$result = array();
-		$result['sessions'] = dbDelta( $sql_sessions );
-		$result['messages'] = dbDelta( $sql_messages );
+		if ( function_exists( 'dbDelta' ) ) {
+			$result['sessions'] = dbDelta( $sql_sessions );
+			$result['messages'] = dbDelta( $sql_messages );
+		}
 
 		// Fallback: If dbDelta failed to create any table, execute direct SQL queries.
 		if ( ! self::verify_tables_exist() ) {
