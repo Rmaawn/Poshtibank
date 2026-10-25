@@ -961,3 +961,15 @@
 	border-color: var(--poshtibank-border-hover);
 	color: var(--poshtibank-text);
 }
+
+/* Inline row action forms (conversation status changes) */
+.poshtibank-inline-form {
+	display: inline-block;
+	margin: 0;
+	margin-inline-start: 4px;
+	vertical-align: middle;
+}
+
+.poshtibank-inline-form .button {
+	margin: 0;
+}

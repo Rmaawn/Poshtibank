@@ -114,11 +114,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 								<button type="button" class="button button-small btn-view-chat" data-session-id="<?php echo esc_attr( $sess->session_id ); ?>">
 									<?php esc_html_e( 'مشاهده', 'poshtibank' ); ?>
 								</button>
-								<?php if ( 'blocked' !== $sess->status ) : ?>
-									<button type="button" class="button button-small button-link-delete btn-block-chat" data-session-id="<?php echo esc_attr( $sess->session_id ); ?>" title="<?php esc_attr_e( 'مسدودسازی', 'poshtibank' ); ?>">
-										<?php esc_html_e( 'بلاک', 'poshtibank' ); ?>
-									</button>
-								<?php endif; ?>
+								<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="poshtibank-inline-form">
+									<input type="hidden" name="action" value="poshtibank_update_session_status">
+									<input type="hidden" name="session_id" value="<?php echo esc_attr( $sess->session_id ); ?>">
+									<input type="hidden" name="redirect_to" value="<?php echo esc_url( admin_url( 'admin.php?page=poshtibank-chats' ) ); ?>">
+									<?php wp_nonce_field( 'poshtibank_update_session_status' ); ?>
+									<?php if ( 'blocked' === $sess->status ) : ?>
+										<input type="hidden" name="status" value="open">
+										<button type="submit" class="button button-small">
+											<?php esc_html_e( 'رفع مسدودی', 'poshtibank' ); ?>
+										</button>
+									<?php else : ?>
+										<input type="hidden" name="status" value="blocked">
+										<button type="submit" class="button button-small button-link-delete" title="<?php esc_attr_e( 'مسدودسازی', 'poshtibank' ); ?>">
+											<?php esc_html_e( 'بلاک', 'poshtibank' ); ?>
+										</button>
+									<?php endif; ?>
+								</form>
 							</td>
 						</tr>
 					<?php endforeach; ?>

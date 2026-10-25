@@ -36,7 +36,8 @@ class Poshtibank_Admin {
 		add_action( 'wp_ajax_poshtibank_delete_bale_webhook', array( $this, 'ajax_delete_bale_webhook' ) );
 		add_action( 'wp_ajax_poshtibank_test_ai', array( $this, 'ajax_test_ai' ) );
 		add_action( 'wp_ajax_poshtibank_get_session_messages', array( $this, 'ajax_get_session_messages' ) );
-		add_action( 'wp_ajax_poshtibank_update_session_status', array( $this, 'ajax_update_session_status' ) );
+		add_action( 'admin_post_poshtibank_update_session_status', array( $this, 'handle_update_session_status' ) );
+		add_action( 'admin_notices', array( $this, 'render_admin_notices' ) );
 	}
 
 	/**
@@ -692,28 +693,109 @@ class Poshtibank_Admin {
 	}
 
 	/**
-	 * AJAX: Update session status (block, close, open).
+	 * Capability required to read and answer conversations.
+	 *
+	 * Defaults to site administrators but can be widened (for example to shop
+	 * managers) through the `poshtibank_chat_capability` filter.
+	 *
+	 * @return string
 	 */
-	public function ajax_update_session_status() {
-		check_ajax_referer( 'poshtibank_admin_action', 'nonce' );
+	protected function chat_capability() {
+		return (string) apply_filters( 'poshtibank_chat_capability', 'manage_options' );
+	}
 
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'poshtibank' ) ) );
+	/**
+	 * Whether the current user may manage conversations.
+	 *
+	 * @return bool
+	 */
+	protected function can_manage_chats() {
+		return current_user_can( $this->chat_capability() );
+	}
+
+	/**
+	 * Handle a conversation status change submitted from the dashboard.
+	 *
+	 * The session identifier travels inside the submitted form body and is
+	 * validated against the database before anything is written, so a missing
+	 * or malformed identifier can never reach the update query.
+	 */
+	public function handle_update_session_status() {
+		if ( ! $this->can_manage_chats() ) {
+			wp_die(
+				esc_html__( 'شما اجازه انجام این عملیات را ندارید.', 'poshtibank' ),
+				esc_html__( 'دسترسی غیرمجاز', 'poshtibank' ),
+				array( 'response' => 403 )
+			);
 		}
+
+		check_admin_referer( 'poshtibank_update_session_status' );
 
 		$session_id = isset( $_POST['session_id'] ) ? sanitize_text_field( wp_unslash( $_POST['session_id'] ) ) : '';
-		$status     = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : 'open';
+		$status     = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : '';
+		$redirect   = isset( $_POST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_POST['redirect_to'] ) ) : '';
 
-		if ( empty( $session_id ) || ! in_array( $status, array( 'open', 'closed', 'blocked' ), true ) ) {
-			wp_send_json_error( array( 'message' => __( 'پارامترهای ارسالی نامعتبر است.', 'poshtibank' ) ) );
+		if ( empty( $redirect ) ) {
+			$redirect = admin_url( 'admin.php?page=poshtibank-chats' );
 		}
 
-		$updated = Poshtibank_DB::update_session( $session_id, array( 'status' => $status ) );
-
-		if ( $updated ) {
-			wp_send_json_success( array( 'message' => __( 'وضعیت گفتگو به‌روزرسانی شد.', 'poshtibank' ) ) );
-		} else {
-			wp_send_json_error( array( 'message' => __( 'خطا در به‌روزرسانی وضعیت گفتگو.', 'poshtibank' ) ) );
+		if ( ! in_array( $status, array( 'open', 'closed', 'blocked' ), true ) ) {
+			$this->redirect_with_notice( $redirect, 'invalid_status' );
 		}
+
+		$session = empty( $session_id ) ? null : Poshtibank_DB::get_session( $session_id );
+
+		if ( ! $session ) {
+			$this->redirect_with_notice( $redirect, 'session_not_found' );
+		}
+
+		Poshtibank_DB::update_session( $session->session_id, array( 'status' => $status ) );
+
+		$this->redirect_with_notice( $redirect, 'status_updated' );
+	}
+
+	/**
+	 * Redirect back to a dashboard screen with a notice flag attached.
+	 *
+	 * @param string $url    Destination URL.
+	 * @param string $notice Notice key understood by render_admin_notices().
+	 */
+	protected function redirect_with_notice( $url, $notice ) {
+		wp_safe_redirect( add_query_arg( 'poshtibank_notice', $notice, $url ) );
+		exit;
+	}
+
+	/**
+	 * Render status notices for the conversations screens.
+	 */
+	public function render_admin_notices() {
+		if ( empty( $_GET['poshtibank_notice'] ) ) {
+			return;
+		}
+
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		if ( 'poshtibank-chats' !== $page ) {
+			return;
+		}
+
+		$notice = sanitize_key( wp_unslash( $_GET['poshtibank_notice'] ) );
+
+		$messages = array(
+			'status_updated'    => array( 'success', __( 'وضعیت گفتگو با موفقیت به‌روزرسانی شد.', 'poshtibank' ) ),
+			'invalid_status'    => array( 'error', __( 'وضعیت درخواستی نامعتبر است.', 'poshtibank' ) ),
+			'session_not_found' => array( 'error', __( 'گفتگوی مورد نظر یافت نشد. ممکن است حذف شده باشد.', 'poshtibank' ) ),
+		);
+
+		if ( ! isset( $messages[ $notice ] ) ) {
+			return;
+		}
+
+		list( $type, $text ) = $messages[ $notice ];
+
+		printf(
+			'<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
+			esc_attr( $type ),
+			esc_html( $text )
+		);
 	}
 }

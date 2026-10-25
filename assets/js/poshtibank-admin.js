@@ -366,28 +366,6 @@
 			}, 'json');
 		});
 
-		// Live Chats: Block Session
-		$('.btn-block-chat').on('click', function () {
-			if (!confirm(poshtibankAdmin.i18n.confirmBlock)) {
-				return;
-			}
-			var sessionId = $(this).data('session-id');
-			var $row = $('#session-row-' + sessionId);
-
-			$.post(poshtibankAdmin.ajaxUrl, {
-				action: 'poshtibank_update_session_status',
-				nonce: poshtibankAdmin.nonce,
-				session_id: sessionId,
-				status: 'blocked'
-			}, function (res) {
-				if (res.success) {
-					$row.find('.poshtibank-status-badge').removeClass('badge-open badge-closed').addClass('badge-blocked').text('بلاک');
-				} else {
-					alert(res.data.message || poshtibankAdmin.i18n.error);
-				}
-			}, 'json');
-		});
-
 		// Modal Close
 		$('.poshtibank-modal-close, .poshtibank-modal-overlay').on('click', function () {
 			$('#poshtibank-chat-modal').fadeOut(200);
