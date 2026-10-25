@@ -81,6 +81,9 @@ class Poshtibank_Frontend {
 		require_once POSHTIBANK_PATH . 'includes/woocommerce/class-poshtibank-woocommerce.php';
 		$wc_context = Poshtibank_WooCommerce::get_page_context();
 
+		require_once POSHTIBANK_PATH . 'includes/ai/class-poshtibank-ai.php';
+		$ai_available = Poshtibank_AI::is_available();
+
 		// Localize script with REST endpoint, nonce, settings & translations
 		wp_localize_script(
 			'poshtibank-widget-script',
@@ -101,6 +104,9 @@ class Poshtibank_Frontend {
 					'telegram' => ! empty( $settings['channels']['telegram_url'] ) ? $settings['channels']['telegram_url'] : '',
 					'bale'     => ! empty( $settings['channels']['bale_url'] ) ? $settings['channels']['bale_url'] : '',
 				),
+				'ai'          => array(
+					'available' => $ai_available,
+				),
 				'faqs'        => $faqs,
 				'wc'          => $wc_context,
 				'user'        => $user_data,
@@ -110,6 +116,14 @@ class Poshtibank_Frontend {
 				),
 				'i18n'        => array(
 					'startChat'        => __( 'شروع گفتگوی آنلاین', 'poshtibank' ),
+					'modeAiTitle'      => __( 'چت سریع با هوش مصنوعی', 'poshtibank' ),
+					'modeAiDesc'       => __( 'پاسخ فوری، شبانه‌روزی و بدون انتظار', 'poshtibank' ),
+					'modeHumanTitle'   => __( 'گفتگو با پشتیبان انسانی', 'poshtibank' ),
+					'modeHumanDesc'    => __( 'ارتباط با کارشناس تیم پشتیبانی', 'poshtibank' ),
+					'modeAiNotice'     => __( 'پاسخ‌ها توسط دستیار هوشمند داده می‌شود.', 'poshtibank' ),
+					'modeHumanNotice'  => __( 'گفتگو به پشتیبان انسانی متصل شد.', 'poshtibank' ),
+					'askHuman'         => __( 'اتصال به پشتیبان انسانی', 'poshtibank' ),
+					'modeSwitchError'  => __( 'تغییر حالت گفتگو ممکن نشد. لطفاً دوباره تلاش کنید.', 'poshtibank' ),
 					'contactHub'       => __( 'دیگر راه‌های ارتباط با ما', 'poshtibank' ),
 					'faqTitle'         => __( 'سوالات پرتکرار', 'poshtibank' ),
 					'inputPlaceholder' => __( 'پیام خود را بنویسید...', 'poshtibank' ),
@@ -147,6 +161,9 @@ class Poshtibank_Frontend {
 		if ( empty( $settings['general']['enabled'] ) ) {
 			return;
 		}
+
+		require_once POSHTIBANK_PATH . 'includes/ai/class-poshtibank-ai.php';
+		$ai_available = Poshtibank_AI::is_available();
 
 		$position = $settings['general']['widget_position'] ?? 'bottom-right';
 		$pos_class = ( 'bottom-left' === $position ) ? 'pos-bottom-left' : 'pos-bottom-right';
@@ -204,13 +221,55 @@ class Poshtibank_Frontend {
 				<div id="poshtibank-view-hub" class="poshtibank-view active">
 					<div class="poshtibank-hub-hero">
 						<h3><?php esc_html_e( 'سلام! 👋 چطور می‌تونیم کمکتون کنیم؟', 'poshtibank' ); ?></h3>
-						<p><?php esc_html_e( 'یک پیام بفرستید، همکاران ما فوراً پاسخگوی شما خواهند بود.', 'poshtibank' ); ?></p>
-						<button type="button" id="poshtibank-btn-open-chat" class="poshtibank-btn-primary-hub">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-							</svg>
-							<span><?php esc_html_e( 'شروع گفتگوی آنلاین', 'poshtibank' ); ?></span>
-						</button>
+						<p>
+							<?php
+							if ( $ai_available ) {
+								esc_html_e( 'انتخاب کنید پاسخ سریع هوش مصنوعی را می‌خواهید یا گفتگو با کارشناس تیم پشتیبانی.', 'poshtibank' );
+							} else {
+								esc_html_e( 'یک پیام بفرستید، همکاران ما فوراً پاسخگوی شما خواهند بود.', 'poshtibank' );
+							}
+							?>
+						</p>
+						<div class="poshtibank-mode-choices" role="group" aria-label="<?php esc_attr_e( 'انتخاب نوع گفتگو', 'poshtibank' ); ?>">
+							<?php if ( $ai_available ) : ?>
+								<button type="button" class="poshtibank-mode-card" id="poshtibank-mode-ai" data-mode="ai">
+									<span class="poshtibank-mode-icon">
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"></path>
+											<path d="M18 15l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"></path>
+										</svg>
+									</span>
+									<span class="poshtibank-mode-text">
+										<span class="poshtibank-mode-title"><?php esc_html_e( 'چت سریع با هوش مصنوعی', 'poshtibank' ); ?></span>
+										<span class="poshtibank-mode-desc"><?php esc_html_e( 'پاسخ فوری، شبانه‌روزی و بدون انتظار', 'poshtibank' ); ?></span>
+									</span>
+									<span class="poshtibank-mode-chevron">
+										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<polyline points="15 18 9 12 15 6"></polyline>
+										</svg>
+									</span>
+								</button>
+							<?php endif; ?>
+
+							<button type="button" class="poshtibank-mode-card poshtibank-mode-card-primary" id="poshtibank-mode-human" data-mode="human">
+								<span class="poshtibank-mode-icon">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M4 14v-2a8 8 0 0 1 16 0v2"></path>
+										<path d="M4 14h3v5H5a1 1 0 0 1-1-1z"></path>
+										<path d="M20 14h-3v5h2a1 1 0 0 0 1-1z"></path>
+									</svg>
+								</span>
+								<span class="poshtibank-mode-text">
+									<span class="poshtibank-mode-title"><?php esc_html_e( 'گفتگو با پشتیبان انسانی', 'poshtibank' ); ?></span>
+									<span class="poshtibank-mode-desc"><?php esc_html_e( 'ارتباط با کارشناس تیم پشتیبانی', 'poshtibank' ); ?></span>
+								</span>
+								<span class="poshtibank-mode-chevron">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<polyline points="15 18 9 12 15 6"></polyline>
+									</svg>
+								</span>
+							</button>
+						</div>
 					</div>
 
 					<!-- FAQs Accordion -->
@@ -248,6 +307,14 @@ class Poshtibank_Frontend {
 
 				<!-- View 3: Chat Messages Stream -->
 				<div id="poshtibank-view-chat" class="poshtibank-view">
+					<div id="poshtibank-mode-strip" class="poshtibank-mode-strip" style="display:none;">
+						<span class="poshtibank-mode-strip-dot" aria-hidden="true"></span>
+						<span class="poshtibank-mode-strip-text" id="poshtibank-mode-strip-text"></span>
+						<button type="button" id="poshtibank-btn-ask-human" class="poshtibank-mode-strip-action">
+							<?php esc_html_e( 'اتصال به پشتیبان انسانی', 'poshtibank' ); ?>
+						</button>
+					</div>
+
 					<div id="poshtibank-messages-stream" class="poshtibank-messages-stream">
 						<div class="poshtibank-chat-date-separator">
 							<span><?php esc_html_e( 'امروز', 'poshtibank' ); ?></span>

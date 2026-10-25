@@ -30,6 +30,7 @@
 		lastMessageId: 0,
 		unreadCount: 0,
 		isOnline: true,
+		mode: '', // 'ai' | 'human' — resolved by the server on session init.
 		pollingTimer: null,
 		pollingInterval: 3000,
 		isUserActive: true,
@@ -85,7 +86,8 @@
 		elements.viewChat = document.getElementById('poshtibank-view-chat');
 
 		// Hub Elements
-		elements.btnOpenChat = document.getElementById('poshtibank-btn-open-chat');
+		elements.modeAi = document.getElementById('poshtibank-mode-ai');
+		elements.modeHuman = document.getElementById('poshtibank-mode-human');
 		elements.channelsGrid = document.getElementById('poshtibank-channels-grid');
 		elements.channelsSection = document.getElementById('poshtibank-channels-section');
 		elements.faqList = document.getElementById('poshtibank-faq-list');
@@ -98,6 +100,9 @@
 		elements.prechatError = document.getElementById('poshtibank-prechat-error');
 
 		// Chat Elements
+		elements.modeStrip = document.getElementById('poshtibank-mode-strip');
+		elements.modeStripText = document.getElementById('poshtibank-mode-strip-text');
+		elements.btnAskHuman = document.getElementById('poshtibank-btn-ask-human');
 		elements.stream = document.getElementById('poshtibank-messages-stream');
 		elements.inputText = document.getElementById('poshtibank-input-text');
 		elements.btnSend = document.getElementById('poshtibank-btn-send');
@@ -128,14 +133,20 @@
 			switchView('hub');
 		});
 
-		// Hub "Start Chat" button
-		elements.btnOpenChat.addEventListener('click', function () {
-			if (config.settings.requireContact && (!state.userName || !state.userPhone)) {
-				switchView('prechat');
-			} else {
-				startOrResumeChat();
-			}
+		// Hub responder chooser
+		[elements.modeAi, elements.modeHuman].forEach(function (card) {
+			if (!card) return;
+			card.addEventListener('click', function () {
+				chooseMode(card.getAttribute('data-mode'));
+			});
 		});
+
+		// Hand the conversation from the assistant to a human
+		if (elements.btnAskHuman) {
+			elements.btnAskHuman.addEventListener('click', function () {
+				switchMode('human');
+			});
+		}
 
 		// Pre-chat form submit
 		elements.prechatForm.addEventListener('submit', function (e) {
@@ -276,6 +287,7 @@
 			elements.viewHub.classList.add('active');
 			elements.btnBack.style.display = 'none';
 			stopAdaptivePolling();
+			renderModeStrip();
 		} else if (viewName === 'prechat') {
 			elements.viewPrechat.classList.add('active');
 			elements.btnBack.style.display = 'flex';
@@ -286,6 +298,7 @@
 			elements.viewChat.classList.add('active');
 			elements.btnBack.style.display = 'flex';
 			renderHandoffBanner();
+			renderModeStrip();
 			startAdaptivePolling();
 			setTimeout(function () {
 				elements.inputText.focus();
@@ -295,13 +308,77 @@
 	}
 
 	/**
-	 * Start or resume chat stream.
+	 * Open the chat in the responder the customer picked.
+	 *
+	 * @param {string} mode 'ai' or 'human'.
 	 */
-	function startOrResumeChat() {
-		switchView('chat');
-		if (!state.sessionId) {
-			initSession();
+	function chooseMode(mode) {
+		if (mode === 'ai' && !(config.ai && config.ai.available)) {
+			mode = 'human';
 		}
+
+		state.mode = mode;
+
+		// The lead form sits between the choice and the conversation.
+		if (config.settings.requireContact && (!state.userName || !state.userPhone)) {
+			switchView('prechat');
+			return;
+		}
+
+		switchView('chat');
+		initSession();
+	}
+
+	/**
+	 * Paint the responder strip above the message stream.
+	 */
+	function renderModeStrip() {
+		if (!elements.modeStrip) return;
+
+		if (state.currentView !== 'chat' || !state.mode) {
+			elements.modeStrip.style.display = 'none';
+			return;
+		}
+
+		var isAi = state.mode === 'ai';
+
+		elements.modeStrip.classList.toggle('is-ai', isAi);
+		elements.modeStripText.textContent = isAi ? config.i18n.modeAiNotice : config.i18n.modeHumanNotice;
+		elements.btnAskHuman.style.display = isAi ? '' : 'none';
+		elements.modeStrip.style.display = 'flex';
+	}
+
+	/**
+	 * Move a live conversation between the assistant and a human operator.
+	 *
+	 * @param {string} mode Target mode.
+	 */
+	function switchMode(mode) {
+		if (state.mode === mode) return;
+
+		if (!state.sessionId) {
+			state.mode = mode;
+			renderModeStrip();
+			return;
+		}
+
+		if (elements.btnAskHuman) elements.btnAskHuman.disabled = true;
+
+		apiRequest('session/mode', 'POST', { session_id: state.sessionId, mode: mode }, function (err, res) {
+			if (elements.btnAskHuman) elements.btnAskHuman.disabled = false;
+
+			if (err || !res || !res.mode) {
+				console.error('[Poshtibank mode error]', err || res);
+				return;
+			}
+
+			state.mode = res.mode;
+			renderModeStrip();
+
+			// The handoff notice is stored server-side; pull it in right away
+			// instead of waiting for the next scheduled poll.
+			startAdaptivePolling();
+		});
 	}
 
 	/**
@@ -391,6 +468,7 @@
 			session_id: state.sessionId,
 			user_name: state.userName,
 			user_phone: state.userPhone,
+			mode: state.mode || '',
 			current_page: config.page.url,
 			referer: document.referrer || '',
 			wc: config.wc || null,
@@ -406,6 +484,12 @@
 				state.sessionId = res.session_id;
 				localStorage.setItem('poshtibank_session_id', res.session_id);
 			}
+
+			// The server owns the responder mode: it normalises legacy sessions.
+			if (res.mode) {
+				state.mode = res.mode;
+			}
+			renderModeStrip();
 
 			// Update Online/Offline status indicator
 			state.isOnline = res.is_online;
@@ -484,7 +568,10 @@
 				scrollStreamToBottom();
 				setTimeout(function () {
 					elements.typingIndicator.style.display = 'none';
-					var aiMsg = {
+
+					// Prefer the stored row: it carries the id the poll will
+					// return, so the same answer is never painted twice.
+					var aiMsg = res.ai_message || {
 						message_id: 'ai-' + Date.now(),
 						sender: 'ai',
 						content: res.ai_reply,
@@ -540,6 +627,12 @@
 					startTitleFlashing();
 					incrementUnreadBadge(res.new_messages.length);
 				}
+			}
+
+			// The server may have handed the thread to a human meanwhile.
+			if (res && res.mode && res.mode !== state.mode) {
+				state.mode = res.mode;
+				renderModeStrip();
 			}
 
 			// Render CSAT Survey if session was closed by admin
@@ -598,9 +691,16 @@
 	 * @param {object} msg Message object.
 	 */
 	function appendMessageBubble(msg) {
+		var bubbleId = 'msg-' + (msg.message_id || msg.id);
+
+		// History, polls and optimistic bubbles can describe the same message.
+		if (document.getElementById(bubbleId)) {
+			return;
+		}
+
 		var bubble = document.createElement('div');
 		bubble.className = 'poshtibank-msg msg-' + (msg.sender || 'user');
-		bubble.id = 'msg-' + (msg.message_id || msg.id);
+		bubble.id = bubbleId;
 
 		var senderName = '';
 		if (msg.sender === 'admin') {
@@ -1240,7 +1340,7 @@
 			}
 			toast.remove();
 			openWindow();
-			startOrResumeChat();
+			chooseMode(state.mode || '');
 		});
 
 		elements.root.appendChild(toast);

@@ -56,6 +56,12 @@ $metadata = ! empty( $session->metadata ) && is_string( $session->metadata )
 	: array();
 $csat = is_array( $metadata ) && ! empty( $metadata['csat'] ) ? $metadata['csat'] : null;
 
+require_once POSHTIBANK_PATH . 'includes/ai/class-poshtibank-ai.php';
+$chat_mode  = Poshtibank_AI::get_session_mode( $session );
+$mode_label = 'ai' === $chat_mode
+	? __( 'دستیار هوشمند', 'poshtibank' )
+	: __( 'پشتیبان انسانی', 'poshtibank' );
+
 $last_message_id = 0;
 if ( ! empty( $messages ) ) {
 	$last_message    = end( $messages );
@@ -79,6 +85,9 @@ if ( ! empty( $messages ) ) {
 				<p class="poshtibank-slogan">
 					<span class="poshtibank-status-badge <?php echo esc_attr( $status_class ); ?>">
 						<?php echo esc_html( $status_label ); ?>
+					</span>
+					<span class="poshtibank-mode-badge mode-<?php echo esc_attr( $chat_mode ); ?>">
+						<?php echo esc_html( $mode_label ); ?>
 					</span>
 					<?php if ( ! empty( $session->user_phone ) ) : ?>
 						<span class="poshtibank-header-meta" dir="ltr"><?php echo esc_html( $session->user_phone ); ?></span>

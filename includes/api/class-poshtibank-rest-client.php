@@ -73,7 +73,18 @@ class Poshtibank_REST_Client {
 			)
 		);
 
-		// 6. Session Feedback (CSAT): /poshtibank/v1/session/feedback
+		// 6. Conversation Mode: /poshtibank/v1/session/mode
+		register_rest_route(
+			'poshtibank/v1',
+			'/session/mode',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'session_mode' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		// 7. Session Feedback (CSAT): /poshtibank/v1/session/feedback
 		register_rest_route(
 			'poshtibank/v1',
 			'/session/feedback',
@@ -163,6 +174,38 @@ class Poshtibank_REST_Client {
 				$meta['wc_customer'] = Poshtibank_WooCommerce::get_customer_summary( get_current_user_id() );
 			}
 			Poshtibank_DB::update_session( $session->session_id, array( 'metadata' => $meta ) );
+
+			// Keep the in-memory row in step: later steps merge into this value.
+			$session->metadata = wp_json_encode( $meta );
+		}
+
+		// Persist the responder the customer picked, if any.
+		$requested_mode = ! empty( $params['mode'] ) ? sanitize_key( $params['mode'] ) : '';
+		if ( ! in_array( $requested_mode, array( 'ai', 'human' ), true ) ) {
+			$requested_mode = '';
+		}
+
+		require_once POSHTIBANK_PATH . 'includes/ai/class-poshtibank-ai.php';
+
+		if ( 'ai' === $requested_mode && ! Poshtibank_AI::is_available() ) {
+			$requested_mode = 'human';
+		}
+
+		if ( '' !== $requested_mode ) {
+			$meta = ! empty( $session->metadata ) ? ( is_array( $session->metadata ) ? $session->metadata : json_decode( $session->metadata, true ) ) : array();
+			$meta = is_array( $meta ) ? $meta : array();
+
+			if ( ( $meta['chat_mode'] ?? '' ) !== $requested_mode ) {
+				$meta['chat_mode'] = $requested_mode;
+				if ( 'human' === $requested_mode ) {
+					$meta['ai_paused'] = 1;
+				} else {
+					unset( $meta['ai_paused'] );
+				}
+
+				Poshtibank_DB::update_session( $session->session_id, array( 'metadata' => $meta ) );
+				$session->metadata = wp_json_encode( $meta );
+			}
 		}
 
 		// Retrieve recent messages
@@ -177,6 +220,8 @@ class Poshtibank_REST_Client {
 			array(
 				'session_id'       => $session->session_id,
 				'status'           => $session->status,
+				'mode'             => Poshtibank_AI::get_session_mode( $session ),
+				'ai_available'     => Poshtibank_AI::is_available(),
 				'is_online'        => $is_online,
 				'offline_message'  => $settings['business_hours']['offline_message'] ?? '',
 				'require_contact'  => ! empty( $settings['general']['require_contact'] ),
@@ -185,6 +230,74 @@ class Poshtibank_REST_Client {
 				'widget_subtitle'  => $settings['general']['widget_subtitle'] ?? '',
 				'channels'         => $settings['channels'] ?? array(),
 				'messages'         => $messages,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Endpoint: Switch a live conversation between AI and human support.
+	 *
+	 * Handing over to a human is recorded as a message and announced to the
+	 * bridges, so an operator sees the request without the customer having to
+	 * type a trigger phrase first.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public function session_mode( WP_REST_Request $request ) {
+		$params     = $request->get_json_params();
+		$session_id = ! empty( $params['session_id'] ) ? sanitize_text_field( $params['session_id'] ) : '';
+		$mode       = ! empty( $params['mode'] ) ? sanitize_key( $params['mode'] ) : '';
+
+		if ( empty( $session_id ) ) {
+			return new WP_REST_Response( array( 'error' => __( 'شناسه نشست الزامی است.', 'poshtibank' ) ), 400 );
+		}
+
+		if ( ! in_array( $mode, array( 'ai', 'human' ), true ) ) {
+			return new WP_REST_Response( array( 'error' => __( 'حالت گفتگو نامعتبر است.', 'poshtibank' ) ), 400 );
+		}
+
+		$session = Poshtibank_DB::get_session( $session_id );
+		if ( ! $session ) {
+			return new WP_REST_Response( array( 'error' => __( 'نشست گفتگو یافت نشد.', 'poshtibank' ) ), 404 );
+		}
+
+		if ( 'blocked' === $session->status ) {
+			return new WP_REST_Response( array( 'error' => __( 'دسترسی شما به این گفتگو مسدود است.', 'poshtibank' ) ), 403 );
+		}
+
+		require_once POSHTIBANK_PATH . 'includes/ai/class-poshtibank-ai.php';
+
+		if ( 'ai' === $mode && ! Poshtibank_AI::is_available() ) {
+			return new WP_REST_Response( array( 'error' => __( 'دستیار هوشمند در حال حاضر فعال نیست.', 'poshtibank' ) ), 409 );
+		}
+
+		if ( 'human' === $mode ) {
+			$ai     = new Poshtibank_AI();
+			$notice = $ai->handle_human_handoff( $session );
+
+			return new WP_REST_Response(
+				array(
+					'mode'   => 'human',
+					'notice' => $notice,
+					'status' => $session->status,
+				),
+				200
+			);
+		}
+
+		$meta = ! empty( $session->metadata ) ? ( is_array( $session->metadata ) ? $session->metadata : json_decode( $session->metadata, true ) ) : array();
+		$meta = is_array( $meta ) ? $meta : array();
+
+		$meta['chat_mode'] = 'ai';
+		unset( $meta['ai_paused'] );
+		Poshtibank_DB::update_session( $session->session_id, array( 'metadata' => $meta ) );
+
+		return new WP_REST_Response(
+			array(
+				'mode'   => 'ai',
+				'status' => $session->status,
 			),
 			200
 		);
@@ -277,20 +390,32 @@ class Poshtibank_REST_Client {
 		);
 
 		// 8. Process AI First-Line Responder (Phase 7)
+		// Only conversations the customer handed to the assistant get an answer.
 		$ai_reply = false;
 		if ( 'text' === $type ) {
 			require_once POSHTIBANK_PATH . 'includes/ai/class-poshtibank-ai.php';
-			$ai = new Poshtibank_AI();
-			if ( $ai->is_enabled() ) {
-				$ai_reply = $ai->process_message( $session, $content );
+			if ( 'ai' === Poshtibank_AI::get_session_mode( $session ) ) {
+				$ai = new Poshtibank_AI();
+				if ( $ai->is_enabled() ) {
+					$ai_reply = $ai->process_message( $session, $content );
+				}
 			}
+		}
+
+		// Hand the stored reply back with its real id so the widget does not
+		// paint a second copy when the poll returns the same message.
+		$ai_message = null;
+		if ( $ai_reply ) {
+			$latest     = Poshtibank_DB::get_messages( $session->session_id, 1 );
+			$ai_message = ! empty( $latest ) && 'ai' === $latest[0]->sender ? $latest[0] : null;
 		}
 
 		return new WP_REST_Response(
 			array(
-				'success'  => true,
-				'message'  => $created_message,
-				'ai_reply' => $ai_reply,
+				'success'    => true,
+				'message'    => $created_message,
+				'ai_reply'   => $ai_reply,
+				'ai_message' => $ai_message,
 			),
 			201
 		);
@@ -323,9 +448,13 @@ class Poshtibank_REST_Client {
 			Poshtibank_DB::mark_messages_as_read( $session_id, 'user' );
 		}
 
+		require_once POSHTIBANK_PATH . 'includes/ai/class-poshtibank-ai.php';
+
 		return new WP_REST_Response(
 			array(
 				'status'       => $session->status,
+				// The assistant may have handed the thread over on its own.
+				'mode'         => Poshtibank_AI::get_session_mode( $session ),
 				'new_messages' => $new_messages,
 			),
 			200

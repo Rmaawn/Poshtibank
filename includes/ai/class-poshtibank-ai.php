@@ -41,6 +41,45 @@ class Poshtibank_AI {
 	}
 
 	/**
+	 * Check whether the site can offer AI answers at all.
+	 *
+	 * Used by the widget and the admin screens, which must not instantiate the
+	 * module just to decide whether to show the AI option.
+	 *
+	 * @return bool
+	 */
+	public static function is_available() {
+		$settings = Poshtibank_Settings::get( 'ai', null, array() );
+
+		return ! empty( $settings['enabled'] ) && ! empty( $settings['api_key'] );
+	}
+
+	/**
+	 * Resolve which responder owns a conversation.
+	 *
+	 * Sessions created before the chooser existed carry no explicit mode, so
+	 * they inherit the historical behaviour: AI answered them whenever the
+	 * module was configured.
+	 *
+	 * @param object $session Session row.
+	 * @return string Either 'ai' or 'human'.
+	 */
+	public static function get_session_mode( $session ) {
+		$meta = array();
+		if ( ! empty( $session->metadata ) ) {
+			$meta = is_array( $session->metadata ) ? $session->metadata : json_decode( $session->metadata, true );
+			$meta = is_array( $meta ) ? $meta : array();
+		}
+
+		if ( isset( $meta['chat_mode'] ) && 'human' === $meta['chat_mode'] ) {
+			return 'human';
+		}
+
+		// An AI conversation cannot outlive the assistant being switched off.
+		return self::is_available() ? 'ai' : 'human';
+	}
+
+	/**
 	 * Detect if user message requests a human agent handoff.
 	 *
 	 * @param string $text User message content.
@@ -82,6 +121,11 @@ class Poshtibank_AI {
 	 */
 	public function process_message( $session, $user_message ) {
 		if ( ! $this->is_enabled() ) {
+			return false;
+		}
+
+		// The customer asked for a human, so this conversation is no longer ours.
+		if ( 'ai' !== self::get_session_mode( $session ) ) {
 			return false;
 		}
 
@@ -135,12 +179,16 @@ class Poshtibank_AI {
 	/**
 	 * Handle transition when user requests human operator.
 	 *
+	 * Public because the widget can also hand a conversation over on demand,
+	 * without waiting for the customer to type a trigger phrase.
+	 *
 	 * @param object $session Active session.
 	 * @return string Handoff notice.
 	 */
-	protected function handle_human_handoff( $session ) {
+	public function handle_human_handoff( $session ) {
 		$meta = ! empty( $session->metadata ) ? ( is_array( $session->metadata ) ? $session->metadata : json_decode( $session->metadata, true ) ) : array();
 		$meta['ai_paused'] = 1;
+		$meta['chat_mode'] = 'human';
 		Poshtibank_DB::update_session( $session->session_id, array( 'metadata' => $meta ) );
 
 		$reply = __( 'درخواست شما برای گفتگو با پشتیبان انسانی ثبت شد. همکاران ما در پیام‌رسان مطلع شدند و به زودی پاسخگوی شما خواهند بود. 🙏', 'poshtibank' );
