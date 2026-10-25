@@ -3,7 +3,7 @@
  * Plugin Name: پشتیبانک — Poshtibank
  * Plugin URI:  https://github.com/Rmaawn/Poshtibank
  * Description: همه پشتیبانی سایت، در یک افزونه. سیستم چت آنلاین حرفه‌ای و رایگان وردپرس متصل به تلگرام و بله، بدون سرور واسط.
- * Version:     1.0.6
+ * Version:     1.0.7
  * Author:      آرمان محبعلی
  * Author URI:  https://armanmohebali.ir/
  * License:     GPL-2.0+
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Currently active plugin version.
  */
-define( 'POSHTIBANK_VERSION', '1.0.6' );
+define( 'POSHTIBANK_VERSION', '1.0.7' );
 
 /**
  * Database schema version.

@@ -84,6 +84,7 @@ class Poshtibank_Settings {
 				'enabled'       => 0,
 				'provider'      => 'gemini',
 				'api_key'       => '',
+				'endpoint'      => '',
 				'model'         => 'gemini-1.5-flash',
 				'system_prompt' => 'شما دستیار هوشمند و مودب پشتیبانی سایت هستید. به سوالات کاربران با دقت و صبوری پاسخ دهید.',
 			),

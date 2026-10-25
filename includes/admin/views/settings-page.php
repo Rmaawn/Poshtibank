@@ -391,17 +391,24 @@ $is_ssl = is_ssl();
 
 				<div class="poshtibank-grid poshtibank-grid-2">
 					<div class="poshtibank-form-field">
-						<label for="poshtibank-ai-provider"><?php esc_html_e( 'سرویس‌دهنده هوش مصنوعی', 'poshtibank' ); ?></label>
+						<label for="poshtibank-ai-provider"><?php esc_html_e( 'نوع API', 'poshtibank' ); ?></label>
 						<select id="poshtibank-ai-provider" name="settings[ai][provider]">
-							<option value="gemini" <?php selected( $settings['ai']['provider'], 'gemini' ); ?>>Google Gemini (پیشنهادی - سریع و مقرون‌به‌صرفه)</option>
-							<option value="openai" <?php selected( $settings['ai']['provider'], 'openai' ); ?>>OpenAI (ChatGPT)</option>
+							<option value="gemini" <?php selected( $settings['ai']['provider'], 'gemini' ); ?>><?php esc_html_e( 'سازگار با Gemini', 'poshtibank' ); ?></option>
+							<option value="openai" <?php selected( $settings['ai']['provider'], 'openai' ); ?>><?php esc_html_e( 'سازگار با OpenAI', 'poshtibank' ); ?></option>
 						</select>
+						<span class="description"><?php esc_html_e( 'قالب درخواست را انتخاب کنید؛ هر سرویس سازگار (OpenRouter، Groq، Ollama و…) با همین دو گزینه کار می‌کند.', 'poshtibank' ); ?></span>
 					</div>
 
 					<div class="poshtibank-form-field">
 						<label for="poshtibank-ai-model"><?php esc_html_e( 'مدل انتخابی (Model)', 'poshtibank' ); ?></label>
 						<input type="text" id="poshtibank-ai-model" name="settings[ai][model]" value="<?php echo esc_attr( $settings['ai']['model'] ); ?>" placeholder="gemini-1.5-flash یا gpt-4o-mini" class="regular-text" dir="ltr">
 					</div>
+				</div>
+
+				<div class="poshtibank-form-field">
+					<label for="poshtibank-ai-endpoint"><?php esc_html_e( 'آدرس اندپوینت (اختیاری)', 'poshtibank' ); ?></label>
+					<input type="url" id="poshtibank-ai-endpoint" name="settings[ai][endpoint]" value="<?php echo esc_attr( $settings['ai']['endpoint'] ?? '' ); ?>" class="large-text" dir="ltr" placeholder="https://api.openai.com/v1">
+					<span class="description"><?php esc_html_e( 'آدرس پایه سرویس را وارد کنید؛ مسیر اختصاصی هر نوع API خودکار اضافه می‌شود. اگر خالی بماند، سرویس رسمی همان گزینه استفاده می‌شود.', 'poshtibank' ); ?></span>
 				</div>
 
 				<div class="poshtibank-form-field">

@@ -292,6 +292,7 @@ class Poshtibank_Admin {
 			'enabled'       => ! empty( $raw['ai']['enabled'] ) ? 1 : 0,
 			'provider'      => in_array( $raw['ai']['provider'] ?? '', array( 'gemini', 'openai' ), true ) ? $raw['ai']['provider'] : 'gemini',
 			'api_key'       => isset( $raw['ai']['api_key'] ) ? sanitize_text_field( trim( $raw['ai']['api_key'] ) ) : '',
+			'endpoint'      => isset( $raw['ai']['endpoint'] ) ? esc_url_raw( trim( $raw['ai']['endpoint'] ) ) : '',
 			'model'         => isset( $raw['ai']['model'] ) ? sanitize_text_field( trim( $raw['ai']['model'] ) ) : 'gemini-1.5-flash',
 			'system_prompt' => isset( $raw['ai']['system_prompt'] ) ? sanitize_textarea_field( $raw['ai']['system_prompt'] ) : '',
 		);
@@ -630,15 +631,25 @@ class Poshtibank_Admin {
 
 		$provider = isset( $_POST['provider'] ) ? sanitize_key( $_POST['provider'] ) : 'gemini';
 		$api_key  = isset( $_POST['api_key'] ) ? sanitize_text_field( trim( wp_unslash( $_POST['api_key'] ) ) ) : '';
+		$model    = isset( $_POST['model'] ) ? sanitize_text_field( trim( wp_unslash( $_POST['model'] ) ) ) : '';
+		$endpoint = isset( $_POST['endpoint'] ) ? esc_url_raw( trim( wp_unslash( $_POST['endpoint'] ) ) ) : '';
 
 		if ( empty( $api_key ) ) {
 			wp_send_json_error( array( 'message' => __( 'کلید API وارد نشده است.', 'poshtibank' ) ) );
 		}
 
+		$provider = in_array( $provider, array( 'gemini', 'openai' ), true ) ? $provider : 'gemini';
+		if ( '' === $model ) {
+			$model = 'gemini' === $provider ? 'gemini-1.5-flash' : 'gpt-4o-mini';
+		}
+
+		require_once POSHTIBANK_PATH . 'includes/ai/class-poshtibank-ai.php';
+
+		$url     = Poshtibank_AI::build_endpoint( $provider, $endpoint, $model, $api_key );
+		$headers = array( 'Content-Type' => 'application/json' );
+
 		if ( 'gemini' === $provider ) {
-			// Test Google Gemini API
-			$url      = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$api_key}";
-			$payload  = array(
+			$payload = array(
 				'contents' => array(
 					array(
 						'parts' => array(
@@ -647,19 +658,9 @@ class Poshtibank_Admin {
 					),
 				),
 			);
-			$response = wp_remote_post(
-				$url,
-				array(
-					'timeout' => 15,
-					'headers' => array( 'Content-Type' => 'application/json' ),
-					'body'    => wp_json_encode( $payload ),
-				)
-			);
 		} else {
-			// Test OpenAI API
-			$url      = 'https://api.openai.com/v1/chat/completions';
-			$payload  = array(
-				'model'    => 'gpt-4o-mini',
+			$payload = array(
+				'model'    => $model,
 				'messages' => array(
 					array(
 						'role'    => 'user',
@@ -667,18 +668,18 @@ class Poshtibank_Admin {
 					),
 				),
 			);
-			$response = wp_remote_post(
-				$url,
-				array(
-					'timeout' => 15,
-					'headers' => array(
-						'Content-Type'  => 'application/json',
-						'Authorization' => 'Bearer ' . $api_key,
-					),
-					'body'    => wp_json_encode( $payload ),
-				)
-			);
+
+			$headers['Authorization'] = 'Bearer ' . $api_key;
 		}
+
+		$response = wp_remote_post(
+			$url,
+			array(
+				'timeout' => 15,
+				'headers' => $headers,
+				'body'    => wp_json_encode( $payload ),
+			)
+		);
 
 		if ( is_wp_error( $response ) ) {
 			wp_send_json_error( array( 'message' => sprintf( __( 'خطا در ارتباط با سرویس هوش مصنوعی: %s', 'poshtibank' ), $response->get_error_message() ) ) );

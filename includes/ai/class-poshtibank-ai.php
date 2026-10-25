@@ -80,6 +80,46 @@ class Poshtibank_AI {
 	}
 
 	/**
+	 * Build the request URL for the configured provider.
+	 *
+	 * The provider setting describes the wire format only, so any compatible
+	 * service can be used by pointing the endpoint at it: a bare base URL gets
+	 * the provider's path appended, while a full URL is respected as typed.
+	 *
+	 * @param string $provider Either 'openai' or 'gemini'.
+	 * @param string $endpoint Custom base URL, empty for the official service.
+	 * @param string $model    Model identifier.
+	 * @param string $api_key  API key, needed by Gemini in the query string.
+	 * @return string
+	 */
+	public static function build_endpoint( $provider, $endpoint, $model, $api_key ) {
+		$endpoint = trim( (string) $endpoint );
+		$model    = trim( (string) $model );
+
+		if ( 'openai' === $provider ) {
+			$base = '' !== $endpoint ? $endpoint : 'https://api.openai.com/v1';
+
+			if ( false !== strpos( $base, '/chat/completions' ) ) {
+				return $base;
+			}
+
+			return untrailingslashit( $base ) . '/chat/completions';
+		}
+
+		$base = '' !== $endpoint ? $endpoint : 'https://generativelanguage.googleapis.com/v1beta';
+
+		if ( false !== strpos( $base, ':generateContent' ) ) {
+			if ( false !== strpos( $base, 'key=' ) ) {
+				return $base;
+			}
+
+			return $base . ( false === strpos( $base, '?' ) ? '?' : '&' ) . 'key=' . rawurlencode( $api_key );
+		}
+
+		return untrailingslashit( $base ) . '/models/' . rawurlencode( $model ) . ':generateContent?key=' . rawurlencode( $api_key );
+	}
+
+	/**
 	 * Detect if user message requests a human agent handoff.
 	 *
 	 * @param string $text User message content.
@@ -281,7 +321,7 @@ class Poshtibank_AI {
 		$api_key = $this->settings['api_key'];
 		$model   = ! empty( $this->settings['model'] ) ? $this->settings['model'] : 'gemini-1.5-flash';
 
-		$url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$api_key}";
+		$url = self::build_endpoint( 'gemini', $this->settings['endpoint'] ?? '', $model, $api_key );
 
 		$contents = array();
 		foreach ( $history as $h ) {
@@ -342,7 +382,7 @@ class Poshtibank_AI {
 		$api_key = $this->settings['api_key'];
 		$model   = ! empty( $this->settings['model'] ) ? $this->settings['model'] : 'gpt-4o-mini';
 
-		$url = 'https://api.openai.com/v1/chat/completions';
+		$url = self::build_endpoint( 'openai', $this->settings['endpoint'] ?? '', $model, $api_key );
 
 		$messages = array();
 		$messages[] = array(

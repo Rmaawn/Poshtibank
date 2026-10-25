@@ -297,6 +297,8 @@
 			var $status = $('#ai-test-status');
 			var provider = $('#poshtibank-ai-provider').val();
 			var apiKey = $('#poshtibank-ai-key').val();
+			var model = $('#poshtibank-ai-model').val();
+			var endpoint = $('#poshtibank-ai-endpoint').val();
 
 			$status.removeClass('success error').addClass('loading').text(poshtibankAdmin.i18n.testing).show();
 			$btn.prop('disabled', true);
@@ -305,7 +307,9 @@
 				action: 'poshtibank_test_ai',
 				nonce: poshtibankAdmin.nonce,
 				provider: provider,
-				api_key: apiKey
+				api_key: apiKey,
+				model: model,
+				endpoint: endpoint
 			}, function (res) {
 				$btn.prop('disabled', false);
 				$status.removeClass('loading');
