@@ -97,10 +97,40 @@ class Poshtibank_Schema {
 		$result['sessions'] = dbDelta( $sql_sessions );
 		$result['messages'] = dbDelta( $sql_messages );
 
-		// Update database version in options.
-		update_option( 'poshtibank_db_version', POSHTIBANK_DB_VERSION );
+		// Only claim the schema is current once it actually is: a failed
+		// dbDelta must leave the version stale so the repair runs again.
+		if ( self::verify_tables_exist() ) {
+			update_option( 'poshtibank_db_version', POSHTIBANK_DB_VERSION );
+		} else {
+			error_log( '[Poshtibank] Table creation failed: ' . wp_json_encode( $result ) );
+		}
 
 		return $result;
+	}
+
+	/**
+	 * Repair the tables when the installed schema is behind.
+	 *
+	 * Activation was the only moment dbDelta ever ran, so a site whose tables
+	 * were never created, or were created by an older version, failed on every
+	 * insert with no way back. The version option is only written once the
+	 * tables verify, so a failed attempt is retried on a later request.
+	 */
+	public static function maybe_upgrade() {
+		if ( POSHTIBANK_DB_VERSION === (string) get_option( 'poshtibank_db_version', '' ) ) {
+			return;
+		}
+
+		// Do not hammer DDL on every request when the database keeps refusing.
+		if ( get_transient( 'poshtibank_schema_retry' ) ) {
+			return;
+		}
+
+		self::create_tables();
+
+		if ( POSHTIBANK_DB_VERSION !== (string) get_option( 'poshtibank_db_version', '' ) ) {
+			set_transient( 'poshtibank_schema_retry', 1, 5 * MINUTE_IN_SECONDS );
+		}
 	}
 
 	/**

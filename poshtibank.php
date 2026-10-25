@@ -29,7 +29,7 @@ define( 'POSHTIBANK_VERSION', '1.0.8' );
 /**
  * Database schema version.
  */
-define( 'POSHTIBANK_DB_VERSION', '1.0.0' );
+define( 'POSHTIBANK_DB_VERSION', '1.0.1' );
 
 /**
  * Plugin root file path.

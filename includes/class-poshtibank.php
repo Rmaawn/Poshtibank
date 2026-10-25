@@ -79,6 +79,17 @@ class Poshtibank {
 		require_once POSHTIBANK_PATH . 'includes/admin/class-poshtibank-admin.php';
 
 		$this->loader = new Poshtibank_Loader();
+
+		// Tables were only ever created on activation, so replacing the plugin
+		// files over a live install could leave the site without them.
+		$this->loader->add_action( 'plugins_loaded', $this, 'maybe_upgrade_schema', 20 );
+	}
+
+	/**
+	 * Bring the database schema up to the version this build expects.
+	 */
+	public function maybe_upgrade_schema() {
+		Poshtibank_Schema::maybe_upgrade();
 	}
 
 	/**
