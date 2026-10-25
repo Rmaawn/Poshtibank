@@ -1770,6 +1770,10 @@
 @media (max-width: 480px) {
 	#poshtibank-widget-root.pos-bottom-right,
 	#poshtibank-widget-root.pos-bottom-left {
+		/* Room for the navigation bar most sites pin to the bottom of a phone,
+		   so the launcher never covers a menu item. Override the variable in
+		   your theme if your bar is taller or shorter. */
+		--pb-mobile-offset: 76px;
 		right: 0 !important;
 		left: 0 !important;
 		bottom: 0 !important;
@@ -1778,15 +1782,30 @@
 	#poshtibank-widget-root.pos-bottom-right .poshtibank-launcher {
 		position: fixed !important;
 		right: 18px !important;
-		bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+		bottom: calc(var(--pb-mobile-offset) + env(safe-area-inset-bottom, 0px)) !important;
 		left: auto !important;
 	}
 
 	#poshtibank-widget-root.pos-bottom-left .poshtibank-launcher {
 		position: fixed !important;
 		left: 18px !important;
-		bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+		bottom: calc(var(--pb-mobile-offset) + env(safe-area-inset-bottom, 0px)) !important;
 		right: auto !important;
+	}
+
+	#poshtibank-widget-root.pos-bottom-right .poshtibank-proactive-toast {
+		right: 18px !important;
+		width: calc(100vw - 36px) !important;
+		max-width: none !important;
+		bottom: calc(var(--pb-mobile-offset) + 66px + env(safe-area-inset-bottom, 0px)) !important;
+	}
+
+	#poshtibank-widget-root.pos-bottom-left .poshtibank-proactive-toast {
+		left: 18px !important;
+		right: auto !important;
+		width: calc(100vw - 36px) !important;
+		max-width: none !important;
+		bottom: calc(var(--pb-mobile-offset) + 66px + env(safe-area-inset-bottom, 0px)) !important;
 	}
 
 	#poshtibank-widget-root .poshtibank-window {
