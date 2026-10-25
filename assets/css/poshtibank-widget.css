@@ -1,52 +1,86 @@
 /**
  * Poshtibank Frontend Widget Stylesheet
  *
- * Minimalist, Clean, High-Contrast, CSS Variables, Full RTL, Protected against WordPress Theme Bleed
+ * Design language: "Soft Minimal" — quiet neutral surfaces, one accent colour,
+ * generous radii, hairline borders and low-contrast elevation.
+ *
+ * Rules of the system:
+ *   1. Every icon button pairs a light surface with a dark icon (never icon == background).
+ *   2. Radii come from the --pb-radius-* scale, never ad-hoc values.
+ *   3. Nothing relies on !important-less layout: the widget must survive theme bleed.
+ *
  * @package Poshtibank
  */
 
+/* ==========================================================================
+   1. Design Tokens
+   ========================================================================== */
 :root {
 	--pb-primary: #2563eb;
 	--pb-primary-hover: #1d4ed8;
-	--pb-primary-light: #eff6ff;
-	--pb-primary-glow: rgba(37, 99, 235, 0.25);
+	--pb-primary-soft: #eef2ff;
+	--pb-primary-ring: rgba(37, 99, 235, 0.16);
+
 	--pb-bg: #ffffff;
-	--pb-surface: #f8fafc;
-	--pb-border: #e2e8f0;
-	--pb-border-light: #f1f5f9;
-	--pb-text: #0f172a;
-	--pb-text-secondary: #475569;
-	--pb-text-muted: #64748b;
-	--pb-text-placeholder: #94a3b8;
+	--pb-surface: #f6f7f9;
+	--pb-surface-raised: #ffffff;
+	--pb-surface-sunken: #eef0f3;
+
+	--pb-border: #e7e9ee;
+	--pb-border-strong: #d5d9e0;
+
+	--pb-text: #111827;
+	--pb-text-secondary: #4b5563;
+	--pb-text-muted: #8b93a1;
+	--pb-text-placeholder: #a6adba;
+
 	--pb-success: #10b981;
 	--pb-danger: #ef4444;
 	--pb-warning: #f59e0b;
-	--pb-radius-sm: 8px;
+
+	--pb-radius-xs: 8px;
+	--pb-radius-sm: 10px;
 	--pb-radius-md: 12px;
 	--pb-radius-lg: 16px;
-	--pb-radius-xl: 20px;
+	--pb-radius-xl: 22px;
+	--pb-radius-2xl: 26px;
 	--pb-radius-full: 9999px;
-	--pb-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-	--pb-shadow-md: 0 4px 14px -2px rgba(15, 23, 42, 0.08);
-	--pb-shadow-lg: 0 16px 36px -6px rgba(15, 23, 42, 0.16), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
-	--pb-transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+	--pb-shadow-xs: 0 1px 2px rgba(17, 24, 39, 0.05);
+	--pb-shadow-sm: 0 1px 3px rgba(17, 24, 39, 0.06), 0 1px 2px rgba(17, 24, 39, 0.03);
+	--pb-shadow-md: 0 6px 18px -6px rgba(17, 24, 39, 0.12), 0 2px 6px -2px rgba(17, 24, 39, 0.05);
+	--pb-shadow-lg: 0 24px 48px -16px rgba(17, 24, 39, 0.22), 0 8px 20px -8px rgba(17, 24, 39, 0.1);
+
+	--pb-ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--pb-transition: 180ms var(--pb-ease);
 	--pb-zindex: 999999;
 }
 
+/* Tinted helpers follow the configured accent colour where the engine can
+   mix colours; older engines keep the static blue tint declared above. */
+@supports (background: color-mix(in srgb, #000 10%, #fff)) {
+	:root {
+		--pb-primary-soft: color-mix(in srgb, var(--pb-primary) 10%, #ffffff);
+		--pb-primary-ring: color-mix(in srgb, var(--pb-primary) 22%, transparent);
+	}
+}
+
 /* ==========================================================================
-   CSS Reset for Poshtibank Widget (Blocks any WordPress Theme Overrides)
+   2. Scoped Reset (blocks WordPress theme bleed)
    ========================================================================== */
 #poshtibank-widget-root {
 	position: fixed !important;
 	bottom: 24px !important;
 	z-index: var(--pb-zindex) !important;
-	font-family: -apple-system, BlinkMacSystemFont, "IRANSans", "Vazirmatn", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+	font-family: -apple-system, BlinkMacSystemFont, "IRANSansX", "IRANSans", "Vazirmatn", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 	font-size: 14px !important;
 	line-height: 1.5 !important;
 	direction: rtl !important;
+	text-align: right !important;
 	box-sizing: border-box !important;
 	-webkit-font-smoothing: antialiased !important;
 	-moz-osx-font-smoothing: grayscale !important;
+	color: var(--pb-text) !important;
 }
 
 #poshtibank-widget-root *,
@@ -54,35 +88,46 @@
 #poshtibank-widget-root *::after {
 	box-sizing: border-box !important;
 	font-family: inherit !important;
+	-webkit-tap-highlight-color: transparent !important;
 }
 
 #poshtibank-widget-root button {
-	border: none !important;
-	outline: none !important;
+	border: 0 !important;
+	outline: 0 !important;
 	padding: 0 !important;
 	margin: 0 !important;
-	background: transparent;
-	line-height: normal !important;
+	background: transparent !important;
+	color: inherit !important;
+	font: inherit !important;
+	line-height: 1 !important;
 	text-transform: none !important;
 	letter-spacing: normal !important;
 	box-shadow: none !important;
 	cursor: pointer !important;
+	-webkit-appearance: none !important;
+	appearance: none !important;
 }
 
 #poshtibank-widget-root input,
 #poshtibank-widget-root textarea {
 	box-sizing: border-box !important;
 	margin: 0 !important;
-	line-height: normal !important;
+	font-family: inherit !important;
+	-webkit-appearance: none !important;
+	appearance: none !important;
 }
 
 #poshtibank-widget-root svg {
 	display: block !important;
 	vertical-align: middle !important;
-	box-sizing: content-box !important;
+	flex-shrink: 0 !important;
 }
 
-/* Position options */
+#poshtibank-widget-root a {
+	text-decoration: none !important;
+}
+
+/* Position anchors */
 #poshtibank-widget-root.pos-bottom-right {
 	right: 24px !important;
 	left: auto !important;
@@ -94,97 +139,113 @@
 }
 
 /* ==========================================================================
-   Launcher Floating Action Button (FAB)
+   3. Launcher (perfectly round FAB)
    ========================================================================== */
 #poshtibank-widget-root .poshtibank-launcher,
 #poshtibank-widget-root button.poshtibank-launcher {
-	width: 60px !important;
-	height: 60px !important;
-	min-width: 60px !important;
-	min-height: 60px !important;
-	max-width: 60px !important;
-	max-height: 60px !important;
-	border-radius: 50% !important;
-	background: var(--pb-primary) !important;
-	color: #ffffff !important;
-	border: none !important;
-	outline: none !important;
-	cursor: pointer !important;
-	padding: 0 !important;
-	margin: 0 !important;
-	box-shadow: 0 6px 20px -2px rgba(15, 23, 42, 0.22), 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+	position: relative !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	position: relative !important;
-	transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	width: 58px !important;
+	height: 58px !important;
+	min-width: 58px !important;
+	min-height: 58px !important;
+	max-width: 58px !important;
+	max-height: 58px !important;
+	flex: 0 0 58px !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	border: 0 !important;
+	border-radius: var(--pb-radius-full) !important;
+	background: var(--pb-primary) !important;
+	background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 55%) !important;
+	color: #ffffff !important;
+	box-shadow:
+		0 8px 22px -6px rgba(17, 24, 39, 0.35),
+		0 2px 6px rgba(17, 24, 39, 0.12),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
+	transition: transform var(--pb-transition), box-shadow var(--pb-transition) !important;
 	user-select: none !important;
-	-webkit-tap-highlight-color: transparent !important;
+	-webkit-user-select: none !important;
+	aspect-ratio: 1 / 1 !important;
 }
 
 #poshtibank-widget-root .poshtibank-launcher:hover {
-	transform: translateY(-3px) !important;
-	box-shadow: 0 10px 26px -2px rgba(15, 23, 42, 0.28), 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+	transform: translateY(-2px) scale(1.02) !important;
+	box-shadow:
+		0 14px 28px -8px rgba(17, 24, 39, 0.4),
+		0 4px 10px rgba(17, 24, 39, 0.14),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
 }
 
 #poshtibank-widget-root .poshtibank-launcher:active {
-	transform: translateY(-1px) scale(0.98) !important;
+	transform: translateY(0) scale(0.97) !important;
+}
+
+#poshtibank-widget-root .poshtibank-launcher:focus-visible {
+	outline: 3px solid var(--pb-primary-ring) !important;
+	outline-offset: 3px !important;
 }
 
 #poshtibank-widget-root .poshtibank-launcher-icon {
-	width: 28px !important;
-	height: 28px !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
+	width: 26px !important;
+	height: 26px !important;
+	color: #ffffff !important;
 }
 
 #poshtibank-widget-root .poshtibank-launcher-icon svg {
-	width: 26px !important;
-	height: 26px !important;
-	stroke: #ffffff !important;
+	width: 25px !important;
+	height: 25px !important;
+	stroke: currentColor !important;
 	fill: none !important;
-	stroke-width: 2.2 !important;
+	stroke-width: 2 !important;
+	stroke-linecap: round !important;
+	stroke-linejoin: round !important;
 }
 
-/* Unread Badge */
+/* Unread badge */
 #poshtibank-widget-root .poshtibank-badge {
 	position: absolute !important;
-	top: -2px !important;
-	left: -2px !important;
-	background: var(--pb-danger) !important;
-	color: #ffffff !important;
-	font-size: 11px !important;
-	font-weight: 700 !important;
-	min-width: 20px !important;
-	height: 20px !important;
-	padding: 0 6px !important;
-	border-radius: var(--pb-radius-full) !important;
+	top: -3px !important;
+	left: -3px !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
+	min-width: 20px !important;
+	height: 20px !important;
+	padding: 0 6px !important;
 	border: 2px solid #ffffff !important;
-	box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4) !important;
+	border-radius: var(--pb-radius-full) !important;
+	background: var(--pb-danger) !important;
+	color: #ffffff !important;
+	font-size: 10.5px !important;
+	font-weight: 700 !important;
 	line-height: 1 !important;
+	box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35) !important;
+	z-index: 2 !important;
 }
 
 /* ==========================================================================
-   Main Chat Window
+   4. Window Shell
    ========================================================================== */
 #poshtibank-widget-root .poshtibank-window {
 	position: absolute !important;
-	bottom: 76px !important;
-	width: 380px !important;
-	height: 580px !important;
-	max-height: calc(85vh - 85px) !important;
-	background: #ffffff !important;
-	border-radius: var(--pb-radius-xl) !important;
-	box-shadow: var(--pb-shadow-lg) !important;
-	border: 1px solid var(--pb-border) !important;
+	bottom: 74px !important;
 	display: flex !important;
 	flex-direction: column !important;
+	width: 392px !important;
+	height: 600px !important;
+	max-height: calc(100vh - 120px) !important;
 	overflow: hidden !important;
-	animation: pbSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	background: var(--pb-bg) !important;
+	border: 1px solid var(--pb-border) !important;
+	border-radius: var(--pb-radius-2xl) !important;
+	box-shadow: var(--pb-shadow-lg) !important;
+	animation: pbWindowIn 280ms var(--pb-ease) both !important;
 	transform-origin: bottom center !important;
 }
 
@@ -200,10 +261,10 @@
 	transform-origin: bottom left !important;
 }
 
-@keyframes pbSlideUp {
+@keyframes pbWindowIn {
 	from {
 		opacity: 0;
-		transform: translateY(14px) scale(0.98);
+		transform: translateY(10px) scale(0.98);
 	}
 	to {
 		opacity: 1;
@@ -212,111 +273,133 @@
 }
 
 /* ==========================================================================
-   Window Header (Clean Minimalist Design)
+   5. Header (light surface, guaranteed icon contrast)
    ========================================================================== */
 #poshtibank-widget-root .poshtibank-win-header {
-	background: var(--pb-primary) !important;
-	color: #ffffff !important;
-	padding: 15px 18px !important;
-	display: flex !important;
-	justify-content: space-between !important;
-	align-items: center !important;
-	flex-shrink: 0 !important;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
 	position: relative !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+	gap: 12px !important;
+	flex-shrink: 0 !important;
+	padding: 14px 16px !important;
+	background: var(--pb-surface-raised) !important;
+	border-bottom: 1px solid var(--pb-border) !important;
+	box-shadow: inset 0 3px 0 var(--pb-primary) !important;
 	z-index: 5 !important;
 }
 
 #poshtibank-widget-root .poshtibank-header-user {
 	display: flex !important;
 	align-items: center !important;
-	gap: 12px !important;
+	gap: 10px !important;
+	min-width: 0 !important;
 }
 
 #poshtibank-widget-root .poshtibank-avatar {
 	position: relative !important;
-	width: 40px !important;
-	height: 40px !important;
-	background: rgba(255, 255, 255, 0.2) !important;
-	border-radius: 50% !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
+	width: 40px !important;
+	height: 40px !important;
+	flex: 0 0 40px !important;
+	border-radius: var(--pb-radius-full) !important;
+	background: var(--pb-primary) !important;
 	color: #ffffff !important;
-	flex-shrink: 0 !important;
-	border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
+	box-shadow: 0 2px 8px -2px var(--pb-primary-ring) !important;
 }
 
 #poshtibank-widget-root .poshtibank-avatar svg {
 	width: 22px !important;
 	height: 22px !important;
-	fill: #ffffff !important;
+	fill: currentColor !important;
 }
 
 #poshtibank-widget-root .poshtibank-status-indicator {
 	position: absolute !important;
 	bottom: -1px !important;
-	right: -1px !important;
+	left: -1px !important;
 	width: 11px !important;
 	height: 11px !important;
-	background: #94a3b8 !important;
-	border: 2px solid #ffffff !important;
-	border-radius: 50% !important;
+	border: 2px solid var(--pb-surface-raised) !important;
+	border-radius: var(--pb-radius-full) !important;
+	background: #c3c9d4 !important;
 }
 
 #poshtibank-widget-root .poshtibank-status-indicator.online {
 	background: var(--pb-success) !important;
-	box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35) !important;
+	box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+}
+
+#poshtibank-widget-root .poshtibank-win-titles {
+	min-width: 0 !important;
 }
 
 #poshtibank-widget-root .poshtibank-win-titles h4 {
 	margin: 0 !important;
-	font-size: 15px !important;
+	padding: 0 !important;
+	color: var(--pb-text) !important;
+	font-size: 14.5px !important;
 	font-weight: 700 !important;
-	color: #ffffff !important;
-	line-height: 1.3 !important;
+	line-height: 1.35 !important;
+	letter-spacing: -0.01em !important;
+	white-space: nowrap !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
 }
 
 #poshtibank-widget-root .poshtibank-win-status {
-	font-size: 11.5px !important;
-	opacity: 0.9 !important;
 	display: block !important;
-	margin-top: 1px !important;
-	color: #ffffff !important;
+	margin-top: 2px !important;
+	color: var(--pb-text-muted) !important;
+	font-size: 11.5px !important;
+	font-weight: 500 !important;
+	line-height: 1.35 !important;
+	white-space: nowrap !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
 }
 
 #poshtibank-widget-root .poshtibank-header-actions {
 	display: flex !important;
 	align-items: center !important;
-	gap: 4px !important;
+	gap: 6px !important;
+	flex-shrink: 0 !important;
 }
 
+/* Header icon buttons: dark glyph on a light chip */
 #poshtibank-widget-root .poshtibank-btn-icon {
-	background: rgba(255, 255, 255, 0.12) !important;
-	color: #ffffff !important;
-	width: 32px !important;
-	height: 32px !important;
-	border-radius: var(--pb-radius-sm) !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	transition: background-color 0.2s ease !important;
+	width: 34px !important;
+	height: 34px !important;
+	min-width: 34px !important;
+	flex: 0 0 34px !important;
+	border-radius: var(--pb-radius-sm) !important;
+	background: var(--pb-surface-sunken) !important;
+	color: var(--pb-text-secondary) !important;
+	transition: background-color var(--pb-transition), color var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-icon:hover {
-	background: rgba(255, 255, 255, 0.25) !important;
+	background: var(--pb-primary-soft) !important;
+	color: var(--pb-primary) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-icon svg {
-	width: 18px !important;
-	height: 18px !important;
-	stroke: #ffffff !important;
+	width: 17px !important;
+	height: 17px !important;
+	stroke: currentColor !important;
 	fill: none !important;
 	stroke-width: 2 !important;
+	stroke-linecap: round !important;
+	stroke-linejoin: round !important;
 }
 
 /* ==========================================================================
-   Views Container & Scrollbars
+   6. Views & Scrollbars
    ========================================================================== */
 #poshtibank-widget-root .poshtibank-view {
 	display: none;
@@ -339,9 +422,9 @@
 	overflow: hidden !important;
 }
 
-/* Minimal Custom Scrollbars */
 #poshtibank-widget-root ::-webkit-scrollbar {
-	width: 5px !important;
+	width: 6px !important;
+	height: 6px !important;
 }
 
 #poshtibank-widget-root ::-webkit-scrollbar-track {
@@ -349,115 +432,128 @@
 }
 
 #poshtibank-widget-root ::-webkit-scrollbar-thumb {
-	background: #cbd5e1 !important;
+	background: #d3d8e0 !important;
 	border-radius: var(--pb-radius-full) !important;
 }
 
 #poshtibank-widget-root ::-webkit-scrollbar-thumb:hover {
-	background: #94a3b8 !important;
+	background: #b9c0cb !important;
 }
 
 /* ==========================================================================
-   View 1: Hub & FAQ & Channels
+   7. View 1 — Hub (hero, FAQ, channels)
    ========================================================================== */
 #poshtibank-widget-root .poshtibank-hub-hero {
-	padding: 24px 20px 20px !important;
+	padding: 22px 18px !important;
 	text-align: center !important;
-	background: #ffffff !important;
+	background: var(--pb-surface-raised) !important;
 	border-bottom: 1px solid var(--pb-border) !important;
 }
 
 #poshtibank-widget-root .poshtibank-hub-hero h3 {
 	margin: 0 0 6px !important;
-	font-size: 16.5px !important;
-	font-weight: 800 !important;
 	color: var(--pb-text) !important;
+	font-size: 16px !important;
+	font-weight: 700 !important;
+	line-height: 1.45 !important;
+	letter-spacing: -0.015em !important;
 }
 
 #poshtibank-widget-root .poshtibank-hub-hero p {
 	margin: 0 0 16px !important;
-	font-size: 13px !important;
 	color: var(--pb-text-muted) !important;
-	line-height: 1.5 !important;
+	font-size: 12.5px !important;
+	line-height: 1.65 !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-primary-hub {
-	width: 100% !important;
-	padding: 12px 18px !important;
-	background: var(--pb-primary) !important;
-	color: #ffffff !important;
-	border-radius: var(--pb-radius-md) !important;
-	font-size: 13.5px !important;
-	font-weight: 700 !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	gap: 10px !important;
-	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
-	transition: var(--pb-transition) !important;
+	gap: 8px !important;
+	width: 100% !important;
+	min-height: 44px !important;
+	padding: 0 18px !important;
+	border-radius: var(--pb-radius-md) !important;
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
+	font-size: 13px !important;
+	font-weight: 700 !important;
+	box-shadow: 0 6px 16px -6px var(--pb-primary-ring) !important;
+	transition: transform var(--pb-transition), box-shadow var(--pb-transition), filter var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-primary-hub:hover {
-	transform: translateY(-2px) !important;
-	box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35) !important;
+	transform: translateY(-1px) !important;
+	filter: brightness(0.96) !important;
+	box-shadow: 0 10px 22px -8px var(--pb-primary-ring) !important;
+}
+
+#poshtibank-widget-root .poshtibank-btn-primary-hub:active {
+	transform: translateY(0) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-primary-hub svg {
-	width: 18px !important;
-	height: 18px !important;
-	stroke: #ffffff !important;
+	width: 17px !important;
+	height: 17px !important;
+	stroke: currentColor !important;
 	fill: none !important;
+	stroke-width: 2 !important;
 }
 
 #poshtibank-widget-root .poshtibank-hub-section {
-	padding: 16px 20px !important;
+	padding: 16px 16px 18px !important;
 }
 
 #poshtibank-widget-root .poshtibank-hub-section h5 {
-	margin: 0 0 10px !important;
-	font-size: 12px !important;
-	font-weight: 700 !important;
+	margin: 0 0 8px !important;
 	color: var(--pb-text-muted) !important;
-	text-transform: uppercase !important;
+	font-size: 11px !important;
+	font-weight: 700 !important;
+	letter-spacing: 0.02em !important;
 }
 
-/* FAQ Accordion */
+/* FAQ accordion */
 #poshtibank-widget-root .poshtibank-faq-list {
 	display: flex !important;
 	flex-direction: column !important;
-	gap: 8px !important;
+	gap: 6px !important;
 }
 
 #poshtibank-widget-root .poshtibank-faq-item {
-	background: #ffffff !important;
+	overflow: hidden !important;
+	background: var(--pb-surface-raised) !important;
 	border: 1px solid var(--pb-border) !important;
 	border-radius: var(--pb-radius-md) !important;
-	overflow: hidden !important;
-	transition: border-color 0.2s ease !important;
+	transition: border-color var(--pb-transition), box-shadow var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-faq-item:hover {
-	border-color: #cbd5e1 !important;
+	border-color: var(--pb-border-strong) !important;
 }
 
 #poshtibank-widget-root .poshtibank-faq-item.open {
 	border-color: var(--pb-primary) !important;
+	box-shadow: 0 0 0 3px var(--pb-primary-ring) !important;
 }
 
 #poshtibank-widget-root .poshtibank-faq-q {
-	padding: 12px 14px !important;
-	font-size: 13px !important;
-	font-weight: 600 !important;
-	color: var(--pb-text) !important;
-	cursor: pointer !important;
 	display: flex !important;
-	justify-content: space-between !important;
 	align-items: center !important;
-	background: #ffffff !important;
+	justify-content: space-between !important;
+	gap: 10px !important;
+	padding: 12px 14px !important;
+	background: var(--pb-surface-raised) !important;
+	color: var(--pb-text) !important;
+	font-size: 12.5px !important;
+	font-weight: 600 !important;
+	line-height: 1.6 !important;
+	text-align: right !important;
+	cursor: pointer !important;
 }
 
 #poshtibank-widget-root .poshtibank-faq-q:hover {
-	background: #f8fafc !important;
+	background: var(--pb-surface) !important;
 }
 
 #poshtibank-widget-root .poshtibank-faq-q svg {
@@ -465,8 +561,8 @@
 	height: 16px !important;
 	stroke: var(--pb-text-muted) !important;
 	fill: none !important;
-	transition: transform 0.2s ease !important;
-	margin-right: 8px !important;
+	stroke-width: 2 !important;
+	transition: transform var(--pb-transition), stroke var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-faq-item.open .poshtibank-faq-q svg {
@@ -477,176 +573,191 @@
 #poshtibank-widget-root .poshtibank-faq-a {
 	display: none;
 	padding: 0 14px 12px !important;
-	font-size: 12.5px !important;
-	line-height: 1.6 !important;
+	border-top: 1px solid var(--pb-border) !important;
+	background: var(--pb-surface-raised) !important;
 	color: var(--pb-text-secondary) !important;
-	border-top: 1px solid var(--pb-border-light) !important;
-	background: #ffffff !important;
+	font-size: 12px !important;
+	line-height: 1.8 !important;
 }
 
 #poshtibank-widget-root .poshtibank-faq-item.open .poshtibank-faq-a {
 	display: block !important;
 }
 
-/* Channels Grid */
+/* Channel cards */
 #poshtibank-widget-root .poshtibank-channels-grid {
 	display: grid !important;
-	grid-template-columns: repeat(2, 1fr) !important;
-	gap: 10px !important;
+	grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	gap: 8px !important;
 }
 
 #poshtibank-widget-root .poshtibank-channel-card {
-	background: #ffffff !important;
-	border: 1px solid var(--pb-border) !important;
-	border-radius: var(--pb-radius-md) !important;
-	padding: 10px 12px !important;
 	display: flex !important;
 	align-items: center !important;
-	gap: 10px !important;
-	text-decoration: none !important;
+	gap: 9px !important;
+	padding: 9px 11px !important;
+	background: var(--pb-surface-raised) !important;
+	border: 1px solid var(--pb-border) !important;
+	border-radius: var(--pb-radius-md) !important;
 	color: var(--pb-text) !important;
-	font-size: 12.5px !important;
+	font-size: 12px !important;
 	font-weight: 600 !important;
-	transition: var(--pb-transition) !important;
+	transition: border-color var(--pb-transition), box-shadow var(--pb-transition), transform var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-channel-card:hover {
-	transform: translateY(-2px) !important;
-	border-color: #cbd5e1 !important;
+	transform: translateY(-1px) !important;
+	border-color: var(--pb-border-strong) !important;
 	box-shadow: var(--pb-shadow-sm) !important;
 }
 
 #poshtibank-widget-root .poshtibank-channel-icon {
-	width: 32px !important;
-	height: 32px !important;
-	border-radius: var(--pb-radius-sm) !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
+	width: 30px !important;
+	height: 30px !important;
+	flex: 0 0 30px !important;
+	border-radius: var(--pb-radius-xs) !important;
 	color: #ffffff !important;
-	font-size: 15px !important;
-	flex-shrink: 0 !important;
+	font-size: 14px !important;
+	line-height: 1 !important;
 }
 
 /* ==========================================================================
-   View 2: Pre-chat Form
+   8. View 2 — Pre-chat form
    ========================================================================== */
 #poshtibank-widget-root .poshtibank-prechat-card {
-	padding: 24px 20px !important;
-	background: #ffffff !important;
-	margin: auto 16px !important;
-	border-radius: var(--pb-radius-lg) !important;
+	margin: auto 14px !important;
+	padding: 22px 18px !important;
+	background: var(--pb-surface-raised) !important;
 	border: 1px solid var(--pb-border) !important;
-	box-shadow: var(--pb-shadow-md) !important;
+	border-radius: var(--pb-radius-lg) !important;
+	box-shadow: var(--pb-shadow-sm) !important;
 }
 
 #poshtibank-widget-root .poshtibank-prechat-card h4 {
 	margin: 0 0 6px !important;
-	font-size: 16px !important;
-	font-weight: 800 !important;
 	color: var(--pb-text) !important;
+	font-size: 15.5px !important;
+	font-weight: 700 !important;
+	letter-spacing: -0.01em !important;
 }
 
 #poshtibank-widget-root .poshtibank-prechat-card p {
-	margin: 0 0 16px !important;
-	font-size: 12.5px !important;
+	margin: 0 0 18px !important;
 	color: var(--pb-text-muted) !important;
+	font-size: 12px !important;
+	line-height: 1.7 !important;
 }
 
 #poshtibank-widget-root .poshtibank-input-group {
-	margin-bottom: 14px !important;
 	display: flex !important;
 	flex-direction: column !important;
-	gap: 5px !important;
+	gap: 6px !important;
+	margin-bottom: 14px !important;
 }
 
 #poshtibank-widget-root .poshtibank-input-group label {
+	color: var(--pb-text-secondary) !important;
 	font-size: 12px !important;
 	font-weight: 600 !important;
-	color: #334155 !important;
+}
+
+#poshtibank-widget-root .poshtibank-input-group label .required {
+	color: var(--pb-danger) !important;
 }
 
 #poshtibank-widget-root .poshtibank-input-group input {
-	padding: 10px 12px !important;
-	border: 1px solid #cbd5e1 !important;
+	width: 100% !important;
+	height: 42px !important;
+	padding: 0 12px !important;
+	background: var(--pb-bg) !important;
+	border: 1px solid var(--pb-border-strong) !important;
 	border-radius: var(--pb-radius-md) !important;
+	color: var(--pb-text) !important;
 	font-size: 13px !important;
 	outline: none !important;
-	background: #ffffff !important;
-	transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+	box-shadow: none !important;
+	transition: border-color var(--pb-transition), box-shadow var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-input-group input:focus {
 	border-color: var(--pb-primary) !important;
-	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+	box-shadow: 0 0 0 3px var(--pb-primary-ring) !important;
 }
 
 #poshtibank-widget-root .poshtibank-form-error {
+	margin-bottom: 12px !important;
 	padding: 8px 12px !important;
 	background: #fef2f2 !important;
-	color: var(--pb-danger) !important;
-	border-radius: var(--pb-radius-sm) !important;
-	font-size: 12px !important;
-	margin-bottom: 12px !important;
 	border: 1px solid #fee2e2 !important;
+	border-radius: var(--pb-radius-sm) !important;
+	color: #b91c1c !important;
+	font-size: 11.5px !important;
+	line-height: 1.6 !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-submit {
 	width: 100% !important;
-	padding: 11px !important;
+	min-height: 44px !important;
+	margin-top: 4px !important;
+	border-radius: var(--pb-radius-md) !important;
 	background: var(--pb-primary) !important;
 	color: #ffffff !important;
-	border-radius: var(--pb-radius-md) !important;
-	font-size: 13.5px !important;
+	font-size: 13px !important;
 	font-weight: 700 !important;
-	margin-top: 6px !important;
-	box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25) !important;
-	transition: var(--pb-transition) !important;
+	box-shadow: 0 6px 16px -6px var(--pb-primary-ring) !important;
+	transition: filter var(--pb-transition), transform var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-submit:hover {
+	filter: brightness(0.96) !important;
 	transform: translateY(-1px) !important;
 }
 
 /* ==========================================================================
-   View 3: Messages Stream & Message Bubbles
+   9. View 3 — Messages
    ========================================================================== */
 #poshtibank-widget-root .poshtibank-messages-stream {
-	flex: 1 1 0% !important;
-	min-height: 0 !important;
-	overflow-y: auto !important;
-	overflow-x: hidden !important;
-	padding: 16px 14px !important;
 	display: flex !important;
 	flex-direction: column !important;
-	gap: 12px !important;
+	gap: 10px !important;
+	flex: 1 1 0% !important;
+	min-height: 0 !important;
+	overflow-x: hidden !important;
+	overflow-y: auto !important;
+	padding: 16px 14px 10px !important;
 	background: var(--pb-surface) !important;
+	scroll-behavior: smooth !important;
 }
 
 #poshtibank-widget-root .poshtibank-chat-date-separator {
+	margin: 2px 0 6px !important;
 	text-align: center !important;
-	margin: 4px 0 8px !important;
 }
 
 #poshtibank-widget-root .poshtibank-chat-date-separator span {
-	background: #e2e8f0 !important;
-	color: #475569 !important;
-	font-size: 11px !important;
+	display: inline-block !important;
 	padding: 3px 12px !important;
+	background: var(--pb-surface-sunken) !important;
 	border-radius: var(--pb-radius-full) !important;
+	color: var(--pb-text-muted) !important;
+	font-size: 10.5px !important;
 	font-weight: 600 !important;
 }
 
-/* Message Bubble */
 #poshtibank-widget-root .poshtibank-msg {
+	position: relative !important;
 	display: flex !important;
 	flex-direction: column !important;
-	max-width: 82% !important;
-	position: relative !important;
-	animation: pbFadeIn 0.2s ease-out !important;
+	max-width: 84% !important;
+	padding: 9px 13px !important;
+	border-radius: var(--pb-radius-lg) !important;
+	animation: pbBubbleIn 200ms var(--pb-ease) both !important;
 }
 
-@keyframes pbFadeIn {
+@keyframes pbBubbleIn {
 	from {
 		opacity: 0;
 		transform: translateY(6px);
@@ -657,166 +768,189 @@
 	}
 }
 
-/* User Bubble (Minimal clean primary surface) */
+/* User bubble — accent, white text */
 #poshtibank-widget-root .poshtibank-msg.msg-user {
 	align-self: flex-start !important;
 	background: var(--pb-primary) !important;
 	color: #ffffff !important;
-	border-radius: 18px 18px 4px 18px !important;
-	padding: 10px 14px !important;
-	box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2) !important;
+	border-radius: var(--pb-radius-lg) var(--pb-radius-lg) 6px var(--pb-radius-lg) !important;
+	box-shadow: 0 4px 12px -6px var(--pb-primary-ring) !important;
 }
 
-#poshtibank-widget-root .poshtibank-msg.msg-user .poshtibank-msg-content {
+#poshtibank-widget-root .poshtibank-msg.msg-user .poshtibank-msg-content,
+#poshtibank-widget-root .poshtibank-msg.msg-user .poshtibank-msg-sender {
 	color: #ffffff !important;
 }
 
 #poshtibank-widget-root .poshtibank-msg.msg-user .poshtibank-msg-time {
-	color: rgba(255, 255, 255, 0.8) !important;
+	color: rgba(255, 255, 255, 0.78) !important;
 }
 
-/* Admin Bubble (Crisp white card) */
+/* Admin bubble — white card */
 #poshtibank-widget-root .poshtibank-msg.msg-admin {
 	align-self: flex-end !important;
-	background: #ffffff !important;
+	background: var(--pb-surface-raised) !important;
 	color: var(--pb-text) !important;
 	border: 1px solid var(--pb-border) !important;
-	border-radius: 18px 18px 18px 4px !important;
-	padding: 10px 14px !important;
-	box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04) !important;
+	border-radius: var(--pb-radius-lg) var(--pb-radius-lg) var(--pb-radius-lg) 6px !important;
+	box-shadow: var(--pb-shadow-xs) !important;
 }
 
 #poshtibank-widget-root .poshtibank-msg.msg-admin .poshtibank-msg-sender {
 	color: var(--pb-primary) !important;
-	font-weight: 700 !important;
 }
 
-/* AI Bubble (Subtle violet surface) */
+/* AI bubble — soft violet card */
 #poshtibank-widget-root .poshtibank-msg.msg-ai {
 	align-self: flex-end !important;
-	background: #fbf7ff !important;
-	border: 1px solid #e9d5ff !important;
-	border-radius: 18px 18px 18px 4px !important;
-	padding: 10px 14px !important;
-	color: #4a044e !important;
-	box-shadow: 0 2px 6px rgba(168, 85, 247, 0.06) !important;
+	background: #f8f5ff !important;
+	color: #3b2b6b !important;
+	border: 1px solid #e9e1fb !important;
+	border-radius: var(--pb-radius-lg) var(--pb-radius-lg) var(--pb-radius-lg) 6px !important;
 }
 
 #poshtibank-widget-root .poshtibank-msg.msg-ai .poshtibank-msg-sender {
-	color: #7e22ce !important;
-	font-weight: 700 !important;
+	color: #6d28d9 !important;
 }
 
 #poshtibank-widget-root .poshtibank-msg.msg-ai .poshtibank-msg-content {
-	color: #3b0764 !important;
+	color: #3b2b6b !important;
 }
 
-/* System Message */
+/* System notice */
 #poshtibank-widget-root .poshtibank-msg.msg-system {
 	align-self: center !important;
+	max-width: 90% !important;
+	padding: 5px 12px !important;
 	background: #fffbeb !important;
-	color: #92400e !important;
-	border: 1px solid #fef3c7 !important;
+	border: 1px solid #fde68a !important;
 	border-radius: var(--pb-radius-full) !important;
-	padding: 5px 14px !important;
-	font-size: 11.5px !important;
+	color: #92400e !important;
+	font-size: 11px !important;
 	text-align: center !important;
 }
 
 #poshtibank-widget-root .poshtibank-msg-sender {
-	font-size: 11px !important;
+	margin-bottom: 3px !important;
+	font-size: 10.5px !important;
 	font-weight: 700 !important;
-	margin-bottom: 2px !important;
+	line-height: 1.4 !important;
 }
 
 #poshtibank-widget-root .poshtibank-msg-content {
+	color: inherit !important;
 	font-size: 13px !important;
-	line-height: 1.6 !important;
+	line-height: 1.75 !important;
 	word-break: break-word !important;
+	overflow-wrap: anywhere !important;
+}
+
+#poshtibank-widget-root .poshtibank-msg-content p {
+	margin: 0 0 6px !important;
+}
+
+#poshtibank-widget-root .poshtibank-msg-content p:last-child {
+	margin-bottom: 0 !important;
 }
 
 #poshtibank-widget-root .poshtibank-msg-time {
-	font-size: 10px !important;
-	margin-top: 4px !important;
+	margin-top: 3px !important;
 	color: var(--pb-text-muted) !important;
+	font-size: 9.5px !important;
+	font-weight: 500 !important;
+	line-height: 1.4 !important;
 	text-align: left !important;
 	direction: ltr !important;
-	font-weight: 500 !important;
 }
 
-/* Typing Indicator */
+/* Typing indicator */
 #poshtibank-widget-root .poshtibank-typing {
 	display: flex !important;
 	align-items: center !important;
-	gap: 5px !important;
-	padding: 6px 16px !important;
-	font-size: 11.5px !important;
+	gap: 4px !important;
+	padding: 0 18px 6px !important;
+	background: var(--pb-surface) !important;
 	color: var(--pb-text-muted) !important;
+	font-size: 10.5px !important;
+	flex-shrink: 0 !important;
 }
 
 #poshtibank-widget-root .poshtibank-typing span {
-	width: 6px !important;
-	height: 6px !important;
-	background: var(--pb-text-muted) !important;
-	border-radius: 50% !important;
 	display: inline-block !important;
-	animation: pbBounce 1.4s infinite ease-in-out both !important;
+	width: 5px !important;
+	height: 5px !important;
+	border-radius: var(--pb-radius-full) !important;
+	background: var(--pb-text-muted) !important;
+	animation: pbTyping 1.2s infinite ease-in-out both !important;
 }
 
-#poshtibank-widget-root .poshtibank-typing span:nth-child(1) { animation-delay: -0.32s !important; }
-#poshtibank-widget-root .poshtibank-typing span:nth-child(2) { animation-delay: -0.16s !important; }
+#poshtibank-widget-root .poshtibank-typing span:nth-child(1) { animation-delay: -0.24s !important; }
+#poshtibank-widget-root .poshtibank-typing span:nth-child(2) { animation-delay: -0.12s !important; }
 
-@keyframes pbBounce {
-	0%, 80%, 100% { transform: scale(0); }
-	40% { transform: scale(1.0); }
+#poshtibank-widget-root .poshtibank-typing small {
+	margin-right: 4px !important;
+	font-size: 10.5px !important;
+}
+
+@keyframes pbTyping {
+	0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+	40% { transform: scale(1); opacity: 1; }
 }
 
 /* ==========================================================================
-   Redesigned Minimalist Message Box (2-Tier Grid Layout)
+   10. Composer (the message box)
+   --------------------------------------------------------------------------
+   One bordered card owns the whole composer: textarea on top, tool chips and
+   the send button on the row below. The textarea keeps NO fixed height so the
+   JS auto-grow (inline height) can actually work.
    ========================================================================== */
 #poshtibank-widget-root .poshtibank-input-bar {
+	position: relative !important;
 	display: grid !important;
 	grid-template-columns: 1fr auto !important;
 	grid-template-areas:
 		"text text"
 		"tools actions" !important;
-	gap: 8px 12px !important;
-	background: #ffffff !important;
-	border-top: 1px solid var(--pb-border) !important;
-	padding: 12px 14px !important;
-	position: relative !important;
-	box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.04) !important;
+	align-items: center !important;
+	gap: 6px 8px !important;
 	flex-shrink: 0 !important;
+	margin: 0 10px 10px !important;
+	padding: 8px 10px 9px !important;
+	background: var(--pb-surface-raised) !important;
+	border: 1px solid var(--pb-border) !important;
+	border-radius: var(--pb-radius-xl) !important;
+	box-shadow: var(--pb-shadow-sm) !important;
+	transition: border-color var(--pb-transition), box-shadow var(--pb-transition) !important;
+}
+
+#poshtibank-widget-root .poshtibank-input-bar:focus-within {
+	border-color: var(--pb-primary) !important;
+	box-shadow: 0 0 0 3px var(--pb-primary-ring) !important;
 }
 
 #poshtibank-widget-root #poshtibank-input-text {
 	grid-area: text !important;
 	width: 100% !important;
-	min-height: 44px !important;
-	max-height: 100px !important;
-	height: 44px !important;
-	padding: 9px 12px !important;
-	border: 1px solid #e2e8f0 !important;
-	border-radius: var(--pb-radius-md) !important;
-	background: #f8fafc !important;
-	color: #0f172a !important;
-	font-size: 13.5px !important;
-	line-height: 1.5 !important;
-	resize: none !important;
-	outline: none !important;
+	min-height: 38px !important;
+	max-height: 120px !important;
+	padding: 8px 6px 2px !important;
+	background: transparent !important;
+	border: 0 !important;
+	border-radius: var(--pb-radius-sm) !important;
 	box-shadow: none !important;
-	margin: 0 !important;
-	transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease !important;
-}
-
-#poshtibank-widget-root #poshtibank-input-text:focus {
-	background: #ffffff !important;
-	border-color: var(--pb-primary) !important;
-	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+	outline: none !important;
+	color: var(--pb-text) !important;
+	font-size: 13px !important;
+	line-height: 1.7 !important;
+	resize: none !important;
+	overflow-y: auto !important;
+	caret-color: var(--pb-primary) !important;
+	transition: none !important;
 }
 
 #poshtibank-widget-root #poshtibank-input-text::placeholder {
-	color: #94a3b8 !important;
+	color: var(--pb-text-placeholder) !important;
+	opacity: 1 !important;
 }
 
 #poshtibank-widget-root .poshtibank-input-tools {
@@ -828,28 +962,29 @@
 	padding: 0 !important;
 }
 
+/* Tool chips: light chip + dark glyph (explicit contrast) */
 #poshtibank-widget-root .poshtibank-btn-tool {
-	width: 32px !important;
-	height: 32px !important;
-	min-width: 32px !important;
-	min-height: 32px !important;
-	border-radius: var(--pb-radius-sm) !important;
-	background: #f1f5f9 !important;
-	border: 1px solid #e2e8f0 !important;
-	color: #475569 !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	cursor: pointer !important;
-	padding: 0 !important;
-	margin: 0 !important;
-	transition: all 0.2s ease !important;
+	width: 34px !important;
+	height: 34px !important;
+	min-width: 34px !important;
+	min-height: 34px !important;
+	flex: 0 0 34px !important;
+	border-radius: var(--pb-radius-sm) !important;
+	background: var(--pb-surface-sunken) !important;
+	color: var(--pb-text-secondary) !important;
+	transition: background-color var(--pb-transition), color var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-tool:hover {
-	background: #e2e8f0 !important;
+	background: var(--pb-primary-soft) !important;
 	color: var(--pb-primary) !important;
-	border-color: #cbd5e1 !important;
+}
+
+#poshtibank-widget-root .poshtibank-btn-tool:active {
+	background: #e3e9f5 !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-tool svg {
@@ -857,7 +992,9 @@
 	height: 17px !important;
 	stroke: currentColor !important;
 	fill: none !important;
-	stroke-width: 2 !important;
+	stroke-width: 1.9 !important;
+	stroke-linecap: round !important;
+	stroke-linejoin: round !important;
 }
 
 #poshtibank-widget-root .poshtibank-input-actions {
@@ -865,32 +1002,30 @@
 	display: flex !important;
 	align-items: center !important;
 	justify-content: flex-end !important;
+	gap: 6px !important;
 	margin: 0 !important;
 	padding: 0 !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-send {
-	width: 34px !important;
-	height: 34px !important;
-	min-width: 34px !important;
-	min-height: 34px !important;
-	border-radius: 50% !important;
-	background: var(--pb-primary) !important;
-	color: #ffffff !important;
-	border: none !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	cursor: pointer !important;
-	padding: 0 !important;
-	margin: 0 !important;
-	box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3) !important;
-	transition: all 0.2s ease !important;
+	width: 38px !important;
+	height: 38px !important;
+	min-width: 38px !important;
+	min-height: 38px !important;
+	flex: 0 0 38px !important;
+	border-radius: var(--pb-radius-full) !important;
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
+	box-shadow: 0 4px 12px -4px var(--pb-primary-ring) !important;
+	transition: transform var(--pb-transition), filter var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-send:hover {
-	transform: scale(1.05) !important;
-	box-shadow: 0 5px 12px rgba(37, 99, 235, 0.4) !important;
+	filter: brightness(0.95) !important;
+	transform: scale(1.04) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-send:active {
@@ -900,82 +1035,75 @@
 #poshtibank-widget-root .poshtibank-btn-send svg {
 	width: 16px !important;
 	height: 16px !important;
-	stroke: #ffffff !important;
+	stroke: currentColor !important;
 	fill: none !important;
 	stroke-width: 2 !important;
-	transform: rotate(180deg) !important; /* Adjust for RTL */
+	stroke-linecap: round !important;
+	stroke-linejoin: round !important;
+	transform: scaleX(-1) !important; /* RTL: plane points left */
 }
 
 /* ==========================================================================
-   Voice Recording Bar Overlay
+   11. Voice recording overlay
    ========================================================================== */
 #poshtibank-widget-root .poshtibank-voice-bar {
 	position: absolute !important;
-	top: 0 !important;
-	left: 0 !important;
-	right: 0 !important;
-	bottom: 0 !important;
-	background: #ffffff !important;
+	inset: 0 !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: space-between !important;
-	padding: 0 16px !important;
+	gap: 12px !important;
+	padding: 0 14px !important;
+	background: var(--pb-surface-raised) !important;
+	border-radius: inherit !important;
+	animation: pbFadeIn 160ms var(--pb-ease) both !important;
 	z-index: 10 !important;
-	border-radius: 0 !important;
-	animation: pbFadeIn 0.2s ease !important;
 }
 
 #poshtibank-widget-root .poshtibank-voice-rec-dot {
-	width: 11px !important;
-	height: 11px !important;
+	width: 10px !important;
+	height: 10px !important;
+	flex: 0 0 10px !important;
+	border-radius: var(--pb-radius-full) !important;
 	background: #dc2626 !important;
-	border-radius: 50% !important;
 	animation: pbRecPulse 1.3s infinite !important;
 }
 
 @keyframes pbRecPulse {
-	0% {
-		transform: scale(0.95);
-		box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
-	}
-	70% {
-		transform: scale(1.05);
-		box-shadow: 0 0 0 7px rgba(220, 38, 38, 0);
-	}
-	100% {
-		transform: scale(0.95);
-		box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
-	}
+	0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+	70% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+	100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
 }
 
 #poshtibank-widget-root .poshtibank-voice-timer {
-	font-family: monospace !important;
-	font-size: 14px !important;
-	font-weight: 700 !important;
+	margin-left: auto !important;
 	color: #dc2626 !important;
+	font-size: 13px !important;
+	font-weight: 700 !important;
 	direction: ltr !important;
+	font-variant-numeric: tabular-nums !important;
 }
 
 #poshtibank-widget-root .poshtibank-voice-actions {
 	display: flex !important;
+	align-items: center !important;
 	gap: 8px !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-vaction {
-	width: 32px !important;
-	height: 32px !important;
-	border-radius: 50% !important;
-	border: none !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	cursor: pointer !important;
-	transition: all 0.2s ease !important;
+	width: 34px !important;
+	height: 34px !important;
+	flex: 0 0 34px !important;
+	border-radius: var(--pb-radius-full) !important;
+	transition: background-color var(--pb-transition), transform var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-vaction.btn-cancel {
 	background: #fee2e2 !important;
-	color: #dc2626 !important;
+	color: #b91c1c !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-vaction.btn-cancel:hover {
@@ -997,73 +1125,75 @@
 	stroke: currentColor !important;
 	fill: none !important;
 	stroke-width: 2 !important;
+	stroke-linecap: round !important;
+	stroke-linejoin: round !important;
 }
 
 /* ==========================================================================
-   Rich Media Messages (Audio, Images, Files, WooCommerce Cards)
+   12. Rich media inside bubbles
    ========================================================================== */
-
-/* Voice Audio Player */
+/* Audio player */
 #poshtibank-widget-root .poshtibank-audio-player {
 	display: flex !important;
 	align-items: center !important;
-	gap: 12px !important;
-	min-width: 200px !important;
-	padding: 4px 0 !important;
+	gap: 10px !important;
+	min-width: 190px !important;
+	padding: 2px 0 !important;
 }
 
 #poshtibank-widget-root .poshtibank-audio-play-btn {
-	width: 32px !important;
-	height: 32px !important;
-	border-radius: 50% !important;
-	border: none !important;
-	cursor: pointer !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	flex-shrink: 0 !important;
-	transition: all 0.2s ease !important;
+	width: 32px !important;
+	height: 32px !important;
+	flex: 0 0 32px !important;
+	border-radius: var(--pb-radius-full) !important;
+	transition: background-color var(--pb-transition) !important;
 }
 
-#poshtibank-widget-root .msg-admin .poshtibank-audio-play-btn {
-	background: #f1f5f9 !important;
-	color: #0f172a !important;
+#poshtibank-widget-root .msg-admin .poshtibank-audio-play-btn,
+#poshtibank-widget-root .msg-ai .poshtibank-audio-play-btn {
+	background: var(--pb-surface-sunken) !important;
+	color: var(--pb-text) !important;
 }
 
-#poshtibank-widget-root .msg-admin .poshtibank-audio-play-btn:hover {
-	background: #e2e8f0 !important;
+#poshtibank-widget-root .msg-admin .poshtibank-audio-play-btn:hover,
+#poshtibank-widget-root .msg-ai .poshtibank-audio-play-btn:hover {
+	background: #e3e7ee !important;
 }
 
 #poshtibank-widget-root .msg-user .poshtibank-audio-play-btn {
-	background: rgba(255, 255, 255, 0.25) !important;
+	background: rgba(255, 255, 255, 0.22) !important;
 	color: #ffffff !important;
 }
 
 #poshtibank-widget-root .msg-user .poshtibank-audio-play-btn:hover {
-	background: rgba(255, 255, 255, 0.35) !important;
+	background: rgba(255, 255, 255, 0.32) !important;
 }
 
 #poshtibank-widget-root .poshtibank-audio-play-btn svg {
-	width: 14px !important;
-	height: 14px !important;
+	width: 13px !important;
+	height: 13px !important;
 	fill: currentColor !important;
 	stroke: none !important;
 }
 
 #poshtibank-widget-root .poshtibank-audio-track {
-	flex: 1 1 0% !important;
 	display: flex !important;
 	flex-direction: column !important;
-	gap: 4px !important;
+	gap: 5px !important;
+	flex: 1 1 0% !important;
 }
 
 #poshtibank-widget-root .poshtibank-audio-progress {
+	position: relative !important;
 	width: 100% !important;
 	height: 4px !important;
-	background: rgba(0, 0, 0, 0.1) !important;
+	overflow: hidden !important;
 	border-radius: var(--pb-radius-full) !important;
+	background: rgba(17, 24, 39, 0.12) !important;
 	cursor: pointer !important;
-	position: relative !important;
 }
 
 #poshtibank-widget-root .msg-user .poshtibank-audio-progress {
@@ -1072,9 +1202,9 @@
 
 #poshtibank-widget-root .poshtibank-audio-progress-bar {
 	height: 100% !important;
-	background: var(--pb-primary) !important;
+	width: 0%;
 	border-radius: var(--pb-radius-full) !important;
-	width: 0% !important;
+	background: var(--pb-primary) !important;
 }
 
 #poshtibank-widget-root .msg-user .poshtibank-audio-progress-bar {
@@ -1082,100 +1212,113 @@
 }
 
 #poshtibank-widget-root .poshtibank-audio-time {
-	font-size: 10px !important;
-	direction: ltr !important;
-	opacity: 0.8 !important;
+	color: inherit !important;
+	font-size: 9.5px !important;
 	font-weight: 500 !important;
+	opacity: 0.75 !important;
+	direction: ltr !important;
+	font-variant-numeric: tabular-nums !important;
 }
 
-/* Image Message Bubble */
+/* Image bubble */
 #poshtibank-widget-root .poshtibank-msg-image {
 	max-width: 220px !important;
-	border-radius: var(--pb-radius-md) !important;
+	margin-bottom: 2px !important;
 	overflow: hidden !important;
+	border-radius: var(--pb-radius-md) !important;
 	cursor: pointer !important;
-	margin-bottom: 4px !important;
 }
 
 #poshtibank-widget-root .poshtibank-msg-image img {
+	display: block !important;
 	width: 100% !important;
 	height: auto !important;
-	display: block !important;
-	transition: opacity 0.2s ease !important;
+	border-radius: inherit !important;
+	transition: opacity var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-msg-image img:hover {
-	opacity: 0.9 !important;
+	opacity: 0.92 !important;
 }
 
-/* Document/File Bubble */
+/* File bubble */
 #poshtibank-widget-root .poshtibank-msg-file {
 	display: flex !important;
 	align-items: center !important;
 	gap: 10px !important;
-	padding: 4px 0 !important;
-	text-decoration: none !important;
+	padding: 2px 0 !important;
 	color: inherit !important;
 }
 
 #poshtibank-widget-root .poshtibank-file-icon {
-	width: 34px !important;
-	height: 34px !important;
-	border-radius: var(--pb-radius-sm) !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	flex-shrink: 0 !important;
+	width: 34px !important;
+	height: 34px !important;
+	flex: 0 0 34px !important;
+	border-radius: var(--pb-radius-sm) !important;
 }
 
-#poshtibank-widget-root .msg-admin .poshtibank-file-icon {
-	background: #f1f5f9 !important;
-	color: #0f172a !important;
+#poshtibank-widget-root .msg-admin .poshtibank-file-icon,
+#poshtibank-widget-root .msg-ai .poshtibank-file-icon {
+	background: var(--pb-surface-sunken) !important;
+	color: var(--pb-text) !important;
 }
 
 #poshtibank-widget-root .msg-user .poshtibank-file-icon {
-	background: rgba(255, 255, 255, 0.25) !important;
+	background: rgba(255, 255, 255, 0.22) !important;
 	color: #ffffff !important;
 }
 
 #poshtibank-widget-root .poshtibank-file-icon svg {
-	width: 18px !important;
-	height: 18px !important;
+	width: 17px !important;
+	height: 17px !important;
 	stroke: currentColor !important;
 	fill: none !important;
+	stroke-width: 1.9 !important;
+}
+
+#poshtibank-widget-root .poshtibank-file-info {
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 2px !important;
+	min-width: 0 !important;
 }
 
 #poshtibank-widget-root .poshtibank-file-name {
-	font-size: 12.5px !important;
-	font-weight: 700 !important;
+	color: inherit !important;
+	font-size: 12px !important;
+	font-weight: 600 !important;
 	word-break: break-all !important;
 }
 
 #poshtibank-widget-root .poshtibank-file-size {
-	font-size: 10px !important;
-	opacity: 0.75 !important;
+	color: inherit !important;
+	font-size: 9.5px !important;
+	opacity: 0.7 !important;
 	direction: ltr !important;
 }
 
-/* WooCommerce Product Card */
+/* Product card */
 #poshtibank-widget-root .poshtibank-product-card {
-	background: #ffffff !important;
+	max-width: 240px !important;
+	margin-top: 2px !important;
+	overflow: hidden !important;
+	background: var(--pb-surface-raised) !important;
 	border: 1px solid var(--pb-border) !important;
 	border-radius: var(--pb-radius-lg) !important;
-	overflow: hidden !important;
-	margin-top: 4px !important;
-	box-shadow: var(--pb-shadow-sm) !important;
-	max-width: 240px !important;
+	box-shadow: var(--pb-shadow-xs) !important;
 }
 
 #poshtibank-widget-root .poshtibank-product-thumb {
-	width: 100% !important;
-	height: 130px !important;
-	background: #f1f5f9 !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
+	width: 100% !important;
+	height: 128px !important;
 	overflow: hidden !important;
+	background: var(--pb-surface-sunken) !important;
 }
 
 #poshtibank-widget-root .poshtibank-product-thumb img {
@@ -1185,178 +1328,191 @@
 }
 
 #poshtibank-widget-root .poshtibank-product-details {
-	padding: 10px 12px !important;
 	display: flex !important;
 	flex-direction: column !important;
 	gap: 6px !important;
+	padding: 10px 12px 12px !important;
 }
 
 #poshtibank-widget-root .poshtibank-product-title {
-	font-size: 13px !important;
-	font-weight: 700 !important;
-	color: var(--pb-text) !important;
 	margin: 0 !important;
+	color: var(--pb-text) !important;
+	font-size: 12.5px !important;
+	font-weight: 700 !important;
+	line-height: 1.5 !important;
 }
 
 #poshtibank-widget-root .poshtibank-product-price {
-	font-size: 13px !important;
-	font-weight: 800 !important;
 	color: var(--pb-primary) !important;
+	font-size: 12.5px !important;
+	font-weight: 700 !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-product-buy {
 	display: block !important;
-	text-align: center !important;
 	padding: 8px 12px !important;
+	border-radius: var(--pb-radius-sm) !important;
 	background: var(--pb-primary) !important;
 	color: #ffffff !important;
-	border-radius: var(--pb-radius-sm) !important;
-	font-size: 12px !important;
+	font-size: 11.5px !important;
 	font-weight: 700 !important;
-	text-decoration: none !important;
-	margin-top: 4px !important;
-	transition: background-color 0.2s ease !important;
+	text-align: center !important;
+	transition: filter var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-product-buy:hover {
-	background: var(--pb-primary-hover) !important;
+	filter: brightness(0.95) !important;
 }
 
-/* Coupon Card */
+/* Coupon card */
 #poshtibank-widget-root .poshtibank-coupon-card {
-	background: #fffbeb !important;
-	border: 1.5px dashed #f59e0b !important;
-	border-radius: var(--pb-radius-lg) !important;
-	padding: 12px 14px !important;
-	margin-top: 4px !important;
 	max-width: 240px !important;
+	margin-top: 2px !important;
+	padding: 12px 14px !important;
+	background: #fffbeb !important;
+	border: 1px dashed #f0c26b !important;
+	border-radius: var(--pb-radius-lg) !important;
 	text-align: center !important;
 }
 
 #poshtibank-widget-root .poshtibank-coupon-badge {
 	display: inline-block !important;
-	background: #fef3c7 !important;
-	color: #b45309 !important;
-	font-size: 11px !important;
-	font-weight: 700 !important;
-	padding: 2px 8px !important;
-	border-radius: var(--pb-radius-full) !important;
 	margin-bottom: 6px !important;
+	padding: 2px 9px !important;
+	background: #fef3c7 !important;
+	border-radius: var(--pb-radius-full) !important;
+	color: #92400e !important;
+	font-size: 10.5px !important;
+	font-weight: 700 !important;
 }
 
 #poshtibank-widget-root .poshtibank-coupon-code {
-	font-family: monospace !important;
+	margin: 4px 0 10px !important;
+	color: #92400e !important;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace !important;
 	font-size: 16px !important;
 	font-weight: 800 !important;
-	letter-spacing: 1px !important;
-	color: #92400e !important;
-	margin: 4px 0 8px !important;
+	letter-spacing: 1.5px !important;
+	direction: ltr !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-copy-coupon {
 	width: 100% !important;
-	padding: 7px 10px !important;
+	padding: 8px 10px !important;
+	border-radius: var(--pb-radius-sm) !important;
 	background: #f59e0b !important;
 	color: #ffffff !important;
-	border-radius: var(--pb-radius-sm) !important;
-	font-size: 11px !important;
+	font-size: 11.5px !important;
 	font-weight: 700 !important;
-	transition: background-color 0.2s ease !important;
+	transition: filter var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-copy-coupon:hover {
-	background: #d97706 !important;
+	filter: brightness(0.95) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-copy-coupon.copied {
 	background: var(--pb-success) !important;
 }
 
-/* CSAT Satisfaction Survey Card */
+/* CSAT survey */
 #poshtibank-widget-root .poshtibank-csat-card {
-	background: #ffffff !important;
+	align-self: stretch !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	margin: 4px 0 !important;
+	padding: 16px 14px !important;
+	background: var(--pb-surface-raised) !important;
 	border: 1px solid var(--pb-border) !important;
 	border-radius: var(--pb-radius-lg) !important;
-	padding: 14px !important;
-	margin: 10px 0 !important;
-	box-shadow: var(--pb-shadow-sm) !important;
+	box-shadow: var(--pb-shadow-xs) !important;
 	text-align: center !important;
 }
 
 #poshtibank-widget-root .poshtibank-csat-card h5 {
-	margin: 0 0 10px !important;
-	font-size: 13px !important;
-	font-weight: 700 !important;
+	margin: 0 0 12px !important;
 	color: var(--pb-text) !important;
+	font-size: 12.5px !important;
+	font-weight: 700 !important;
+	line-height: 1.6 !important;
 }
 
 #poshtibank-widget-root .poshtibank-csat-stars {
 	display: flex !important;
+	align-items: center !important;
 	justify-content: center !important;
-	gap: 6px !important;
-	margin-bottom: 10px !important;
+	gap: 4px !important;
+	margin-bottom: 12px !important;
 	direction: ltr !important;
 }
 
 #poshtibank-widget-root .poshtibank-star-btn {
-	background: none !important;
-	border: none !important;
-	font-size: 22px !important;
-	cursor: pointer !important;
-	opacity: 0.3 !important;
-	transition: all 0.15s ease !important;
-	line-height: 1 !important;
 	padding: 2px !important;
+	color: #f59e0b !important;
+	font-size: 22px !important;
+	line-height: 1 !important;
+	opacity: 0.28 !important;
+	transition: opacity var(--pb-transition), transform var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-star-btn:hover,
 #poshtibank-widget-root .poshtibank-star-btn.active {
 	opacity: 1 !important;
-	transform: scale(1.1) !important;
+	transform: scale(1.08) !important;
 }
 
 #poshtibank-widget-root .poshtibank-csat-comment {
 	width: 100% !important;
+	margin-bottom: 8px !important;
+	padding: 8px 10px !important;
+	background: var(--pb-surface) !important;
 	border: 1px solid var(--pb-border) !important;
 	border-radius: var(--pb-radius-sm) !important;
-	padding: 6px 10px !important;
+	color: var(--pb-text) !important;
 	font-size: 12px !important;
+	line-height: 1.6 !important;
 	resize: none !important;
-	margin-bottom: 8px !important;
 	outline: none !important;
-	background: #f8fafc !important;
+	transition: border-color var(--pb-transition), background-color var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-csat-comment:focus {
-	background: #ffffff !important;
+	background: var(--pb-bg) !important;
 	border-color: var(--pb-primary) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-csat-submit {
-	padding: 6px 14px !important;
+	padding: 8px 18px !important;
+	border-radius: var(--pb-radius-sm) !important;
 	background: var(--pb-primary) !important;
 	color: #ffffff !important;
-	border-radius: var(--pb-radius-sm) !important;
 	font-size: 12px !important;
 	font-weight: 700 !important;
+	transition: filter var(--pb-transition) !important;
 }
 
-/* Proactive Toast Notification */
+#poshtibank-widget-root .poshtibank-btn-csat-submit:hover {
+	filter: brightness(0.95) !important;
+}
+
+/* ==========================================================================
+   13. Proactive toast
+   ========================================================================== */
 #poshtibank-widget-root .poshtibank-proactive-toast {
 	position: absolute !important;
-	bottom: 76px !important;
-	background: #ffffff !important;
-	border-radius: var(--pb-radius-lg) !important;
-	border: 1px solid var(--pb-border) !important;
-	box-shadow: var(--pb-shadow-lg) !important;
-	padding: 12px 14px !important;
-	max-width: 280px !important;
+	bottom: 74px !important;
 	display: flex !important;
 	align-items: flex-start !important;
 	gap: 10px !important;
+	max-width: 286px !important;
+	padding: 12px 13px !important;
+	background: var(--pb-surface-raised) !important;
+	border: 1px solid var(--pb-border) !important;
+	border-radius: var(--pb-radius-lg) !important;
+	box-shadow: var(--pb-shadow-md) !important;
 	cursor: pointer !important;
+	animation: pbWindowIn 260ms var(--pb-ease) both !important;
 	z-index: 100 !important;
-	animation: pbSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 #poshtibank-widget-root.pos-bottom-right .poshtibank-proactive-toast {
@@ -1368,56 +1524,64 @@
 }
 
 #poshtibank-widget-root .poshtibank-proactive-avatar {
-	width: 32px !important;
-	height: 32px !important;
-	background: var(--pb-primary) !important;
-	color: #ffffff !important;
-	border-radius: 50% !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: center !important;
-	flex-shrink: 0 !important;
+	width: 32px !important;
+	height: 32px !important;
+	flex: 0 0 32px !important;
+	border-radius: var(--pb-radius-full) !important;
+	background: var(--pb-primary) !important;
+	color: #ffffff !important;
 }
 
 #poshtibank-widget-root .poshtibank-proactive-avatar svg {
-	width: 17px !important;
-	height: 17px !important;
-	stroke: #ffffff !important;
+	width: 16px !important;
+	height: 16px !important;
+	stroke: currentColor !important;
 	fill: none !important;
+	stroke-width: 2 !important;
 }
 
 #poshtibank-widget-root .poshtibank-proactive-content p {
 	margin: 0 !important;
-	font-size: 12px !important;
-	line-height: 1.5 !important;
 	color: var(--pb-text) !important;
+	font-size: 12px !important;
 	font-weight: 600 !important;
+	line-height: 1.7 !important;
 }
 
 #poshtibank-widget-root .poshtibank-proactive-close {
-	background: none !important;
-	border: none !important;
+	flex-shrink: 0 !important;
+	padding: 0 2px !important;
 	color: var(--pb-text-muted) !important;
-	font-size: 16px !important;
-	cursor: pointer !important;
-	padding: 0 0 4px 4px !important;
+	font-size: 15px !important;
 	line-height: 1 !important;
 }
 
-/* Seamless Handoff Banner */
+#poshtibank-widget-root .poshtibank-proactive-close:hover {
+	color: var(--pb-text) !important;
+}
+
+/* ==========================================================================
+   14. Handoff banner
+   ========================================================================== */
 #poshtibank-widget-root .poshtibank-handoff-banner {
-	background: #f1f5f9 !important;
-	border-top: 1px solid var(--pb-border) !important;
-	padding: 8px 14px !important;
 	display: flex !important;
 	align-items: center !important;
 	justify-content: space-between !important;
-	font-size: 11px !important;
+	gap: 10px !important;
+	flex-shrink: 0 !important;
+	padding: 8px 14px !important;
+	background: var(--pb-surface-raised) !important;
+	border-top: 1px solid var(--pb-border) !important;
 	color: var(--pb-text-muted) !important;
+	font-size: 10.5px !important;
 }
 
 #poshtibank-widget-root .poshtibank-handoff-links {
 	display: flex !important;
+	align-items: center !important;
 	gap: 6px !important;
 }
 
@@ -1425,14 +1589,14 @@
 	display: inline-flex !important;
 	align-items: center !important;
 	gap: 4px !important;
-	padding: 3px 8px !important;
-	border-radius: var(--pb-radius-sm) !important;
-	background: #ffffff !important;
+	padding: 4px 9px !important;
+	background: var(--pb-surface) !important;
 	border: 1px solid var(--pb-border) !important;
-	color: var(--pb-text) !important;
-	text-decoration: none !important;
+	border-radius: var(--pb-radius-xs) !important;
+	color: var(--pb-text-secondary) !important;
+	font-size: 10.5px !important;
 	font-weight: 700 !important;
-	font-size: 11px !important;
+	transition: border-color var(--pb-transition), color var(--pb-transition) !important;
 }
 
 #poshtibank-widget-root .poshtibank-btn-handoff:hover {
@@ -1441,7 +1605,15 @@
 }
 
 /* ==========================================================================
-   Mobile Responsiveness
+   15. Shared fade helper
+   ========================================================================== */
+@keyframes pbFadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+/* ==========================================================================
+   16. Responsive & motion preferences
    ========================================================================== */
 @media (max-width: 480px) {
 	#poshtibank-widget-root.pos-bottom-right,
@@ -1451,26 +1623,61 @@
 		bottom: 0 !important;
 	}
 
-	#poshtibank-widget-root .poshtibank-launcher {
+	#poshtibank-widget-root.pos-bottom-right .poshtibank-launcher {
 		position: fixed !important;
-		bottom: 18px !important;
 		right: 18px !important;
+		bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+		left: auto !important;
+	}
+
+	#poshtibank-widget-root.pos-bottom-left .poshtibank-launcher {
+		position: fixed !important;
+		left: 18px !important;
+		bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+		right: auto !important;
 	}
 
 	#poshtibank-widget-root .poshtibank-window {
 		position: fixed !important;
-		top: 0 !important;
-		right: 0 !important;
-		bottom: 0 !important;
-		left: 0 !important;
+		inset: 0 !important;
 		width: 100% !important;
 		height: 100% !important;
 		max-height: 100% !important;
+		border: 0 !important;
 		border-radius: 0 !important;
-		border: none !important;
 	}
 
 	#poshtibank-widget-root .poshtibank-win-header {
-		border-radius: 0 !important;
+		padding-top: calc(14px + env(safe-area-inset-top, 0px)) !important;
+	}
+
+	#poshtibank-widget-root .poshtibank-input-bar {
+		margin: 0 8px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+	}
+
+	#poshtibank-widget-root .poshtibank-messages-stream {
+		padding: 14px 12px 8px !important;
+	}
+}
+
+@media (min-width: 481px) and (max-height: 620px) {
+	#poshtibank-widget-root .poshtibank-window {
+		height: calc(100vh - 110px) !important;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#poshtibank-widget-root .poshtibank-window,
+	#poshtibank-widget-root .poshtibank-proactive-toast,
+	#poshtibank-widget-root .poshtibank-msg,
+	#poshtibank-widget-root .poshtibank-voice-bar {
+		animation: none !important;
+	}
+
+	#poshtibank-widget-root .poshtibank-launcher,
+	#poshtibank-widget-root .poshtibank-btn-tool,
+	#poshtibank-widget-root .poshtibank-btn-send,
+	#poshtibank-widget-root .poshtibank-btn-icon {
+		transition: none !important;
 	}
 }

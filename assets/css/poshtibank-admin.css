@@ -886,3 +886,78 @@
 	direction: ltr;
 	text-align: left;
 }
+
+/* ==========================================================================
+   Visual consistency pass
+   Native WordPress buttons are aligned with the plugin's minimal design
+   system so actions never look foreign next to custom controls.
+   ========================================================================== */
+.poshtibank-wrap .button,
+.poshtibank-modal .button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 36px;
+	padding: 0 14px;
+	border-radius: var(--poshtibank-radius-sm);
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1;
+	transition: var(--poshtibank-transition);
+}
+
+.poshtibank-wrap .button .dashicons,
+.poshtibank-modal .button .dashicons {
+	width: 17px;
+	height: 17px;
+	font-size: 17px;
+	line-height: 1;
+	color: currentColor;
+}
+
+.poshtibank-wrap .button.button-primary,
+.poshtibank-modal .button.button-primary {
+	border-color: transparent;
+	background: var(--poshtibank-primary);
+	color: #ffffff;
+	box-shadow: 0 4px 12px -4px var(--poshtibank-primary-glow);
+}
+
+.poshtibank-wrap .button.button-primary:hover,
+.poshtibank-modal .button.button-primary:hover {
+	background: var(--poshtibank-primary-hover);
+	color: #ffffff;
+}
+
+.poshtibank-wrap .button:focus-visible,
+.poshtibank-modal .button:focus-visible {
+	outline: 2px solid var(--poshtibank-primary);
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* Modal shell: softer corners to match the widget */
+.poshtibank-modal-content {
+	border-radius: var(--poshtibank-radius-xl);
+}
+
+.poshtibank-modal-header {
+	border-radius: var(--poshtibank-radius-xl) var(--poshtibank-radius-xl) 0 0;
+}
+
+/* The footer "close" control reuses .poshtibank-modal-close, whose transparent
+   background is meant for the header ×. Give the footer button a real surface. */
+.poshtibank-modal-footer .button.poshtibank-modal-close {
+	background: var(--poshtibank-card-bg);
+	border: 1px solid var(--poshtibank-border);
+	color: var(--poshtibank-text-secondary);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.poshtibank-modal-footer .button.poshtibank-modal-close:hover {
+	background: #f1f5f9;
+	border-color: var(--poshtibank-border-hover);
+	color: var(--poshtibank-text);
+}
