@@ -430,11 +430,14 @@
 	 * @param {object} data     Payload.
 	 * @param {function} callback Success callback.
 	 */
-	function apiRequest(endpoint, method, data, callback) {
+	function apiRequest(endpoint, method, data, callback, retried) {
 		var xhr = new XMLHttpRequest();
 		xhr.open(method, config.restUrl + endpoint, true);
 		xhr.setRequestHeader('Content-Type', 'application/json');
-		xhr.setRequestHeader('X-WP-Nonce', config.nonce);
+
+		if (config.nonce) {
+			xhr.setRequestHeader('X-WP-Nonce', config.nonce);
+		}
 
 		xhr.onload = function () {
 			if (xhr.status >= 200 && xhr.status < 300) {
@@ -444,11 +447,22 @@
 				} catch (e) {
 					if (callback) callback(e);
 				}
-			} else {
-				var err = null;
-				try { err = JSON.parse(xhr.responseText); } catch (e) {}
-				if (callback) callback(err || new Error('Request failed with status ' + xhr.status));
+				return;
 			}
+
+			var err = null;
+			try { err = JSON.parse(xhr.responseText); } catch (e) {}
+
+			// A page cache can serve a page whose nonce has already expired.
+			// These endpoints are public, so dropping the nonce and retrying
+			// is better than leaving the visitor with a dead chat.
+			if (!retried && xhr.status === 403 && err && err.code === 'rest_cookie_invalid_nonce') {
+				config.nonce = '';
+				apiRequest(endpoint, method, data, callback, true);
+				return;
+			}
+
+			if (callback) callback(err || new Error('Request failed with status ' + xhr.status));
 		};
 
 		xhr.onerror = function () {
