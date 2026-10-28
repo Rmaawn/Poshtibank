@@ -111,6 +111,12 @@ class Poshtibank_Schema {
 
 		// Only claim the schema is current once it actually is:
 		if ( self::verify_tables_exist() ) {
+			// Purge any corrupted records from previous buggy releases (empty session_id or message_id)
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->query( "DELETE FROM {$sessions_table} WHERE session_id = '' OR session_id IS NULL" );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$wpdb->query( "DELETE FROM {$messages_table} WHERE message_id = '' OR message_id IS NULL" );
+
 			update_option( 'poshtibank_db_version', POSHTIBANK_DB_VERSION );
 			delete_transient( 'poshtibank_schema_retry' );
 		} else {
@@ -142,10 +148,28 @@ class Poshtibank_Schema {
 		$sessions_table = Poshtibank_DB::get_sessions_table();
 		$messages_table = Poshtibank_DB::get_messages_table();
 
+		// Use esc_like for SHOW TABLES check with case-insensitive comparison
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$has_sessions = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $sessions_table ) ) === $sessions_table;
+		$sessions_found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $sessions_table ) ) );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$has_messages = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $messages_table ) ) === $messages_table;
+		$messages_found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $messages_table ) ) );
+
+		$has_sessions = ! empty( $sessions_found ) && strcasecmp( $sessions_found, $sessions_table ) === 0;
+		$has_messages = ! empty( $messages_found ) && strcasecmp( $messages_found, $messages_table ) === 0;
+
+		// Fallback verification using queryability check if SHOW TABLES was inconclusive
+		if ( ! $has_sessions ) {
+			$suppress = $wpdb->suppress_errors( true );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$has_sessions = false !== $wpdb->query( "SELECT 1 FROM {$sessions_table} LIMIT 0" );
+			$wpdb->suppress_errors( $suppress );
+		}
+		if ( ! $has_messages ) {
+			$suppress = $wpdb->suppress_errors( true );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$has_messages = false !== $wpdb->query( "SELECT 1 FROM {$messages_table} LIMIT 0" );
+			$wpdb->suppress_errors( $suppress );
+		}
 
 		return $has_sessions && $has_messages;
 	}

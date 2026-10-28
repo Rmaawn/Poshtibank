@@ -143,6 +143,14 @@ class Poshtibank_Bridge_Manager {
 				break;
 		}
 
+		// Fallback: If sending into a topic failed (e.g. topic deleted, or chat is not a forum), retry in main chat
+		if ( empty( $res['ok'] ) && ! empty( $extra['message_thread_id'] ) ) {
+			unset( $extra['message_thread_id'] );
+			if ( 'text' === $type ) {
+				$res = $this->telegram->send_text( $chat_id, $formatted_text, $extra );
+			}
+		}
+
 		// Store Telegram Message ID into metadata for reply tracking
 		if ( ! empty( $res['ok'] ) && ! empty( $res['result']['message_id'] ) ) {
 			$tg_msg_id = $res['result']['message_id'];
@@ -176,7 +184,7 @@ class Poshtibank_Bridge_Manager {
 		// Attach Inline Action Keyboard for Bale
 		$extra['reply_markup'] = Poshtibank_Bridge_Bale::make_session_inline_keyboard( $session->session_id );
 
-		$formatted_text = $this->format_header( $session, 'bale' ) . "\n\n" . esc_html( $message_data['content'] );
+		$formatted_text = $this->format_header( $session, 'bale' ) . "\n\n" . $message_data['content'];
 
 		$type = $message_data['type'] ?? 'text';
 		$res  = false;
@@ -226,9 +234,16 @@ class Poshtibank_Bridge_Manager {
 	 * @return string
 	 */
 	protected function format_header( $session, $platform = 'telegram' ) {
-		$name  = ! empty( $session->user_name ) ? esc_html( $session->user_name ) : 'کاربر مهمان';
-		$phone = ! empty( $session->user_phone ) ? ' | 📱 ' . esc_html( $session->user_phone ) : '';
-		$page  = ! empty( $session->current_page ) ? "\n🔗 " . esc_url( $session->current_page ) : '';
+		$name  = ! empty( $session->user_name ) ? ( 'telegram' === $platform ? esc_html( $session->user_name ) : $session->user_name ) : 'کاربر مهمان';
+		$phone = ! empty( $session->user_phone ) ? ' | 📱 ' . ( 'telegram' === $platform ? esc_html( $session->user_phone ) : $session->user_phone ) : '';
+
+		// For Telegram HTML mode, escape '&', '<', '>' in URLs so entity parser does not reject the message.
+		if ( ! empty( $session->current_page ) ) {
+			$raw_url = esc_url_raw( $session->current_page );
+			$page    = "\n🔗 " . ( 'telegram' === $platform ? htmlspecialchars( $raw_url, ENT_QUOTES, 'UTF-8' ) : $raw_url );
+		} else {
+			$page = '';
+		}
 
 		// WooCommerce context enrichment
 		$extra_info = '';
@@ -236,12 +251,15 @@ class Poshtibank_Bridge_Manager {
 
 		if ( ! empty( $meta['wc_product'] ) && is_array( $meta['wc_product'] ) ) {
 			$prod = $meta['wc_product'];
-			$extra_info .= sprintf( "\n📦 محصول: %s (%s)", esc_html( $prod['title'] ?? '' ), esc_html( $prod['price_formatted'] ?? '' ) );
+			$prod_title = 'telegram' === $platform ? esc_html( $prod['title'] ?? '' ) : ( $prod['title'] ?? '' );
+			$prod_price = 'telegram' === $platform ? esc_html( $prod['price_formatted'] ?? '' ) : ( $prod['price_formatted'] ?? '' );
+			$extra_info .= sprintf( "\n📦 محصول: %s (%s)", $prod_title, $prod_price );
 		}
 
 		if ( ! empty( $meta['wc_cart'] ) && is_array( $meta['wc_cart'] ) ) {
 			$cart = $meta['wc_cart'];
-			$extra_info .= sprintf( "\n🛒 سبد خرید: %d کالا (مجموع: %s)", absint( $cart['count'] ?? 0 ), esc_html( $cart['total'] ?? '' ) );
+			$cart_total = 'telegram' === $platform ? esc_html( $cart['total'] ?? '' ) : ( $cart['total'] ?? '' );
+			$extra_info .= sprintf( "\n🛒 سبد خرید: %d کالا (مجموع: %s)", absint( $cart['count'] ?? 0 ), $cart_total );
 		}
 
 		if ( ! empty( $meta['wc_customer'] ) && is_array( $meta['wc_customer'] ) ) {

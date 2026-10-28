@@ -182,7 +182,7 @@ class Poshtibank_AI {
 		}
 
 		// 2. Multi-turn conversation history
-		$history = $this->build_conversation_history( $session->session_id );
+		$history = $this->build_conversation_history( $session->session_id, $user_message );
 
 		// 3. System Prompt & Context Enrichment
 		$system_prompt = $this->build_system_prompt( $session );
@@ -288,12 +288,24 @@ class Poshtibank_AI {
 	/**
 	 * Retrieve last 8 messages for multi-turn history.
 	 *
-	 * @param string $session_id
+	 * @param string $session_id      Session ID.
+	 * @param string $exclude_content Content of the message just stored to avoid duplication.
 	 * @return array
 	 */
-	protected function build_conversation_history( $session_id ) {
-		$messages = Poshtibank_DB::get_messages( $session_id, 8 );
+	protected function build_conversation_history( $session_id, $exclude_content = '' ) {
+		$messages = Poshtibank_DB::get_messages( $session_id, 10 );
 		$history  = array();
+
+		// If the very latest message in the DB matches the user message just stored,
+		// omit it from the historical context array so it gets appended cleanly as the active turn.
+		if ( ! empty( $messages ) ) {
+			$last_msg = end( $messages );
+			if ( $last_msg && 'user' === $last_msg->sender ) {
+				if ( '' === $exclude_content || trim( (string) $last_msg->content ) === trim( (string) $exclude_content ) ) {
+					array_pop( $messages );
+				}
+			}
+		}
 
 		foreach ( $messages as $msg ) {
 			if ( 'system' === $msg->sender || 'voice' === $msg->type || 'file' === $msg->type ) {
@@ -323,19 +335,50 @@ class Poshtibank_AI {
 
 		$url = self::build_endpoint( 'gemini', $this->settings['endpoint'] ?? '', $model, $api_key );
 
-		$contents = array();
+		// Build and sanitize multi-turn contents for Gemini API requirements:
+		// 1. Alternating turns between 'user' and 'model'
+		// 2. First turn MUST have role 'user'
+		// 3. Last turn MUST have role 'user'
+		$raw_turns = array();
 		foreach ( $history as $h ) {
-			$contents[] = array(
-				'role'  => ( 'user' === $h['role'] ) ? 'user' : 'model',
-				'parts' => array( array( 'text' => $h['content'] ) ),
+			$raw_turns[] = array(
+				'role' => ( 'user' === $h['role'] ) ? 'user' : 'model',
+				'text' => $h['content'],
 			);
 		}
-
 		// Append latest user message
-		$contents[] = array(
-			'role'  => 'user',
-			'parts' => array( array( 'text' => $user_message ) ),
+		$raw_turns[] = array(
+			'role' => 'user',
+			'text' => $user_message,
 		);
+
+		// Merge consecutive turns with identical role into one turn
+		$merged_turns = array();
+		foreach ( $raw_turns as $turn ) {
+			$count = count( $merged_turns );
+			if ( $count > 0 && $merged_turns[ $count - 1 ]['role'] === $turn['role'] ) {
+				$merged_turns[ $count - 1 ]['text'] .= "\n" . $turn['text'];
+			} else {
+				$merged_turns[] = $turn;
+			}
+		}
+
+		// Ensure first turn starts with 'user'
+		while ( ! empty( $merged_turns ) && 'user' !== $merged_turns[0]['role'] ) {
+			array_shift( $merged_turns );
+		}
+
+		if ( empty( $merged_turns ) ) {
+			$merged_turns[] = array( 'role' => 'user', 'text' => $user_message );
+		}
+
+		$contents = array();
+		foreach ( $merged_turns as $turn ) {
+			$contents[] = array(
+				'role'  => $turn['role'],
+				'parts' => array( array( 'text' => $turn['text'] ) ),
+			);
+		}
 
 		$payload = array(
 			'system_instruction' => array(
@@ -365,6 +408,10 @@ class Poshtibank_AI {
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( ! empty( $body['candidates'][0]['content']['parts'][0]['text'] ) ) {
 			return trim( $body['candidates'][0]['content']['parts'][0]['text'] );
+		}
+
+		if ( ! empty( $body['error'] ) ) {
+			error_log( '[Poshtibank Gemini API Error] ' . wp_json_encode( $body['error'] ) );
 		}
 
 		return false;
@@ -429,6 +476,10 @@ class Poshtibank_AI {
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( ! empty( $body['choices'][0]['message']['content'] ) ) {
 			return trim( $body['choices'][0]['message']['content'] );
+		}
+
+		if ( ! empty( $body['error'] ) ) {
+			error_log( '[Poshtibank OpenAI API Error] ' . wp_json_encode( $body['error'] ) );
 		}
 
 		return false;

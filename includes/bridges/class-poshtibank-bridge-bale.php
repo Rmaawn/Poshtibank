@@ -51,9 +51,8 @@ class Poshtibank_Bridge_Bale implements Poshtibank_Bridge_Interface {
 	 * @return bool
 	 */
 	public function is_enabled() {
-		$settings = get_option( 'poshtibank_settings', array() );
-		$enabled  = ! empty( $settings['bale']['enabled'] );
-		return $enabled && ! empty( $this->token ) && ! empty( $this->chat_id );
+		$enabled = Poshtibank_Settings::get( 'bale', 'enabled' );
+		return ! empty( $enabled ) && ! empty( $this->token ) && ! empty( $this->chat_id );
 	}
 
 	/**
@@ -279,6 +278,9 @@ class Poshtibank_Bridge_Bale implements Poshtibank_Bridge_Interface {
 		}
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( is_array( $body ) && empty( $body['ok'] ) && ! empty( $body['description'] ) ) {
+			error_log( '[Poshtibank Bale API Error] ' . $method . ': ' . $body['description'] );
+		}
 		return is_array( $body ) ? $body : false;
 	}
 }

@@ -435,8 +435,13 @@
 	 * @param {function} callback Success callback.
 	 */
 	function apiRequest(endpoint, method, data, callback, retried) {
+		var url = config.restUrl + endpoint;
+		if (config.restUrl.indexOf('?') !== -1 && endpoint.indexOf('?') !== -1) {
+			url = config.restUrl + endpoint.replace('?', '&');
+		}
+
 		var xhr = new XMLHttpRequest();
-		xhr.open(method, config.restUrl + endpoint, true);
+		xhr.open(method, url, true);
 		xhr.setRequestHeader('Content-Type', 'application/json');
 
 		if (config.nonce) {
@@ -460,7 +465,7 @@
 			// A page cache can serve a page whose nonce has already expired.
 			// These endpoints are public, so dropping the nonce and retrying
 			// is better than leaving the visitor with a dead chat.
-			if (!retried && xhr.status === 403 && err && err.code === 'rest_cookie_invalid_nonce') {
+			if (!retried && xhr.status === 403 && config.nonce) {
 				config.nonce = '';
 				apiRequest(endpoint, method, data, callback, true);
 				return;
@@ -651,6 +656,17 @@
 				return;
 			}
 
+			// Promote optimistic temp bubble to real message ID to prevent duplicate echo on poll
+			if (res && res.message) {
+				var tempBubble = document.getElementById('msg-' + tempId);
+				if (tempBubble) {
+					tempBubble.id = 'msg-' + (res.message.message_id || res.message.id);
+				}
+				if (res.message.id && parseInt(res.message.id, 10) > state.lastMessageId) {
+					state.lastMessageId = parseInt(res.message.id, 10);
+				}
+			}
+
 			// If AI First-Line Responder provided an instant response (Phase 7)
 			if (res && res.ai_reply) {
 				elements.typingIndicator.style.display = 'flex';
@@ -667,6 +683,9 @@
 						created_at: formatTime(new Date()),
 					};
 					appendMessageBubble(aiMsg);
+					if (res.ai_message && res.ai_message.id && parseInt(res.ai_message.id, 10) > state.lastMessageId) {
+						state.lastMessageId = parseInt(res.ai_message.id, 10);
+					}
 					scrollStreamToBottom();
 					playNotificationSound();
 				}, 500);
@@ -1126,16 +1145,29 @@
 			formData.append('duration', duration);
 		}
 
+		var uploadUrl = config.restUrl + 'media/upload';
+		if (config.restUrl.indexOf('?') !== -1) {
+			uploadUrl = config.restUrl + 'media/upload'.replace('?', '&');
+		}
+
 		var xhr = new XMLHttpRequest();
-		xhr.open('POST', config.restUrl + 'media/upload', true);
-		xhr.setRequestHeader('X-WP-Nonce', config.nonce);
+		xhr.open('POST', uploadUrl, true);
+		if (config.nonce) {
+			xhr.setRequestHeader('X-WP-Nonce', config.nonce);
+		}
 
 		xhr.onload = function () {
 			if (xhr.status >= 200 && xhr.status < 300) {
 				try {
 					var res = JSON.parse(xhr.responseText);
-					if (res.message && res.message.id) {
-						state.lastMessageId = Math.max(state.lastMessageId, parseInt(res.message.id, 10));
+					if (res.message) {
+						var tempBubble = document.getElementById('msg-' + tempMsg.message_id);
+						if (tempBubble) {
+							tempBubble.id = 'msg-' + (res.message.message_id || res.message.id);
+						}
+						if (res.message.id) {
+							state.lastMessageId = Math.max(state.lastMessageId, parseInt(res.message.id, 10));
+						}
 					}
 				} catch (e) {}
 			} else {

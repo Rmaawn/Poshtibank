@@ -62,9 +62,8 @@ class Poshtibank_Bridge_Telegram implements Poshtibank_Bridge_Interface {
 	 * @return bool
 	 */
 	public function is_enabled() {
-		$settings = get_option( 'poshtibank_settings', array() );
-		$enabled  = ! empty( $settings['telegram']['enabled'] );
-		return $enabled && ! empty( $this->token ) && ! empty( $this->chat_id );
+		$enabled = Poshtibank_Settings::get( 'telegram', 'enabled' );
+		return ! empty( $enabled ) && ! empty( $this->token ) && ! empty( $this->chat_id );
 	}
 
 	/**
@@ -100,7 +99,18 @@ class Poshtibank_Bridge_Telegram implements Poshtibank_Bridge_Interface {
 			'parse_mode' => 'HTML',
 		);
 
-		return $this->request( 'sendMessage', array_merge( $params, $extra ) );
+		$res = $this->request( 'sendMessage', array_merge( $params, $extra ) );
+
+		// Fallback: If Telegram rejected due to HTML entity parse error, retry as plain text.
+		if ( empty( $res['ok'] ) && ! empty( $res['description'] ) && false !== stripos( $res['description'], 'parse' ) ) {
+			$plain_params = array(
+				'chat_id' => $chat_id,
+				'text'    => wp_strip_all_tags( $text ),
+			);
+			$res = $this->request( 'sendMessage', array_merge( $plain_params, $extra ) );
+		}
+
+		return $res;
 	}
 
 	/**
@@ -120,7 +130,18 @@ class Poshtibank_Bridge_Telegram implements Poshtibank_Bridge_Interface {
 			'parse_mode' => 'HTML',
 		);
 
-		return $this->request( 'sendVoice', array_merge( $params, $extra ) );
+		$res = $this->request( 'sendVoice', array_merge( $params, $extra ) );
+
+		if ( empty( $res['ok'] ) && ! empty( $res['description'] ) && false !== stripos( $res['description'], 'parse' ) ) {
+			$plain_params = array(
+				'chat_id' => $chat_id,
+				'voice'   => $voice_url,
+				'caption' => wp_strip_all_tags( $caption ),
+			);
+			$res = $this->request( 'sendVoice', array_merge( $plain_params, $extra ) );
+		}
+
+		return $res;
 	}
 
 	/**
@@ -140,7 +161,18 @@ class Poshtibank_Bridge_Telegram implements Poshtibank_Bridge_Interface {
 			'parse_mode' => 'HTML',
 		);
 
-		return $this->request( 'sendPhoto', array_merge( $params, $extra ) );
+		$res = $this->request( 'sendPhoto', array_merge( $params, $extra ) );
+
+		if ( empty( $res['ok'] ) && ! empty( $res['description'] ) && false !== stripos( $res['description'], 'parse' ) ) {
+			$plain_params = array(
+				'chat_id' => $chat_id,
+				'photo'   => $photo_url,
+				'caption' => wp_strip_all_tags( $caption ),
+			);
+			$res = $this->request( 'sendPhoto', array_merge( $plain_params, $extra ) );
+		}
+
+		return $res;
 	}
 
 	/**
@@ -160,7 +192,18 @@ class Poshtibank_Bridge_Telegram implements Poshtibank_Bridge_Interface {
 			'parse_mode' => 'HTML',
 		);
 
-		return $this->request( 'sendDocument', array_merge( $params, $extra ) );
+		$res = $this->request( 'sendDocument', array_merge( $params, $extra ) );
+
+		if ( empty( $res['ok'] ) && ! empty( $res['description'] ) && false !== stripos( $res['description'], 'parse' ) ) {
+			$plain_params = array(
+				'chat_id'  => $chat_id,
+				'document' => $doc_url,
+				'caption'  => wp_strip_all_tags( $caption ),
+			);
+			$res = $this->request( 'sendDocument', array_merge( $plain_params, $extra ) );
+		}
+
+		return $res;
 	}
 
 	/**
@@ -332,6 +375,9 @@ class Poshtibank_Bridge_Telegram implements Poshtibank_Bridge_Interface {
 		}
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( is_array( $body ) && empty( $body['ok'] ) && ! empty( $body['description'] ) ) {
+			error_log( '[Poshtibank Telegram API Error] ' . $method . ': ' . $body['description'] );
+		}
 		return is_array( $body ) ? $body : false;
 	}
 }

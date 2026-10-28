@@ -100,6 +100,9 @@ class Poshtibank_DB {
 		$session_id = ! empty( $args['session_id'] ) ? sanitize_text_field( $args['session_id'] ) : self::generate_uuid();
 		$now        = current_time( 'mysql' );
 
+		// Ensure session_id in $args is the generated UUID, preventing empty string overwrite in wp_parse_args.
+		$args['session_id'] = $session_id;
+
 		$defaults = array(
 			'session_id'         => $session_id,
 			'user_id'            => get_current_user_id(),
@@ -124,6 +127,8 @@ class Poshtibank_DB {
 		);
 
 		$data = wp_parse_args( $args, $defaults );
+		// Guarantee a valid UUID is always preserved.
+		$data['session_id'] = $session_id;
 
 		if ( is_array( $data['metadata'] ) ) {
 			$data['metadata'] = wp_json_encode( $data['metadata'] );
@@ -323,6 +328,9 @@ class Poshtibank_DB {
 		$message_id = ! empty( $args['message_id'] ) ? sanitize_text_field( $args['message_id'] ) : self::generate_uuid();
 		$now        = current_time( 'mysql' );
 
+		// Ensure message_id in $args is the generated UUID, preventing empty string overwrite in wp_parse_args.
+		$args['message_id'] = $message_id;
+
 		$defaults = array(
 			'message_id'  => $message_id,
 			'session_id'  => $args['session_id'],
@@ -338,6 +346,8 @@ class Poshtibank_DB {
 		);
 
 		$data = wp_parse_args( $args, $defaults );
+		// Guarantee a valid UUID is always preserved.
+		$data['message_id'] = $message_id;
 
 		if ( is_array( $data['metadata'] ) ) {
 			$data['metadata'] = wp_json_encode( $data['metadata'] );
@@ -603,7 +613,7 @@ class Poshtibank_DB {
 		$sessions_table = self::get_sessions_table();
 		$messages_table = self::get_messages_table();
 
-		$cutoff_date = gmdate( 'Y-m-d H:i:s', time() - ( $retention_days * DAY_IN_SECONDS ) );
+		$cutoff_date = date( 'Y-m-d H:i:s', current_time( 'timestamp' ) - ( $retention_days * DAY_IN_SECONDS ) );
 
 		// 1. Find sessions older than the cutoff date.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery

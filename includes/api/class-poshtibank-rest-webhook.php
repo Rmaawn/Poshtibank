@@ -260,7 +260,8 @@ class Poshtibank_REST_Webhook {
 	 * @return WP_REST_Response
 	 */
 	public function handle_bale( WP_REST_Request $request ) {
-		$payload = $request->get_json_params();
+		$settings = Poshtibank_Settings::get_settings();
+		$payload  = $request->get_json_params();
 		if ( empty( $payload ) || ! is_array( $payload ) ) {
 			return new WP_REST_Response( array( 'ok' => true ), 200 );
 		}
